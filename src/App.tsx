@@ -1,14 +1,20 @@
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import { Button } from '@/components/ui/button';
+import DashboardLayout from '@/components/Layout/DashboardLayout';
+import Home from '@/pages/Home';
+import Login from '@/pages/Login';
 
 function App() {
   return (
-    <>
-      <div className='flex min-h-svh flex-col items-center justify-center'>
-        <Button>Click me</Button>
-      </div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/login' element={<Login />} />
+
+        <Route element={<DashboardLayout />}>
+          <Route path='/' element={<Home />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
