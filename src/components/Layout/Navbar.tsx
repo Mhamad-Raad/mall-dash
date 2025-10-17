@@ -8,7 +8,7 @@ import LocaleToggle from '../locale-button';
 
 export default function Navbar() {
   const location = useLocation();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
