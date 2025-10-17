@@ -1,9 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import {
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarInset,
-} from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from './SideBar';
 import Navbar from './Navbar';
 
@@ -13,7 +9,6 @@ const Layout = () => {
       <AppSidebar />
       <SidebarInset>
         <main className='p-4'>
-          <SidebarTrigger />
           <Navbar />
           <Outlet />
         </main>
