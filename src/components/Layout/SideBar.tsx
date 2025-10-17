@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from '@/components/ui/sidebar';
 
 // Menu items.
@@ -62,6 +63,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }
