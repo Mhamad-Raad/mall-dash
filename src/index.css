@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -118,3 +118,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+button,
+textarea,
+select {
+  cursor: pointer;
+}
+
+input {
+  cursor: text;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+body {
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
