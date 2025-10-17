@@ -5,6 +5,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { AppSidebar } from './SideBar';
+import Navbar from './Navbar';
 
 const Layout = () => {
   return (
@@ -13,6 +14,7 @@ const Layout = () => {
       <SidebarInset>
         <main className='p-4'>
           <SidebarTrigger />
+          <Navbar />
           <Outlet />
         </main>
       </SidebarInset>

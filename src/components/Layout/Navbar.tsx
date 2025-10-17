@@ -1,5 +1,9 @@
-const Navbar = () => {
-  return <div>Navbar</div>;
-};
+import ThemeButton from '../ui/ThemeButton';
 
-export default Navbar;
+export default function Navbar() {
+  return (
+    <div>
+      <ThemeButton />
+    </div>
+  );
+}
