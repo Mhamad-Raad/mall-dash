@@ -5,7 +5,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -60,7 +59,7 @@ export function AppSidebar() {
           <SidebarMenuItem className='pl-1'>
             <SidebarMenuButton
               asChild
-              className='data-[slot=sidebar-menu-button]:!p-1.5 mt-4 '
+              className='data-[slot=sidebar-menu-button]:!p-1.5 mt-4'
             >
               <a href='#'>
                 <img src={Logo} title='logo' className='!w-6 !h-6' />
@@ -72,9 +71,8 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className='mt-6'>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>

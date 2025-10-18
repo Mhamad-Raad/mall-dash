@@ -8,9 +8,11 @@ const Layout = () => {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <main className='p-4'>
+        <main className='flex flex-col gap-8 p-4'>
           <Navbar />
-          <Outlet />
+          <section className='p-5'>
+            <Outlet />
+          </section>
         </main>
       </SidebarInset>
     </SidebarProvider>
