@@ -11,7 +11,7 @@ const Layout = () => {
       <SidebarInset>
         <main className='flex flex-col gap-8 p-4'>
           <Navbar />
-          <section className='p-5'>
+          <section className='px-4'>
             <Outlet />
           </section>
         </main>
