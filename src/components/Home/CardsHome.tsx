@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-import type { HomeCardsProps } from '@/interfaces/CardsHome.interface';
+import type { HomeCardsProps } from '@/interfaces/Home.interface';
 
 const HomeCards = ({ cards }: HomeCardsProps) => {
   return (

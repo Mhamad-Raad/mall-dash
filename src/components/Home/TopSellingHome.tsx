@@ -7,34 +7,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const items = [
-  {
-    id: '1',
-    type: 'Market',
-    vendor: 'Mini-Markety barzyakan',
-    sold: '10',
-  },
-  {
-    id: '2',
-    type: 'Restaurant',
-    vendor: 'Aland StakeHouse',
-    sold: '20',
-  },
-  {
-    id: '3',
-    type: 'Bakery',
-    vendor: 'Barzayakan Bakery',
-    sold: '12',
-  },
-  {
-    id: '4',
-    type: 'Market',
-    vendor: 'Mini-Markety barzyakany 2',
-    sold: '100',
-  },
-];
+import type { TopSellingItemsHomeProps } from '@/interfaces/Home.interface';
 
-const TopSelling = () => {
+const TopSelling = ({ items }: TopSellingItemsHomeProps) => {
   return (
     <div className='w-full'>
       <div className='[&>div]:rounded-sm [&>div]:border'>
