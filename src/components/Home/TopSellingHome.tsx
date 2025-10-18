@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import type { TopSellingItemsHomeProps } from '@/interfaces/Home.interface';
 
@@ -14,7 +15,7 @@ const TopSelling = ({ items }: TopSellingItemsHomeProps) => {
     <div className='w-full'>
       <div className='[&>div]:rounded-sm [&>div]:border'>
         {/* Scrollable Table Container */}
-        <div className='max-h-[300px] overflow-y-auto'>
+        <ScrollArea className='h-[300px] overflow-y-auto'>
           <Table className='min-w-full'>
             <TableHeader>
               <TableRow className='bg-background'>
@@ -39,7 +40,7 @@ const TopSelling = ({ items }: TopSellingItemsHomeProps) => {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );
