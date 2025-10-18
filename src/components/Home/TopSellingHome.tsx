@@ -8,6 +8,8 @@ import {
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+import { formatCompact } from '@/lib/formatNumbers';
+
 import type { TopSellingItemsHomeProps } from '@/interfaces/Home.interface';
 
 const TopSelling = ({ items }: TopSellingItemsHomeProps) => {
@@ -35,7 +37,7 @@ const TopSelling = ({ items }: TopSellingItemsHomeProps) => {
                 <TableRow key={item.id}>
                   <TableCell>{item.vendor}</TableCell>
                   <TableCell>{item.type}</TableCell>
-                  <TableCell>{item.sold}</TableCell>
+                  <TableCell>{formatCompact(item.sold)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

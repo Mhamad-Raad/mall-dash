@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+import { formatCompact } from '@/lib/formatNumbers';
+
 import type { HomeCardsProps } from '@/interfaces/Home.interface';
 
 const HomeCards = ({ cards }: HomeCardsProps) => {
@@ -19,7 +21,7 @@ const HomeCards = ({ cards }: HomeCardsProps) => {
           <CardHeader>
             <CardDescription>{card.title}</CardDescription>
             <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-              {card.value}
+              {formatCompact(card.value)}
             </CardTitle>
             <CardAction>
               <Badge variant='outline'>

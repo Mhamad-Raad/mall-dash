@@ -1,6 +1,6 @@
 export interface HomeCard {
   title: string;
-  value: string;
+  value: number;
   badge: { text: string; trendingUp: boolean | null };
   footer: string;
 }
