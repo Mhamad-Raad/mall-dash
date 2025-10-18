@@ -1,4 +1,6 @@
 import CardsHome from '@/components/Home/CardsHome';
+import RecentOrdersHome from '@/components/Home/RecentOrdersHome';
+import TopSellingHome from '@/components/Home/TopSellingHome';
 
 const cardsInfo = [
   {
@@ -29,8 +31,18 @@ const cardsInfo = [
 
 const Home = () => {
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-12'>
       <CardsHome cards={cardsInfo} />
+      <div className='flex items-center gap-6'>
+        <div className='w-[60%] h-[400px] bg-card flex flex-col gap-4 border rounded-md p-4'>
+          <h3 className='font-bold'>Recent Orders</h3>
+          <RecentOrdersHome />
+        </div>
+        <div className='w-[30%] h-[400px] bg-card flex flex-col gap-4 border rounded-md p-4'>
+          <h3 className='font-bold'>Top Selling</h3>
+          <TopSellingHome />
+        </div>
+      </div>
     </div>
   );
 };
