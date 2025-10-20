@@ -10,6 +10,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import type { Users as UsersTableProps } from '@/interfaces/Users.interface';
+import CustomTablePagination from '../CustomTablePagination';
 
 const UsersTable = ({ users }: UsersTableProps) => {
   return (
@@ -61,6 +62,7 @@ const UsersTable = ({ users }: UsersTableProps) => {
           </TableBody>
         </Table>
       </ScrollArea>
+      <CustomTablePagination total={10} suggestions={[10, 20, 40, 50, 100]} />
     </div>
   );
 };
