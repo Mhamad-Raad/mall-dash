@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -13,6 +13,7 @@ function App() {
 
         <Route element={<DashboardLayout />}>
           <Route path='/' element={<Home />} />
+          <Route path='/users' element={<Users />} />
         </Route>
       </Routes>
     </BrowserRouter>
