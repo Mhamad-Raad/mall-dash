@@ -164,17 +164,16 @@ const users = [
   },
 ];
 
-
 const Users = () => {
   return (
-    <div className='w-full flex flex-col items-start gap-8'>
+    <section className='w-full flex flex-col items-start gap-8'>
       <div className='w-full flex items-center bg-card border rounded-md p-4'>
         <UsersFilters />
       </div>
       <div className='w-full bg-card border rounded-md p-4'>
         <UsersTable users={users} />
       </div>
-    </div>
+    </section>
   );
 };
 

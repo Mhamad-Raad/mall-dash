@@ -1,23 +1,37 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
-import Users from './pages/Users';
+import Users from './pages/users/Users';
+import CreateUser from './pages/users/CreateUser';
+
+const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: '/',
+        element: <Home />,
+      },
+      {
+        path: '/users',
+        element: <Users />,
+      },
+      {
+        path: '/users/create',
+        element: <CreateUser />,
+      },
+    ],
+  },
+]);
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/login' element={<Login />} />
-
-        <Route element={<DashboardLayout />}>
-          <Route path='/' element={<Home />} />
-          <Route path='/users' element={<Users />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import {
   Select,
   SelectContent,
@@ -11,9 +13,19 @@ import { Button } from '@/components/ui/button';
 import { Search, Plus } from 'lucide-react';
 
 const UsersFilters = () => {
+  const navigate = useNavigate();
+
+  const handleOnCreate = () => {
+    navigate('/users/create');
+  };
+
   return (
     <div className='w-full flex items-center justify-between'>
-      <Button type='button' className='flex items-center gap-1 text-md'>
+      <Button
+        type='button'
+        className='flex items-center gap-1 text-md'
+        onClick={handleOnCreate}
+      >
         <Plus className='size-4' />
         <p className='font-black'>Create</p>
       </Button>
