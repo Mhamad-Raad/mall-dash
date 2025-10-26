@@ -2,14 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Table,
   TableBody,
   TableCell,
@@ -18,7 +10,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { MoreHorizontal, Eye, Edit, Trash2, Mail, Phone, Building2 } from 'lucide-react';
+import { Trash2, Mail, Phone, Building2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import type { Users as UsersTableProps } from '@/interfaces/Users.interface';
 import CustomTablePagination from '../CustomTablePagination';
@@ -32,6 +25,18 @@ const getUserTypeColor = (type: string) => {
 };
 
 const UsersTable = ({ users }: UsersTableProps) => {
+  const navigate = useNavigate();
+
+  const handleRowClick = (userId: string) => {
+    navigate(`/users/${userId}`);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation(); // Prevent row click when clicking delete
+    // Add your delete logic here
+    console.log('Delete user:', userId);
+  };
+
   return (
     <div className='rounded-lg border bg-card shadow-sm'>
       {/* Scrollable Table Container */}
@@ -51,14 +56,15 @@ const UsersTable = ({ users }: UsersTableProps) => {
               <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
                 Location
               </TableHead>
-              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 text-right font-semibold border-b'>
-                Actions
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user, index) => (
-              <TableRow key={`${user.id}-${index}`} className='hover:bg-muted/50 transition-colors'>
+              <TableRow
+                key={`${user.id}-${index}`}
+                className='hover:bg-muted/50 transition-colors cursor-pointer'
+                onClick={() => handleRowClick(user.id)}
+              >
                 {/* User Info with Avatar */}
                 <TableCell className='font-medium'>
                   <div className='flex items-center gap-3'>
@@ -102,35 +108,6 @@ const UsersTable = ({ users }: UsersTableProps) => {
                     <Building2 className='size-4 text-muted-foreground' />
                     <span className='text-sm font-medium'>{user.buildingName}</span>
                   </div>
-                </TableCell>
-
-                {/* Actions Dropdown */}
-                <TableCell className='text-right'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost' className='h-8 w-8 p-0'>
-                        <span className='sr-only'>Open menu</span>
-                        <MoreHorizontal className='h-4 w-4' />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end' className='w-[160px]'>
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className='cursor-pointer'>
-                        <Eye className='mr-2 h-4 w-4' />
-                        <span>View details</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className='cursor-pointer'>
-                        <Edit className='mr-2 h-4 w-4' />
-                        <span>Edit user</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className='cursor-pointer text-destructive focus:text-destructive'>
-                        <Trash2 className='mr-2 h-4 w-4' />
-                        <span>Delete</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
