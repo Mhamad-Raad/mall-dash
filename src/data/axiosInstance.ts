@@ -59,6 +59,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
+        console.log('here', refreshToken);
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
@@ -79,12 +80,12 @@ axiosInstance.interceptors.response.use(
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
-      } catch (err) {
+      } catch (err: any) {
         processQueue(err, null);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
-        return Promise.reject(err);
+        // window.location.href = '/login';
+        throw new Error(err?.message);
       } finally {
         isRefreshing = false;
       }

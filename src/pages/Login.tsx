@@ -1,21 +1,27 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { ToastContainer, toast } from 'react-toastify';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
-import Logo from '@/assets/Logo.jpg';
+
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
-import { ToastContainer, toast } from 'react-toastify';
+
 import { loginUser } from '@/data/Authorization';
 
+import Logo from '@/assets/Logo.jpg';
+
 const Login = () => {
+  const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

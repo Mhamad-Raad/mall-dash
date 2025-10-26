@@ -29,6 +29,10 @@ export const loginUser = async ({
     if (data.accessToken && data.refreshToken) {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
+      // Expiry must be in the future:
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+      localStorage.setItem('refreshTokenExpiresAt', expiresAt);
+      console.log('LOGIN STORAGE SET', data.refreshToken, expiresAt);
     }
 
     return data;
