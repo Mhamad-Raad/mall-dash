@@ -3,26 +3,67 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-
+import { useNavigate } from 'react-router-dom';
 import Logo from '@/assets/Logo.jpg';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import { loginUser } from '@/data/Authorization';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (isLocked) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await loginUser({ email, password });
+
+      if (response.error) {
+        toast.error('Email or password is incorrect');
+        setIsLocked(true);
+      } else {
+        toast.success('Login successful!');
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast.error('Server is down or unreachable!');
+      setIsLocked(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value);
+      if (isLocked) setIsLocked(false);
+    };
 
   return (
     <div className='w-full h-[100vh] flex items-center justify-center'>
       <div className='w-[90%] max-w-[1000px] flex flex-col gap-6'>
         <Card className='overflow-hidden p-0'>
           <CardContent className='grid p-0 md:grid-cols-2'>
-            <form className='p-6 md:p-8'>
+            <form className='p-6 md:p-8' onSubmit={handleSubmit}>
               <FieldGroup>
-                <div className='flex flex-col items-center gap-2 text-center'>
+                <div className='flex flex-col items-center gap-2 text-center mb-4'>
                   <h1 className='text-2xl font-bold'>Welcome back!</h1>
                   <p className='text-muted-foreground text-balance'>
                     Login to your account
                   </p>
                 </div>
+
+                {/* Email Field */}
                 <Field className='gap-2'>
                   <FieldLabel htmlFor='email' className='text-muted-foreground'>
                     Email
@@ -32,14 +73,18 @@ const Login = () => {
                       id='email'
                       type='email'
                       placeholder='m@example.com'
-                      className='h-11 pl-10' /* left padding for icon */
+                      className='h-11 pl-10'
                       required
+                      value={email}
+                      onChange={handleChange(setEmail)}
                     />
                     <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
                       <Mail size={20} />
                     </span>
                   </div>
                 </Field>
+
+                {/* Password Field */}
                 <Field className='gap-2'>
                   <div className='flex items-center'>
                     <FieldLabel
@@ -59,9 +104,11 @@ const Login = () => {
                     <Input
                       id='password'
                       type={showPassword ? 'text' : 'password'}
-                      className='h-11 pl-10 pr-10' /* left/right padding for icons */
+                      className='h-11 pl-10 pr-10'
                       placeholder='******'
                       required
+                      value={password}
+                      onChange={handleChange(setPassword)}
                     />
                     <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
                       <Lock size={20} />
@@ -76,11 +123,29 @@ const Login = () => {
                     </button>
                   </div>
                 </Field>
-                <Field>
-                  <Button type='submit'>Login</Button>
+
+                {/* Submit Button */}
+                <Field className='mt-4'>
+                  <Button
+                    type='submit'
+                    disabled={isLoading || isLocked}
+                    className='w-full'
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />{' '}
+                        Logging in...
+                      </>
+                    ) : isLocked ? (
+                      'Please edit your credentials'
+                    ) : (
+                      'Login'
+                    )}
+                  </Button>
                 </Field>
               </FieldGroup>
             </form>
+
             <div className='bg-muted relative hidden md:block'>
               <img
                 src={Logo}
@@ -91,6 +156,11 @@ const Login = () => {
           </CardContent>
         </Card>
       </div>
+      <ToastContainer
+        position='bottom-right'
+        autoClose={5000}
+        hideProgressBar={false}
+      />
     </div>
   );
 };
