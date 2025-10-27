@@ -1,7 +1,7 @@
 import UsersFilters from '@/components/Users/UsersFilters';
 import UsersTable from '@/components/Users/UsersTable';
 
-const users = [
+export const usersData = [
   {
     id: '1',
     src: 'https://randomuser.me/api/portraits/men/1.jpg',
@@ -212,7 +212,7 @@ const Users = () => {
       <UsersFilters />
       
       {/* Users Table */}
-      <UsersTable users={users} />
+      <UsersTable users={usersData} />
     </section>
   );
 };

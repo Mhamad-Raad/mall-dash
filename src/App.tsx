@@ -6,6 +6,7 @@ import Home from '@/pages/Home';
 import Login from '@/pages/Login';
 import Users from './pages/users/Users';
 import CreateUser from './pages/users/CreateUser';
+import UserDetail from './pages/users/UserDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -32,8 +33,12 @@ const router = createBrowserRouter([
         element: <CreateUser />,
       },
       {
+        path: '/users/:id',
+        element: <UserDetail />,
+      },
+      {
         path: '*',
-        element: <NotFound />, // catch-all for unmatched paths
+        element: <NotFound />,
       },
     ],
   },
@@ -44,4 +49,3 @@ function App() {
 }
 
 export default App;
-
