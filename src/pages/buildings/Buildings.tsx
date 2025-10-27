@@ -11,8 +11,8 @@ export const buildingsData: Building[] = [
         id: 1,
         floorNumber: 1,
         apartments: [
-          { id: 1, apartmentNumber: 1, occupants: [{ id: 1, name: 'John Smith', email: 'john.smith@email.com' }] },
-          { id: 2, apartmentNumber: 2, occupants: [{ id: 2, name: 'Sarah Johnson', email: 'sarah.j@email.com' }, { id: 3, name: 'Mike Davis', email: 'mike.d@email.com' }] },
+          { id: 1, apartmentNumber: 1, name: 'Sunset Suite', occupants: [{ id: 1, name: 'John Smith', email: 'john.smith@email.com' }] },
+          { id: 2, apartmentNumber: 2, name: 'Ocean View', occupants: [{ id: 2, name: 'Sarah Johnson', email: 'sarah.j@email.com' }, { id: 3, name: 'Mike Davis', email: 'mike.d@email.com' }] },
           { id: 3, apartmentNumber: 3, occupants: [] },
         ],
       },

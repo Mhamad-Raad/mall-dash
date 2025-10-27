@@ -15,6 +15,7 @@ const BuildingDetail = () => {
   const navigate = useNavigate();
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
   const [editedOccupants, setEditedOccupants] = useState<Occupant[]>([]);
+  const [editedApartmentName, setEditedApartmentName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Find the building by ID
@@ -51,6 +52,7 @@ const BuildingDetail = () => {
   const handleApartmentClick = (apartment: Apartment) => {
     setSelectedApartment(apartment);
     setEditedOccupants([...apartment.occupants]);
+    setEditedApartmentName(apartment.name || '');
     setIsDialogOpen(true);
   };
 
@@ -86,6 +88,7 @@ const BuildingDetail = () => {
         );
         if (apartmentIndex !== -1) {
           building.floors[floorIndex].apartments[apartmentIndex].occupants = editedOccupants;
+          building.floors[floorIndex].apartments[apartmentIndex].name = editedApartmentName;
         }
       }
     }
@@ -121,6 +124,8 @@ const BuildingDetail = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         occupants={editedOccupants}
+        apartmentName={editedApartmentName}
+        onApartmentNameChange={setEditedApartmentName}
         onAddOccupant={handleAddOccupant}
         onRemoveOccupant={handleRemoveOccupant}
         onOccupantChange={handleOccupantChange}

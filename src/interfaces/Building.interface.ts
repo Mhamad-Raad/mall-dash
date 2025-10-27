@@ -7,6 +7,7 @@ export interface Occupant {
 export interface Apartment {
   id: number;
   apartmentNumber: number;
+  name?: string;
   occupants: Occupant[];
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Building2, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,16 @@ interface BuildingHeaderProps {
 const BuildingHeader = ({ buildingName, onNameChange, onBack }: BuildingHeaderProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(buildingName);
+
+  // Sync editedName with buildingName prop changes
+  useEffect(() => {
+    setEditedName(buildingName);
+  }, [buildingName]);
+
+  const handleStartEditing = () => {
+    setEditedName(buildingName); // Sync with current building name
+    setIsEditing(true);
+  };
 
   const handleSave = () => {
     if (editedName.trim()) {
@@ -78,7 +88,7 @@ const BuildingHeader = ({ buildingName, onNameChange, onBack }: BuildingHeaderPr
                 <Button
                   size='icon'
                   variant='ghost'
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleStartEditing}
                   className='hover:bg-primary/10'
                 >
                   <Pencil className='h-5 w-5' />

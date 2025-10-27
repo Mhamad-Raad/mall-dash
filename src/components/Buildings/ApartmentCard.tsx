@@ -22,7 +22,12 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
                 <Home className='h-5 w-5 text-primary' />
               </div>
               <div>
-                <p className='font-bold text-lg'>Apt {apartment.apartmentNumber}</p>
+                <p className='font-bold text-lg'>
+                  {apartment.name || `Apt ${apartment.apartmentNumber}`}
+                </p>
+                {apartment.name && (
+                  <p className='text-xs text-muted-foreground'>Apt #{apartment.apartmentNumber}</p>
+                )}
               </div>
             </div>
             <Pencil className='h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity' />
