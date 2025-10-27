@@ -1,10 +1,9 @@
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 import ThemeButton from '../ui/ThemeButton';

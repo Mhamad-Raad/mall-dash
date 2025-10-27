@@ -46,7 +46,7 @@ const UserDetail = () => {
   // If user not found, show error state
   if (!user) {
     return (
-      <div className='container mx-auto p-6 max-w-6xl'>
+      <div className='flex flex-col gap-6 p-4 md:p-6'>
         <Button
           variant='ghost'
           className='mb-6'
@@ -64,13 +64,13 @@ const UserDetail = () => {
   }
 
   return (
-    <div className='container mx-auto p-6 max-w-6xl'>
+    <div className='flex flex-col gap-6 p-4 md:p-6'>
       <UserDetailHeader onBack={() => navigate('/users')} onSave={handleSave} />
 
       <UserProfileCard user={user} formData={formData} onInputChange={handleInputChange} />
 
       {/* Information Grid */}
-      <div className='grid gap-6 md:grid-cols-2'>
+      <div className='grid gap-6 lg:grid-cols-2'>
         <ContactInfoCard formData={formData} onInputChange={handleInputChange} />
 
         <LocationRoleCard formData={formData} onInputChange={handleInputChange} />

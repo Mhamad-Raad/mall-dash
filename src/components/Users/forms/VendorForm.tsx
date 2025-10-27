@@ -1,40 +1,24 @@
-import * as React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select';
-import { Clock, FileText, Image as ImageIcon, Store } from 'lucide-react';
-
-const vendorTypes = [
-  { label: 'Store', value: 'Store' },
-  { label: 'Restaurant', value: 'Restaurant' },
-  { label: 'Bakery', value: 'Bakery' },
-];
+import { Textarea } from '@/components/ui/textarea';
+import { User, Mail, Lock, Image as ImageIcon, Store, Phone, MapPin } from 'lucide-react';
 
 export default function VendorForm() {
-  const [vendorType, setVendorType] = React.useState('');
-
   return (
     <>
-      {/* Business Logo */}
+      {/* Profile Picture */}
       <div className='space-y-2'>
-        <Label htmlFor='vendor-logo' className='flex items-center gap-2'>
+        <Label htmlFor='vendor-photo' className='flex items-center gap-2'>
           <ImageIcon className='size-4 text-muted-foreground' />
-          Business Logo
+          Store Logo
         </Label>
         <div className='flex items-center gap-4'>
-          <div className='w-20 h-20 rounded-lg bg-muted flex items-center justify-center border-2 border-dashed'>
+          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed'>
             <Store className='size-8 text-muted-foreground' />
           </div>
           <Input
-            id='vendor-logo'
+            id='vendor-photo'
             type='file'
             accept='image/*'
             className='flex-1'
@@ -46,66 +30,91 @@ export default function VendorForm() {
 
       {/* Business Information */}
       <div className='space-y-4'>
-        <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide'>
-          Business Information
-        </h3>
-        <div className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-name' className='flex items-center gap-2'>
-              <Store className='size-4 text-muted-foreground' />
-              Business Name
-            </Label>
-            <Input id='vendor-name' placeholder='Enter business name' />
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-type' className='flex items-center gap-2'>
-              <FileText className='size-4 text-muted-foreground' />
-              Business Type
-            </Label>
-            <Select value={vendorType} onValueChange={setVendorType}>
-              <SelectTrigger id='vendor-type'>
-                <SelectValue placeholder='Select business type' />
-              </SelectTrigger>
-              <SelectContent>
-                {vendorTypes.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-desc' className='flex items-center gap-2'>
-              <FileText className='size-4 text-muted-foreground' />
-              Description
-            </Label>
-            <Textarea
-              id='vendor-desc'
-              placeholder='Describe your business...'
-              rows={4}
-            />
-          </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-business' className='flex items-center gap-2'>
+            <Store className='size-4 text-muted-foreground' />
+            Business Name
+          </Label>
+          <Input id='vendor-business' placeholder='Enter business name' />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-description' className='flex items-center gap-2'>
+            Description
+          </Label>
+          <Textarea
+            id='vendor-description'
+            placeholder='Brief description of your business'
+            rows={3}
+          />
         </div>
       </div>
 
       <Separator />
 
-      {/* Operating Hours */}
+      {/* Contact Person */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-firstname' className='flex items-center gap-2'>
+            <User className='size-4 text-muted-foreground' />
+            Contact First Name
+          </Label>
+          <Input id='vendor-firstname' placeholder='Enter first name' />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-lastname' className='flex items-center gap-2'>
+            <User className='size-4 text-muted-foreground' />
+            Contact Last Name
+          </Label>
+          <Input id='vendor-lastname' placeholder='Enter last name' />
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Contact Information */}
       <div className='space-y-4'>
-        <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2'>
-          <Clock className='size-4' />
-          Operating Hours
-        </h3>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-open'>Opening Time</Label>
-            <Input id='vendor-open' type='time' />
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-close'>Closing Time</Label>
-            <Input id='vendor-close' type='time' />
-          </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-email' className='flex items-center gap-2'>
+            <Mail className='size-4 text-muted-foreground' />
+            Email Address
+          </Label>
+          <Input
+            id='vendor-email'
+            type='email'
+            placeholder='vendor@example.com'
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-phone' className='flex items-center gap-2'>
+            <Phone className='size-4 text-muted-foreground' />
+            Phone Number
+          </Label>
+          <Input
+            id='vendor-phone'
+            type='tel'
+            placeholder='+1 (555) 000-0000'
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-address' className='flex items-center gap-2'>
+            <MapPin className='size-4 text-muted-foreground' />
+            Business Address
+          </Label>
+          <Input
+            id='vendor-address'
+            placeholder='Enter business address'
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='vendor-password' className='flex items-center gap-2'>
+            <Lock className='size-4 text-muted-foreground' />
+            Password
+          </Label>
+          <Input
+            id='vendor-password'
+            type='password'
+            placeholder='Enter secure password'
+          />
         </div>
       </div>
     </>
