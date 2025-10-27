@@ -7,6 +7,9 @@ import Login from '@/pages/Login';
 import Users from './pages/users/Users';
 import CreateUser from './pages/users/CreateUser';
 
+import NotFound from './pages/NotFound';
+import ErrorPage from './pages/ErrorPage';
+
 const router = createBrowserRouter([
   {
     path: '/login',
@@ -14,6 +17,7 @@ const router = createBrowserRouter([
   },
   {
     element: <LoadingPage />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: '/',
@@ -26,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: '/users/create',
         element: <CreateUser />,
+      },
+      {
+        path: '*',
+        element: <NotFound />, // catch-all for unmatched paths
       },
     ],
   },

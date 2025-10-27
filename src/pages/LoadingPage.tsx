@@ -36,16 +36,15 @@ const LoadingPage = () => {
         }
         if (isRefreshTokenExpired()) {
           console.log('TOKEN EXPIRED');
-          clearTokens();
           setIsAuthorized(false);
           return;
         }
         try {
+          console.log(refreshToken);
           await axiosInstance.post('/Account/refresh', { refreshToken });
           setIsAuthorized(true);
         } catch (e) {
           console.log('REFRESH FAILED', e);
-          clearTokens();
           setIsAuthorized(false);
           return;
         }
@@ -56,6 +55,12 @@ const LoadingPage = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (isAuthorized === false) {
+      navigate('/login');
+    }
+  }, [isAuthorized, navigate]);
 
   if (isAuthorized === null) {
     return (
@@ -71,11 +76,6 @@ const LoadingPage = () => {
         <Loader2 className='mt-8 h-8 w-8 animate-spin text-gray-800' />
       </div>
     );
-  }
-
-  if (!isAuthorized) {
-    navigate('/login');
-    return;
   }
 
   return (
