@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, Pencil, Check, X } from 'lucide-react';
+import { Building2, Pencil, Check, X, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -46,7 +46,7 @@ const BuildingHeader = ({ buildingName, onNameChange, onBack }: BuildingHeaderPr
   return (
     <div>
       <Button variant='ghost' onClick={onBack} className='mb-4 hover:bg-muted/50'>
-        <span className='mr-2'>←</span>
+        <ArrowLeft className='mr-2 h-4 w-4' />
         Back to Buildings
       </Button>
 
