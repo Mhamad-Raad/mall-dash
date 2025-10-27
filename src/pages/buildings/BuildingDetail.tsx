@@ -3,6 +3,12 @@ import { ArrowLeft, Building2, Layers, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { buildingsData } from './Buildings';
 
 const BuildingDetail = () => {
@@ -52,15 +58,8 @@ const BuildingDetail = () => {
               </div>
               <div>
                 <h1 className='text-3xl md:text-4xl font-bold tracking-tight'>{building.name}</h1>
-                <p className='text-muted-foreground mt-1'>Building ID: {building.id}</p>
               </div>
             </div>
-            <Badge
-              variant='outline'
-              className='bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 font-bold text-base px-4 py-2 w-fit'
-            >
-              ● Active
-            </Badge>
           </div>
         </div>
 
@@ -110,54 +109,55 @@ const BuildingDetail = () => {
             <h2 className='text-2xl font-bold'>Floors & Apartments</h2>
           </div>
 
-          {building.floors
-            .sort((a, b) => a.floorNumber - b.floorNumber)
-            .map((floor) => (
-              <Card key={floor.id} className='border-2 shadow-lg hover:shadow-xl transition-shadow'>
-                <CardHeader className='border-b'>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-3'>
-                      <div className='p-2 rounded-lg bg-primary/10'>
-                        <Layers className='h-5 w-5 text-primary' />
+          <Card className='border-2 shadow-lg'>
+            <Accordion type='multiple' className='w-full'>
+              {building.floors
+                .sort((a, b) => a.floorNumber - b.floorNumber)
+                .map((floor) => (
+                  <AccordionItem key={floor.id} value={`floor-${floor.id}`}>
+                    <AccordionTrigger className='px-6 hover:no-underline hover:bg-muted/50'>
+                      <div className='flex items-center justify-between w-full pr-4'>
+                        <div className='flex items-center gap-3'>
+                          <div className='p-2 rounded-lg bg-primary/10'>
+                            <Layers className='h-5 w-5 text-primary' />
+                          </div>
+                          <div className='text-left'>
+                            <p className='text-xl font-semibold'>Floor {floor.floorNumber}</p>
+                            <p className='text-sm text-muted-foreground font-normal'>
+                              {floor.apartments.length} apartment{floor.apartments.length !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className='text-xl'>Floor {floor.floorNumber}</CardTitle>
-                        <CardDescription>
-                          {floor.apartments.length} apartment{floor.apartments.length !== 1 ? 's' : ''}
-                        </CardDescription>
+                    </AccordionTrigger>
+                    <AccordionContent className='px-6 pb-6'>
+                      <div className='grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 pt-4'>
+                        {floor.apartments
+                          .sort((a, b) => a.apartmentNumber - b.apartmentNumber)
+                          .map((apartment) => (
+                            <Card
+                              key={apartment.id}
+                              className='border-2 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md'
+                            >
+                              <CardContent className='p-4'>
+                                <div className='flex items-center gap-3'>
+                                  <div className='p-2 rounded-lg bg-primary/5 border'>
+                                    <Home className='h-5 w-5 text-primary' />
+                                  </div>
+                                  <div>
+                                    <p className='font-bold text-lg'>Apt {apartment.apartmentNumber}</p>
+                                    <p className='text-xs text-muted-foreground'>ID: {apartment.id}</p>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
                       </div>
-                    </div>
-                    <Badge variant='outline' className='font-semibold'>
-                      ID: {floor.id}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className='pt-6'>
-                  <div className='grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
-                    {floor.apartments
-                      .sort((a, b) => a.apartmentNumber - b.apartmentNumber)
-                      .map((apartment) => (
-                        <Card
-                          key={apartment.id}
-                          className='border-2 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md'
-                        >
-                          <CardContent className='p-4'>
-                            <div className='flex items-center gap-3'>
-                              <div className='p-2 rounded-lg bg-primary/5 border'>
-                                <Home className='h-5 w-5 text-primary' />
-                              </div>
-                              <div>
-                                <p className='font-bold text-lg'>Apt {apartment.apartmentNumber}</p>
-                                <p className='text-xs text-muted-foreground'>ID: {apartment.id}</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+            </Accordion>
+          </Card>
         </div>
     </div>
   );
