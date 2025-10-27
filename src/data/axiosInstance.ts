@@ -2,6 +2,8 @@ import axios, { AxiosError } from 'axios';
 
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
+import { clearTokens } from '@/utils/authUtils';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 let isRefreshing = false;
@@ -59,7 +61,6 @@ axiosInstance.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        console.log('here', refreshToken);
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
@@ -69,6 +70,7 @@ axiosInstance.interceptors.response.use(
         });
 
         const { accessToken, refreshToken: newRefreshToken } = response.data;
+        console.log('here', refreshToken);
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', newRefreshToken);
 
@@ -82,9 +84,8 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (err: any) {
         processQueue(err, null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        // window.location.href = '/login';
+        clearTokens();
+        window.dispatchEvent(new Event('force-logout'));
         throw new Error(err?.message);
       } finally {
         isRefreshing = false;

@@ -10,6 +10,9 @@ import UserDetail from './pages/users/UserDetail';
 import Buildings from './pages/buildings/Buildings';
 import BuildingDetail from './pages/buildings/BuildingDetail';
 
+import NotFound from './pages/NotFound';
+import ErrorPage from './pages/ErrorPage';
+
 const router = createBrowserRouter([
   {
     path: '/login',
@@ -17,6 +20,7 @@ const router = createBrowserRouter([
   },
   {
     element: <LoadingPage />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: '/',
@@ -42,6 +46,10 @@ const router = createBrowserRouter([
         path: '/buildings/:id',
         element: <BuildingDetail />,
       },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
     ],
   },
 ]);
@@ -51,4 +59,3 @@ function App() {
 }
 
 export default App;
-
