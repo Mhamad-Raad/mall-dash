@@ -7,6 +7,8 @@ import Login from '@/pages/Login';
 import Users from './pages/users/Users';
 import CreateUser from './pages/users/CreateUser';
 import UserDetail from './pages/users/UserDetail';
+import Buildings from './pages/buildings/Buildings';
+import BuildingDetail from './pages/buildings/BuildingDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -35,6 +37,14 @@ const router = createBrowserRouter([
       {
         path: '/users/:id',
         element: <UserDetail />,
+      },
+      {
+        path: '/buildings',
+        element: <Buildings />,
+      },
+      {
+        path: '/buildings/:id',
+        element: <BuildingDetail />,
       },
       {
         path: '*',

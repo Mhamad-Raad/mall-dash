@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -10,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Trash2, Mail, Phone, Building2 } from 'lucide-react';
+import {  Mail, Phone, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { Users as UsersTableProps } from '@/interfaces/Users.interface';
@@ -30,13 +29,6 @@ const UsersTable = ({ users }: UsersTableProps) => {
   const handleRowClick = (userId: string) => {
     navigate(`/users/${userId}`);
   };
-
-  const handleDeleteClick = (e: React.MouseEvent, userId: string) => {
-    e.stopPropagation(); // Prevent row click when clicking delete
-    // Add your delete logic here
-    console.log('Delete user:', userId);
-  };
-
   return (
     <div className='rounded-lg border bg-card shadow-sm'>
       {/* Scrollable Table Container */}

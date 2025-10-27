@@ -2,13 +2,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Users, 
-  Store, 
   Package, 
   BarChart3, 
   Settings, 
   FileText,
   CreditCard,
-  ShoppingCart
+  ShoppingCart,
+  Building2
 } from 'lucide-react';
 
 import {
@@ -42,9 +42,9 @@ const mainNavItems = [
     icon: Users,
   },
   {
-    title: 'Vendors',
-    url: '#',
-    icon: Store,
+    title: 'Buildings',
+    url: '/buildings',
+    icon: Building2,
   },
   {
     title: 'Products',
