@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowLeft, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
@@ -91,30 +92,18 @@ const BuildingDetail = () => {
     setIsDialogOpen(false);
   };
 
+  const handleBuildingNameChange = (newName: string) => {
+    building.name = newName;
+  };
+
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       {/* Header Section */}
-      <div>
-        <Button
-          variant='ghost'
-          onClick={() => navigate('/buildings')}
-          className='mb-4 hover:bg-muted/50'
-        >
-          <ArrowLeft className='mr-2 h-4 w-4' />
-          Back to Buildings
-        </Button>
-
-        <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-          <div className='flex items-center gap-4'>
-            <div className='p-4 rounded-xl bg-primary/10 border-2 border-primary/20'>
-              <Building2 className='h-10 w-10 text-primary' />
-            </div>
-            <div>
-              <h1 className='text-3xl md:text-4xl font-bold tracking-tight'>{building.name}</h1>
-            </div>
-          </div>
-        </div>
-      </div>
+      <BuildingHeader
+        buildingName={building.name}
+        onNameChange={handleBuildingNameChange}
+        onBack={() => navigate('/buildings')}
+      />
 
       {/* Summary Cards */}
       <BuildingSummaryCards
