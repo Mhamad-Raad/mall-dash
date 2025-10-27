@@ -1,17 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { ToastContainer, toast } from 'react-toastify';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
-
 import { loginUser } from '@/data/Authorization';
-
+import { getStoredTokens, validateRefreshToken } from '@/utils/authUtils';
 import Logo from '@/assets/Logo.jpg';
 
 const Login = () => {
@@ -22,17 +18,30 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { refreshToken } = getStoredTokens();
+      if (refreshToken) {
+        const refreshTokenIsValid = await validateRefreshToken(refreshToken);
+        if (refreshTokenIsValid) {
+          navigate('/');
+          return;
+        }
+      }
+      setIsCheckingSession(false);
+    };
+    checkSession();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isLocked) return;
-
     setIsLoading(true);
 
     try {
       const response = await loginUser({ email, password });
-
       if (response.error) {
         toast.error('Email or password is incorrect');
         setIsLocked(true);
@@ -55,6 +64,20 @@ const Login = () => {
       if (isLocked) setIsLocked(false);
     };
 
+  if (isCheckingSession) {
+    return (
+      <div className='flex flex-col justify-center items-center h-screen'>
+        <img
+          src={Logo}
+          alt='Company Logo'
+          className='w-32 h-32 object-contain'
+          style={{ animation: 'bw-pulse 2.5s infinite' }}
+        />
+        <Loader2 className='mt-8 h-8 w-8 animate-spin text-gray-800' />
+      </div>
+    );
+  }
+
   return (
     <div className='w-full h-[100vh] flex items-center justify-center'>
       <div className='w-[90%] max-w-[1000px] flex flex-col gap-6'>
@@ -68,7 +91,6 @@ const Login = () => {
                     Login to your account
                   </p>
                 </div>
-
                 {/* Email Field */}
                 <Field className='gap-2'>
                   <FieldLabel htmlFor='email' className='text-muted-foreground'>
@@ -89,7 +111,6 @@ const Login = () => {
                     </span>
                   </div>
                 </Field>
-
                 {/* Password Field */}
                 <Field className='gap-2'>
                   <div className='flex items-center'>
@@ -129,7 +150,6 @@ const Login = () => {
                     </button>
                   </div>
                 </Field>
-
                 {/* Submit Button */}
                 <Field className='mt-4'>
                   <Button
@@ -151,7 +171,6 @@ const Login = () => {
                 </Field>
               </FieldGroup>
             </form>
-
             <div className='bg-muted relative hidden md:block'>
               <img
                 src={Logo}
