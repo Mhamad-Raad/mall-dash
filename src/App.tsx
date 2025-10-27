@@ -1,24 +1,61 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+import LoadingPage from './pages/LoadingPage';
+
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
-import Users from './pages/Users';
+import Users from './pages/users/Users';
+import CreateUser from './pages/users/CreateUser';
+import UserDetail from './pages/users/UserDetail';
+import Buildings from './pages/buildings/Buildings';
+import BuildingDetail from './pages/buildings/BuildingDetail';
+
+import NotFound from './pages/NotFound';
+import ErrorPage from './pages/ErrorPage';
+
+const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    element: <LoadingPage />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: '/',
+        element: <Home />,
+      },
+      {
+        path: '/users',
+        element: <Users />,
+      },
+      {
+        path: '/users/create',
+        element: <CreateUser />,
+      },
+      {
+        path: '/users/:id',
+        element: <UserDetail />,
+      },
+      {
+        path: '/buildings',
+        element: <Buildings />,
+      },
+      {
+        path: '/buildings/:id',
+        element: <BuildingDetail />,
+      },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
+    ],
+  },
+]);
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/login' element={<Login />} />
-
-        <Route element={<DashboardLayout />}>
-          <Route path='/' element={<Home />} />
-          <Route path='/users' element={<Users />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
-
