@@ -1,6 +1,14 @@
+export interface Occupant {
+  id: number;
+  name: string;
+  email?: string;
+}
+
 export interface Apartment {
   id: number;
   apartmentNumber: number;
+  name?: string;
+  occupants: Occupant[];
 }
 
 export interface Floor {

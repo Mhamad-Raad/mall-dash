@@ -1,13 +1,22 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, Layers, Home } from 'lucide-react';
+import { useState } from 'react';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ArrowLeft } from 'lucide-react';
+import BuildingHeader from '@/components/Buildings/BuildingHeader';
+import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
+import BuildingFloors from '@/components/Buildings/BuildingFloors';
+import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
 import { buildingsData } from './Buildings';
+import type { Apartment, Occupant } from '@/interfaces/Building.interface';
 
 const BuildingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
+  const [editedOccupants, setEditedOccupants] = useState<Occupant[]>([]);
+  const [editedApartmentName, setEditedApartmentName] = useState<string>('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Find the building by ID
   const building = buildingsData.find((b) => b.id === Number(id));
@@ -32,133 +41,96 @@ const BuildingDetail = () => {
     return building.floors.reduce((total, floor) => total + floor.apartments.length, 0);
   };
 
+  const getTotalOccupants = () => {
+    return building.floors.reduce(
+      (total, floor) =>
+        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
+      0
+    );
+  };
+
+  const handleApartmentClick = (apartment: Apartment) => {
+    setSelectedApartment(apartment);
+    setEditedOccupants([...apartment.occupants]);
+    setEditedApartmentName(apartment.name || '');
+    setIsDialogOpen(true);
+  };
+
+  const handleAddOccupant = () => {
+    const newOccupant: Occupant = {
+      id: Date.now(),
+      name: '',
+      email: '',
+    };
+    setEditedOccupants([...editedOccupants, newOccupant]);
+  };
+
+  const handleRemoveOccupant = (occupantId: number) => {
+    setEditedOccupants(editedOccupants.filter((occ) => occ.id !== occupantId));
+  };
+
+  const handleOccupantChange = (occupantId: number, field: 'name' | 'email', value: string) => {
+    setEditedOccupants(
+      editedOccupants.map((occ) =>
+        occ.id === occupantId ? { ...occ, [field]: value } : occ
+      )
+    );
+  };
+
+  const handleSave = () => {
+    if (selectedApartment) {
+      const floorIndex = building.floors.findIndex((floor) =>
+        floor.apartments.some((apt) => apt.id === selectedApartment.id)
+      );
+      if (floorIndex !== -1) {
+        const apartmentIndex = building.floors[floorIndex].apartments.findIndex(
+          (apt) => apt.id === selectedApartment.id
+        );
+        if (apartmentIndex !== -1) {
+          building.floors[floorIndex].apartments[apartmentIndex].occupants = editedOccupants;
+          building.floors[floorIndex].apartments[apartmentIndex].name = editedApartmentName;
+        }
+      }
+    }
+    setIsDialogOpen(false);
+  };
+
+  const handleBuildingNameChange = (newName: string) => {
+    building.name = newName;
+  };
+
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
-        {/* Header Section */}
-        <div>
-          <Button
-            variant='ghost'
-            onClick={() => navigate('/buildings')}
-            className='mb-4 hover:bg-muted/50'
-          >
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Buildings
-          </Button>
+      {/* Header Section */}
+      <BuildingHeader
+        buildingName={building.name}
+        onNameChange={handleBuildingNameChange}
+        onBack={() => navigate('/buildings')}
+      />
 
-          <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-            <div className='flex items-center gap-4'>
-              <div className='p-4 rounded-xl bg-primary/10 border-2 border-primary/20'>
-                <Building2 className='h-10 w-10 text-primary' />
-              </div>
-              <div>
-                <h1 className='text-3xl md:text-4xl font-bold tracking-tight'>{building.name}</h1>
-                <p className='text-muted-foreground mt-1'>Building ID: {building.id}</p>
-              </div>
-            </div>
-            <Badge
-              variant='outline'
-              className='bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 font-bold text-base px-4 py-2 w-fit'
-            >
-              ● Active
-            </Badge>
-          </div>
-        </div>
+      {/* Summary Cards */}
+      <BuildingSummaryCards
+        totalOccupants={getTotalOccupants()}
+        totalFloors={building.floors.length}
+        totalApartments={getTotalApartments()}
+      />
 
-        {/* Summary Cards */}
-        <div className='grid gap-6 md:grid-cols-3'>
-          <Card className='border-2 shadow-lg'>
-            <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
-                <Building2 className='h-4 w-4' />
-                Building Name
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-2xl font-bold'>{building.name}</p>
-            </CardContent>
-          </Card>
+      {/* Floors and Apartments */}
+      <BuildingFloors floors={building.floors} onApartmentEdit={handleApartmentClick} />
 
-          <Card className='border-2 shadow-lg'>
-            <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
-                <Layers className='h-4 w-4' />
-                Total Floors
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-2xl font-bold'>{building.floors.length}</p>
-            </CardContent>
-          </Card>
-
-          <Card className='border-2 shadow-lg'>
-            <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground flex items-center gap-2'>
-                <Home className='h-4 w-4' />
-                Total Apartments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-2xl font-bold'>{getTotalApartments()}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Floors and Apartments */}
-        <div className='space-y-6'>
-          <div className='flex items-center gap-2'>
-            <Layers className='h-6 w-6 text-primary' />
-            <h2 className='text-2xl font-bold'>Floors & Apartments</h2>
-          </div>
-
-          {building.floors
-            .sort((a, b) => a.floorNumber - b.floorNumber)
-            .map((floor) => (
-              <Card key={floor.id} className='border-2 shadow-lg hover:shadow-xl transition-shadow'>
-                <CardHeader className='border-b'>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-3'>
-                      <div className='p-2 rounded-lg bg-primary/10'>
-                        <Layers className='h-5 w-5 text-primary' />
-                      </div>
-                      <div>
-                        <CardTitle className='text-xl'>Floor {floor.floorNumber}</CardTitle>
-                        <CardDescription>
-                          {floor.apartments.length} apartment{floor.apartments.length !== 1 ? 's' : ''}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant='outline' className='font-semibold'>
-                      ID: {floor.id}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className='pt-6'>
-                  <div className='grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
-                    {floor.apartments
-                      .sort((a, b) => a.apartmentNumber - b.apartmentNumber)
-                      .map((apartment) => (
-                        <Card
-                          key={apartment.id}
-                          className='border-2 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md'
-                        >
-                          <CardContent className='p-4'>
-                            <div className='flex items-center gap-3'>
-                              <div className='p-2 rounded-lg bg-primary/5 border'>
-                                <Home className='h-5 w-5 text-primary' />
-                              </div>
-                              <div>
-                                <p className='font-bold text-lg'>Apt {apartment.apartmentNumber}</p>
-                                <p className='text-xs text-muted-foreground'>ID: {apartment.id}</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-        </div>
+      {/* Edit Apartment Dialog */}
+      <EditApartmentDialog
+        apartment={selectedApartment}
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        occupants={editedOccupants}
+        apartmentName={editedApartmentName}
+        onApartmentNameChange={setEditedApartmentName}
+        onAddOccupant={handleAddOccupant}
+        onRemoveOccupant={handleRemoveOccupant}
+        onOccupantChange={handleOccupantChange}
+        onSave={handleSave}
+      />
     </div>
   );
 };

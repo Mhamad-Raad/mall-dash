@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Building2, Layers, Home } from 'lucide-react';
+import { Building2, Layers, Home, Users } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -9,7 +9,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import type { BuildingsTableProps } from '@/interfaces/Building.interface';
 
@@ -22,6 +21,14 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
 
   const getTotalApartments = (building: typeof buildings[0]) => {
     return building.floors.reduce((total, floor) => total + floor.apartments.length, 0);
+  };
+
+  const getTotalOccupants = (building: typeof buildings[0]) => {
+    return building.floors.reduce(
+      (total, floor) =>
+        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
+      0
+    );
   };
 
   return (
@@ -48,8 +55,8 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
                 <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b text-center'>
                   Total Apartments
                 </TableHead>
-                <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b text-right'>
-                  Status
+                <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b text-center'>
+                  Occupants
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -67,7 +74,6 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
                       </div>
                       <div className='flex flex-col'>
                         <span className='font-bold text-base'>{building.name}</span>
-                        <span className='text-xs text-muted-foreground'>ID: {building.id}</span>
                       </div>
                     </div>
                   </TableCell>
@@ -83,13 +89,11 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
                       <span className='font-semibold text-base'>{getTotalApartments(building)}</span>
                     </div>
                   </TableCell>
-                  <TableCell className='text-right'>
-                    <Badge
-                      variant='outline'
-                      className='bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 font-semibold'
-                    >
-                      Active
-                    </Badge>
+                  <TableCell className='text-center'>
+                    <div className='flex items-center justify-center gap-2'>
+                      <Users className='h-4 w-4 text-muted-foreground' />
+                      <span className='font-semibold text-base'>{getTotalOccupants(building)}</span>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,14 +1,15 @@
-export interface User {
-  id: string;
-  name: string;
+export interface UserType {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  role: number;
   src: string;
   fallback: string;
   phoneNumber: string;
   email: string;
-  type: string;
   buildingName: string;
 }
 
-export interface Users {
-  users: User[];
+export interface UsersType {
+  users: UserType[];
 }
