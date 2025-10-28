@@ -51,7 +51,6 @@ export const logoutUser = async () => {
         }
       );
     }
-    window.dispatchEvent(new Event('force-logout'));
   } catch (error: any) {
     console.error(
       'Logout error:',
