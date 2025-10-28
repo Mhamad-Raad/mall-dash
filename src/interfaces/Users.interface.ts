@@ -1,8 +1,8 @@
 export interface UserType {
-  userId: string;
+  _id: string;
   firstName: string;
   lastName: string;
-  roles: [string];
+  role: number;
   src: string;
   fallback: string;
   phoneNumber: string;

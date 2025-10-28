@@ -1,5 +1,4 @@
 import { Calendar, User as UserIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const AccountDetailsCard = () => {
@@ -21,17 +20,10 @@ const AccountDetailsCard = () => {
             <p className='text-base font-semibold'>January 15, 2024</p>
           </div>
           <div className='space-y-2'>
-            <div className='text-sm text-muted-foreground font-medium'>Last Login</div>
+            <div className='text-sm text-muted-foreground font-medium'>
+              Last Login
+            </div>
             <p className='text-base font-semibold'>October 25, 2025</p>
-          </div>
-          <div className='space-y-2'>
-            <div className='text-sm text-muted-foreground font-medium'>Status</div>
-            <Badge
-              variant='outline'
-              className='bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800 w-fit'
-            >
-              Active
-            </Badge>
           </div>
         </div>
       </CardContent>

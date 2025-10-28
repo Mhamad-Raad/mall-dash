@@ -19,6 +19,8 @@ import { Mail, Phone, Building2 } from 'lucide-react';
 
 import type { UserType } from '@/interfaces/Users.interface';
 
+import roles from '@/constants/roles';
+
 import { fetchUsers } from '@/data/Users';
 
 const getUserTypeColor = (type: string) => {
@@ -95,12 +97,12 @@ const UsersTable = () => {
             : // Render actual user data
               users.map((user, index) => {
                 const fullName = `${user.firstName} ${user.lastName}`;
-                const userRole = user.roles[0];
+                const userRole = roles[user.role];
                 return (
                   <TableRow
-                    key={`${user?.userId}-${index}`}
+                    key={`${user?._id}-${index}`}
                     className='hover:bg-muted/50 transition-colors cursor-pointer'
-                    onClick={() => handleRowClick(user?.userId)}
+                    onClick={() => handleRowClick(user?._id)}
                   >
                     {/* User Info with Avatar */}
                     <TableCell className='font-medium'>
@@ -116,7 +118,7 @@ const UsersTable = () => {
                             {fullName}
                           </span>
                           <span className='text-xs text-muted-foreground'>
-                            ID: {user?.userId}
+                            ID: {user?._id}
                           </span>
                         </div>
                       </div>

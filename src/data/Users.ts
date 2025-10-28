@@ -14,3 +14,14 @@ export const fetchUsers = async () => {
     return { error: error.response?.data?.message || error.message };
   }
 };
+
+export const fetchUserById = async (id: string) => {
+  try {
+    const response = await axiosInstance.get(`/Account/user/${id}`, {
+      headers: { key: API_KEY, value: API_VALUE },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};
