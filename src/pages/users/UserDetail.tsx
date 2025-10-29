@@ -23,6 +23,7 @@ const UserDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Get user, loading, and error from Redux store
   const {
@@ -59,9 +60,16 @@ const UserDetail = () => {
     }
   }, [user]);
 
-  const handleOpenUpdateModal = () => {
-    setShowUpdateModal(true);
+  const handletoggleUpdateModal = () => {
+    setShowUpdateModal(!showUpdateModal);
   };
+
+  const handletoggleDeleteModal = () => {
+    setShowDeleteModal(!showDeleteModal);
+  };
+
+  const handleUpdateUser = async () => {};
+  const handleDeleteUser = async () => {};
 
   const hasChanges = useMemo(() => {
     const keys = Object.keys(user) as Array<keyof UserType>;
@@ -75,7 +83,8 @@ const UserDetail = () => {
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       <UserDetailHeader
         onBack={() => navigate('/users')}
-        onSave={handleOpenUpdateModal}
+        onSave={handletoggleUpdateModal}
+        onDelete={handletoggleDeleteModal}
         hasChanges={hasChanges}
       />
 
@@ -95,15 +104,23 @@ const UserDetail = () => {
       </div>
       <ConfirmModal
         open={showUpdateModal}
-        title='Archive Item'
-        description='Are you sure you want to archive this item?'
+        title='Update User'
+        description={`Are you sure you want to UPDATE ${user.firstName}?`}
         confirmType='warning'
-        confirmLabel='Archive'
+        confirmLabel='Update'
         cancelLabel='Cancel'
-        onCancel={() => setShowUpdateModal(false)}
-        onConfirm={async () => {
-          setShowUpdateModal(false);
-        }}
+        onCancel={handletoggleUpdateModal}
+        onConfirm={handleUpdateUser}
+      />
+      <ConfirmModal
+        open={showDeleteModal}
+        title='Delete User'
+        description={`Are you sure you want to DELETE ${user.firstName}?`}
+        confirmType='danger'
+        confirmLabel='Delete'
+        cancelLabel='Cancel'
+        onCancel={handletoggleDeleteModal}
+        onConfirm={handleDeleteUser}
       />
     </div>
   );

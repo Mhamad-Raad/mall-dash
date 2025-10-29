@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 interface UserDetailHeaderProps {
   onBack: () => void;
   onSave: () => void;
+  onDelete: () => void;
   hasChanges: boolean;
 }
 
 const UserDetailHeader = ({
   onBack,
   onSave,
+  onDelete,
   hasChanges,
 }: UserDetailHeaderProps) => {
   return (
@@ -23,7 +25,9 @@ const UserDetailHeader = ({
           <Save className='mr-2 h-4 w-4' />
           Save Changes
         </Button>
-        <Button variant='destructive'>Delete User</Button>
+        <Button variant='destructive' onClick={onDelete}>
+          Delete User
+        </Button>
       </div>
     </div>
   );
