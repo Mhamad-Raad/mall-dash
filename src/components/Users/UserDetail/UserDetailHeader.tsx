@@ -16,7 +16,7 @@ const UserDetailHeader = ({
 }: UserDetailHeaderProps) => {
   return (
     <div className='flex items-center justify-between mb-6'>
-      <Button variant='ghost' onClick={onBack} disabled={hasChanges}>
+      <Button variant='ghost' onClick={onBack}>
         <ArrowLeft className='mr-2 h-4 w-4' />
         Back to Users
       </Button>
