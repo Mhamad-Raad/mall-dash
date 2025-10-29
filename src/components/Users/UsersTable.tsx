@@ -15,7 +15,7 @@ import {
 import UsersTableSkeleton from './UsersTableSkeleton';
 import CustomTablePagination from '../CustomTablePagination';
 
-import { Mail, Phone, Building2 } from 'lucide-react';
+import { Mail, Phone, Building2, User as UserIcon } from 'lucide-react';
 
 import roles from '@/constants/roles';
 
@@ -101,8 +101,10 @@ const UsersTable = () => {
                       <div className='flex items-center gap-3'>
                         <Avatar className='h-10 w-10 border-2 border-background shadow-sm'>
                           <AvatarImage src={user.src} alt={fullName} />
-                          <AvatarFallback className='text-xs font-semibold bg-primary/10 text-primary'>
-                            {user.fallback}
+                          <AvatarFallback className='text-xs font-semibold bg-primary/10 text-primary flex items-center justify-center'>
+                            {user.fallback || (
+                              <UserIcon className='h-5 w-5 text-muted-foreground' />
+                            )}
                           </AvatarFallback>
                         </Avatar>
                         <div className='flex flex-col'>
