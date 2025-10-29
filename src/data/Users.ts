@@ -25,3 +25,39 @@ export const fetchUserById = async (id: string) => {
     return { error: error.response?.data?.message || error.message };
   }
 };
+
+export const updateUser = async (
+  id: string,
+  userData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    role: number;
+  }
+) => {
+  try {
+    const response = await axiosInstance.put(`/Account/${id}`, userData, {
+      headers: {
+        key: API_KEY,
+        value: API_VALUE,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};
+
+// Delete user by ID (DELETE request)
+export const deleteUser = async (id: string) => {
+  try {
+    const response = await axiosInstance.delete(`/Account/${id}`, {
+      headers: { key: API_KEY, value: API_VALUE },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};

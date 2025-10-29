@@ -7,15 +7,22 @@ import ContactInfoCard from '@/components/Users/UserDetail/ContactInfoCard';
 import LocationRoleCard from '@/components/Users/UserDetail/LocationRoleCard';
 import UserDetailSkeleton from '@/components/Users/UserDetail/UserDetailSkeloton';
 import UserErrorCard from '@/components/Users/UserDetail/UserErrorCard';
-
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
 
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store/store';
-import { fetchUserById, clearUser } from '@/store/slices/userSlice';
+import {
+  fetchUserById,
+  clearUser,
+  updateUser,
+  deleteUser,
+} from '@/store/slices/userSlice';
 
 import type { UserType } from '@/interfaces/Users.interface';
 import { initialUser } from '@/constants/Users';
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -25,15 +32,25 @@ const UserDetail = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Get user, loading, and error from Redux store
+  // Get user, loading, error, updating/deleting states from Redux store
   const {
     user,
     luser: loading,
     euser: error,
+    updating,
+    updatingError,
+    deleting,
+    deletingError,
   } = useSelector((state: RootState) => state.user);
 
   // Local state for editable form data
   const [formData, setFormData] = useState<UserType>(initialUser);
+
+  // Compare local form data with redux user
+  const hasChanges = useMemo(() => {
+    const keys = Object.keys(user) as Array<keyof UserType>;
+    return keys.some((key) => user[key] !== formData[key]);
+  }, [user, formData]);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData((prev) => ({
@@ -46,35 +63,67 @@ const UserDetail = () => {
     if (id) {
       dispatch(fetchUserById(id));
     }
-
     // Cleanup when component unmounts
     return () => {
       dispatch(clearUser());
     };
   }, [id, dispatch]);
 
-  // Update formData when user data is loaded from Redux
+  // Sync local form data with loaded user
   useEffect(() => {
-    if (user) {
-      setFormData(user);
-    }
+    if (user) setFormData(user);
   }, [user]);
 
-  const handletoggleUpdateModal = () => {
-    setShowUpdateModal(!showUpdateModal);
+  // Listen for update/delete outcomes & show notifications
+  useEffect(() => {
+    if (updatingError) {
+      toast.error(updatingError, { position: 'top-right' });
+    }
+    if (!updating && showUpdateModal && !updatingError) {
+      // If updating goes from true to false and there was no error
+      setShowUpdateModal(false);
+      toast.success('User updated successfully!', { position: 'top-right' });
+    }
+  }, [updating, updatingError]);
+
+  useEffect(() => {
+    if (deletingError) {
+      toast.error(deletingError, { position: 'top-right' });
+    }
+    if (!deleting && showDeleteModal && !deletingError) {
+      setShowDeleteModal(false);
+      toast.success('User deleted!', { position: 'top-right' });
+      navigate('/users');
+    }
+  }, [deleting, deletingError, navigate]);
+
+  // Modal togglers
+  const handletoggleUpdateModal = () => setShowUpdateModal((v) => !v);
+  const handletoggleDeleteModal = () => setShowDeleteModal((v) => !v);
+
+  // Handlers for modal confirm
+  const handleUpdateUser = async () => {
+    // Cleaned payload to avoid undefined
+    const { _id, ...payload } = formData;
+    await dispatch(
+      updateUser({
+        id: id || user._id,
+        update: {
+          firstName: payload.firstName ?? '',
+          lastName: payload.lastName ?? '',
+          email: payload.email ?? '',
+          phoneNumber: payload.phoneNumber ?? '',
+          role: payload.role ?? null,
+        },
+      })
+    );
+    // Notification handled by useEffect above
   };
 
-  const handletoggleDeleteModal = () => {
-    setShowDeleteModal(!showDeleteModal);
+  const handleDeleteUser = async () => {
+    await dispatch(deleteUser(id || user._id));
+    // Notification handled by useEffect above
   };
-
-  const handleUpdateUser = async () => {};
-  const handleDeleteUser = async () => {};
-
-  const hasChanges = useMemo(() => {
-    const keys = Object.keys(user) as Array<keyof UserType>;
-    return keys.some((key) => user[key] !== formData[key]);
-  }, [user, formData]);
 
   if (error) return <UserErrorCard error={error} />;
   if (loading) return <UserDetailSkeleton />;
@@ -87,16 +136,12 @@ const UserDetail = () => {
         onDelete={handletoggleDeleteModal}
         hasChanges={hasChanges}
       />
-
       <UserProfileCard formData={formData} onInputChange={handleInputChange} />
-
-      {/* Information Grid */}
       <div className='grid gap-6 lg:grid-cols-2'>
         <ContactInfoCard
           formData={formData}
           onInputChange={handleInputChange}
         />
-
         <LocationRoleCard
           formData={formData as any}
           onInputChange={handleInputChange}
