@@ -8,6 +8,8 @@ import LocationRoleCard from '@/components/Users/UserDetail/LocationRoleCard';
 import UserDetailSkeleton from '@/components/Users/UserDetail/UserDetailSkeloton';
 import UserErrorCard from '@/components/Users/UserDetail/UserErrorCard';
 
+import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store/store';
 import { fetchUserById, clearUser } from '@/store/slices/userSlice';
@@ -19,6 +21,8 @@ const UserDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   // Get user, loading, and error from Redux store
   const {
@@ -55,8 +59,8 @@ const UserDetail = () => {
     }
   }, [user]);
 
-  const handleSave = () => {
-    console.log('Saving user data:', formData);
+  const handleOpenUpdateModal = () => {
+    setShowUpdateModal(true);
   };
 
   const hasChanges = useMemo(() => {
@@ -71,7 +75,7 @@ const UserDetail = () => {
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       <UserDetailHeader
         onBack={() => navigate('/users')}
-        onSave={handleSave}
+        onSave={handleOpenUpdateModal}
         hasChanges={hasChanges}
       />
 
@@ -89,6 +93,18 @@ const UserDetail = () => {
           onInputChange={handleInputChange}
         />
       </div>
+      <ConfirmModal
+        open={showUpdateModal}
+        title='Archive Item'
+        description='Are you sure you want to archive this item?'
+        confirmType='warning'
+        confirmLabel='Archive'
+        cancelLabel='Cancel'
+        onCancel={() => setShowUpdateModal(false)}
+        onConfirm={async () => {
+          setShowUpdateModal(false);
+        }}
+      />
     </div>
   );
 };
