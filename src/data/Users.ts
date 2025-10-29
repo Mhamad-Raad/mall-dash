@@ -61,3 +61,25 @@ export const deleteUser = async (id: string) => {
     return { error: error.response?.data?.message || error.message };
   }
 };
+
+export const createUser = async (userData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  role: number;
+}) => {
+  try {
+    const response = await axiosInstance.post('/Account/register', userData, {
+      headers: {
+        key: API_KEY,
+        value: API_VALUE,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};
