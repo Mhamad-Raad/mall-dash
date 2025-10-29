@@ -1,8 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 
 import UserDetailHeader from '@/components/Users/UserDetail/UserDetailHeader';
 import UserProfileCard from '@/components/Users/UserDetail/UserProfileCard';
