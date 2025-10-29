@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,11 +17,11 @@ import CustomTablePagination from '../CustomTablePagination';
 
 import { Mail, Phone, Building2 } from 'lucide-react';
 
-import type { UserType } from '@/interfaces/Users.interface';
-
 import roles from '@/constants/roles';
 
-import { fetchUsers } from '@/data/Users';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/store/store'; // Import these types
+import { fetchUsers } from '@/store/slices/usersSlice';
 
 const getUserTypeColor = (type: string) => {
   const typeLower = type.toLowerCase();
@@ -36,30 +36,22 @@ const getUserTypeColor = (type: string) => {
 
 const UsersTable = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>(); // Type the dispatch
 
-  const [users, setUsers] = useState<UserType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Type the useSelector with RootState
+  const {
+    users,
+    lusers: loading,
+    eusers: error,
+  } = useSelector((state: RootState) => state.users);
 
   const handleRowClick = (userId: string) => {
     navigate(`/users/${userId}`);
   };
 
   useEffect(() => {
-    const getUsers = async () => {
-      setLoading(true);
-      const data = await fetchUsers();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setUsers(data);
-      }
-      setLoading(false);
-    };
-
-    getUsers();
-  }, []);
+    dispatch(fetchUsers());
+  }, [dispatch]);
 
   if (error) {
     return (
