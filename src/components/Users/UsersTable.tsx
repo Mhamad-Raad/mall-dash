@@ -79,8 +79,8 @@ const UsersTable = () => {
   return (
     <div className='rounded-lg border bg-card shadow-sm flex flex-col'>
 
-      {/* Scrollable table area with fixed height */}
-      <ScrollArea className='h-[500px]'>
+      {/* Scrollable table area - responsive height based on viewport */}
+      <ScrollArea className='h-[calc(100vh-280px)]'>
         <Table className='w-full'>
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b'>
