@@ -3,10 +3,14 @@ import { axiosInstance } from '@/data/axiosInstance';
 const API_KEY = import.meta.env.VITE_API_KEY;
 const API_VALUE = import.meta.env.VITE_API_VALUE;
 
-export const fetchUsers = async () => {
+export const fetchUsers = async (params?: {
+  page?: number;
+  limit?: number;
+}) => {
   try {
     const response = await axiosInstance.get('/Account/users', {
       headers: { key: API_KEY, value: API_VALUE },
+      params, // Pass page and limit as params, if provided
     });
 
     return response.data;

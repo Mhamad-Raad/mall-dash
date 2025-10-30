@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 type Props = {
@@ -8,18 +8,17 @@ type Props = {
 };
 
 const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
-  // Initial limit from URL or 40
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Initial limit/page from URL (minimum page is 1)
   function getInitialLimit() {
-    const params = new URLSearchParams(window.location.search);
-    const limitParam = params.get('limit');
-    const asNumber = Number(limitParam);
-    return asNumber && asNumber > 0 ? asNumber.toString() : '40';
+    const limitParam = Number(searchParams.get('limit'));
+    return limitParam > 0 ? limitParam.toString() : '40';
   }
   function getInitialPage() {
-    const params = new URLSearchParams(window.location.search);
-    const pageParam = params.get('page');
-    const asNumber = Number(pageParam);
-    return asNumber && asNumber >= 0 ? asNumber : 0;
+    const pageParam = Number(searchParams.get('page'));
+    return pageParam > 0 ? pageParam : 1;
   }
 
   const [value, setValue] = useState(getInitialLimit());
@@ -41,7 +40,7 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
 
   // Debounced search param update: limit only
   useEffect(() => {
-    if (value !== '') setLastValid(value); // Only update last valid when not empty
+    if (value !== '') setLastValid(value);
     if (debounce.current) clearTimeout(debounce.current);
     debounce.current = setTimeout(() => {
       updateSearchParams(page, Number(value || lastValid));
@@ -50,22 +49,29 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
     return () => debounce.current && clearTimeout(debounce.current);
   }, [value, lastValid, page]);
 
+  // Sync to URL changes (e.g. browser navigation)
+  useEffect(() => {
+    // Set local state from URL for page/limit
+    setValue(getInitialLimit());
+    setLastValid(getInitialLimit());
+    setPage(getInitialPage());
+  }, [searchParams]);
+
   // Pagination logic
   const perPage = Number(value || lastValid) || 1;
   const totalPages = Math.max(1, Math.ceil(total / perPage));
-  const from = page * perPage + 1;
-  const to = Math.min(total, (page + 1) * perPage);
+  const from = (page - 1) * perPage + 1;
+  const to = Math.min(total, page * perPage);
 
-  // Search param setter
+  // Update URL search params using navigation (SPA way)
   function updateSearchParams(newPage: number, newLimit: number) {
+    const safePage = Math.max(1, newPage);
     const params = new URLSearchParams(window.location.search);
     params.set('limit', String(newLimit));
-    params.set('page', String(newPage));
-    window.history.replaceState(
-      {},
-      '',
-      `${window.location.pathname}?${params.toString()}`
-    );
+    params.set('page', String(safePage));
+    navigate(`${window.location.pathname}?${params.toString()}`, {
+      replace: true,
+    });
   }
 
   // Suggestion click
@@ -80,19 +86,18 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
   // Input Focus/Blur logic
   const handleFocus = () => setShowSuggestions(true);
   const handleBlur = () => {
-    setTimeout(() => setShowSuggestions(false), 120); // allow mouse click in dropdown
-    if (value === '') setValue(lastValid); // restore if empty
+    setTimeout(() => setShowSuggestions(false), 120);
+    if (value === '') setValue(lastValid);
   };
 
-  // Next/Prev buttons immediately update the page param (debounce not needed for buttons)
+  // Next/Prev buttons
   const onNext = () => {
-    const newPage = Math.min(totalPages - 1, page + 1);
+    const newPage = Math.min(totalPages, page + 1);
     setPage(newPage);
     updateSearchParams(newPage, perPage);
   };
-
   const onPrev = () => {
-    const newPage = Math.max(0, page - 1);
+    const newPage = Math.max(1, page - 1);
     setPage(newPage);
     updateSearchParams(newPage, perPage);
   };
@@ -131,7 +136,7 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
       <button
         className='mx-1 px-2 py-2 rounded disabled:opacity-40 bg-transparent text-foreground hover:bg-muted transition'
         onClick={onPrev}
-        disabled={page <= 0}
+        disabled={page <= 1}
         aria-label='Previous'
         type='button'
       >
@@ -140,7 +145,7 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
       <button
         className='mx-1 px-2 py-2 rounded disabled:opacity-40 bg-transparent text-foreground hover:bg-muted transition'
         onClick={onNext}
-        disabled={page >= totalPages - 1}
+        disabled={page >= totalPages}
         aria-label='Next'
         type='button'
       >

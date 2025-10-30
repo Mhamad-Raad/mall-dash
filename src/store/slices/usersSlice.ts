@@ -7,20 +7,26 @@ interface UsersState {
   users: UserType[];
   lusers: boolean;
   eusers: string | null;
+  limit: number;
+  page: number;
+  total: number;
 }
 
 const initialState: UsersState = {
   users: [],
   lusers: false,
   eusers: null,
+  limit: 10,
+  page: 1,
+  total: 10,
 };
 
 // Create async thunk for fetching users
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
-  async (_, { rejectWithValue }) => {
+  async (params: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
-      const data = await fetchUsersAPI();
+      const data = await fetchUsersAPI(params);
 
       if (data.error) {
         return rejectWithValue(data.error);
@@ -49,15 +55,26 @@ const usersSlice = createSlice({
       })
       .addCase(
         fetchUsers.fulfilled,
-        (state, action: PayloadAction<UserType[]>) => {
+        (
+          state,
+          action: PayloadAction<{
+            data: UserType[];
+            limit: number;
+            page: number;
+            total: number;
+          }>
+        ) => {
           state.lusers = false;
-          state.users = action.payload;
+          state.users = action.payload.data;
+          state.limit = action.payload.limit;
+          state.page = action.payload.page;
+          state.total = action.payload.total;
           state.eusers = null;
         }
       )
       .addCase(fetchUsers.rejected, (state, action) => {
         state.lusers = false;
-        state.eusers = (action.payload as string) || 'An error occurred';
+        state.eusers = action.payload as string;
       });
   },
 });

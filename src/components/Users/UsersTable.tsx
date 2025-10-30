@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -36,13 +36,20 @@ const getUserTypeColor = (type: string) => {
 
 const UsersTable = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch<AppDispatch>(); // Type the dispatch
+
+  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+
+  console.log('Limit:', limit, 'Page:', page);
 
   // Type the useSelector with RootState
   const {
     users,
     lusers: loading,
     eusers: error,
+    total,
   } = useSelector((state: RootState) => state.users);
 
   const handleRowClick = (userId: string) => {
@@ -50,8 +57,10 @@ const UsersTable = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+    dispatch(fetchUsers({ limit, page }));
+  }, [dispatch, limit, page]);
+
+  console.log(users);
 
   if (error) {
     return (
@@ -163,7 +172,10 @@ const UsersTable = () => {
 
       {/* Pagination */}
       <div className='border-t px-4 py-3 bg-muted/30'>
-        <CustomTablePagination total={10} suggestions={[10, 20, 40, 50, 100]} />
+        <CustomTablePagination
+          total={total}
+          suggestions={[10, 20, 40, 50, 100]}
+        />
       </div>
     </div>
   );
