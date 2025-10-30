@@ -3,31 +3,9 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
-
-const Spinner = () => (
-  <svg className='animate-spin h-5 w-5 mr-2 text-white' viewBox='0 0 24 24'>
-    <circle
-      className='opacity-25'
-      cx='12'
-      cy='12'
-      r='10'
-      stroke='currentColor'
-      strokeWidth='4'
-      fill='none'
-    />
-    <path
-      className='opacity-75'
-      fill='currentColor'
-      d='M4 12A8 8 0 0112 4v4a4 4 0 00-4 4H4z'
-    />
-  </svg>
-);
+import { AlertTriangle, CheckCircle2, Info, Loader2, X } from 'lucide-react';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -35,6 +13,8 @@ interface ConfirmModalProps {
   onConfirm: () => Promise<any> | void;
   title: string;
   description: string;
+  userName?: string;
+  warning?: string;
   confirmType?: 'danger' | 'warning' | 'success';
   confirmLabel?: string;
   cancelLabel?: string;
@@ -46,17 +26,42 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   title,
   description,
+  userName,
+  warning,
   confirmType = 'success',
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
 }) => {
   const [loading, setLoading] = useState(false);
 
-  let confirmClass = 'bg-green-600 hover:bg-green-700 text-white';
-  if (confirmType === 'danger')
-    confirmClass = 'bg-red-600 hover:bg-red-700 text-white';
-  if (confirmType === 'warning')
-    confirmClass = 'bg-yellow-500 hover:bg-yellow-600 text-white';
+  // Define styles and icons based on type
+  const getTypeStyles = () => {
+    switch (confirmType) {
+      case 'danger':
+        return {
+          iconBg: 'bg-red-100 dark:bg-red-950',
+          icon: <AlertTriangle className='h-6 w-6 text-red-600 dark:text-red-400' />,
+          buttonClass: 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white',
+          ringClass: 'ring-red-600/20',
+        };
+      case 'warning':
+        return {
+          iconBg: 'bg-yellow-100 dark:bg-yellow-950',
+          icon: <Info className='h-6 w-6 text-yellow-600 dark:text-yellow-400' />,
+          buttonClass: 'bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800 text-white',
+          ringClass: 'ring-yellow-600/20',
+        };
+      default:
+        return {
+          iconBg: 'bg-green-100 dark:bg-green-950',
+          icon: <CheckCircle2 className='h-6 w-6 text-green-600 dark:text-green-400' />,
+          buttonClass: 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white',
+          ringClass: 'ring-green-600/20',
+        };
+    }
+  };
+
+  const styles = getTypeStyles();
 
   // handle confirm with internal loading state
   const handleConfirm = async () => {
@@ -75,36 +80,71 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={open ? onCancel : undefined}>
-      <DialogContent className='max-w-md transition-all duration-300 animate-in slide-in-from-top-8 fade-in scale-95'>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-          <button
-            className='absolute top-3 right-3 rounded-full p-1 hover:bg-muted/50 transition'
-            onClick={onCancel}
-            aria-label='Close'
-            type='button'
-            disabled={loading}
-          >
-            <X className='h-5 w-5' />
-          </button>
-        </DialogHeader>
-        <div className='flex gap-3 mt-6 justify-end'>
+      <DialogContent className='sm:max-w-md'>
+        {/* Close button */}
+        <button
+          className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none'
+          onClick={onCancel}
+          aria-label='Close'
+          type='button'
+          disabled={loading}
+        >
+          <X className='h-4 w-4' />
+        </button>
+
+        {/* Icon at top */}
+        <div className='flex flex-col items-center gap-4 pt-6'>
+          <div className={`${styles.iconBg} rounded-full p-3 ring-8 ${styles.ringClass}`}>
+            {styles.icon}
+          </div>
+
+          <div className='space-y-4 text-center w-full px-4'>
+            <h2 className='text-xl font-semibold text-foreground'>
+              {title}
+            </h2>
+            <p className='text-base text-foreground/70 leading-relaxed'>
+              {description}
+            </p>
+            
+            {userName && (
+              <div className='bg-muted/50 rounded-lg p-4 border border-border'>
+                <p className='text-2xl font-bold text-foreground'>
+                  {userName}
+                </p>
+              </div>
+            )}
+
+            {warning && (
+              <p className='text-sm text-destructive font-medium'>
+                {warning}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className='flex flex-col-reverse sm:flex-row gap-3 mt-6 pt-4 border-t'>
           <Button
             variant='outline'
             onClick={onCancel}
             disabled={loading}
-            className='min-w-[90px]'
+            className='flex-1'
           >
             {cancelLabel}
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={loading}
-            className={`${confirmClass} min-w-[90px] flex items-center justify-center`}
+            className={`${styles.buttonClass} flex-1`}
           >
-            {loading && <Spinner />}
-            {loading ? 'Please wait...' : confirmLabel}
+            {loading ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Loading...
+              </>
+            ) : (
+              confirmLabel
+            )}
           </Button>
         </div>
       </DialogContent>

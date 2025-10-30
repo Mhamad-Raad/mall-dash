@@ -150,7 +150,8 @@ const UserDetail = () => {
       <ConfirmModal
         open={showUpdateModal}
         title='Update User'
-        description={`Are you sure you want to UPDATE ${user.firstName}?`}
+        description='Are you sure you want to update this user?'
+        userName={`${user.firstName} ${user.lastName}`}
         confirmType='warning'
         confirmLabel='Update'
         cancelLabel='Cancel'
@@ -160,7 +161,9 @@ const UserDetail = () => {
       <ConfirmModal
         open={showDeleteModal}
         title='Delete User'
-        description={`Are you sure you want to DELETE ${user.firstName}?`}
+        description='Are you sure you want to delete this user?'
+        userName={`${user.firstName} ${user.lastName}`}
+        warning='WARNING! This action cannot be undone.'
         confirmType='danger'
         confirmLabel='Delete'
         cancelLabel='Cancel'
