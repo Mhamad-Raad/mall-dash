@@ -6,11 +6,13 @@ const API_VALUE = import.meta.env.VITE_API_VALUE;
 export const fetchUsers = async (params?: {
   page?: number;
   limit?: number;
+  search?: string;
+  role?: number;
 }) => {
   try {
-    const response = await axiosInstance.get('/Account/users', {
+    const response = await axiosInstance.get('/Account/users/filter', {
       headers: { key: API_KEY, value: API_VALUE },
-      params, // Pass page and limit as params, if provided
+      params,
     });
 
     return response.data;

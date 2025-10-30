@@ -21,10 +21,17 @@ const initialState: UsersState = {
   total: 10,
 };
 
-// Create async thunk for fetching users
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
-  async (params: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
+  async (
+    params: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      role?: number;
+    } = {},
+    { rejectWithValue }
+  ) => {
     try {
       const data = await fetchUsersAPI(params);
 

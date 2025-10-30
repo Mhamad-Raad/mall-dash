@@ -20,7 +20,7 @@ import { Mail, Phone, Building2, User as UserIcon } from 'lucide-react';
 import roles from '@/constants/roles';
 
 import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '@/store/store'; // Import these types
+import type { AppDispatch, RootState } from '@/store/store';
 import { fetchUsers } from '@/store/slices/usersSlice';
 
 const getUserTypeColor = (type: string) => {
@@ -37,14 +37,19 @@ const getUserTypeColor = (type: string) => {
 const UsersTable = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const dispatch = useDispatch<AppDispatch>(); // Type the dispatch
+  const dispatch = useDispatch<AppDispatch>();
 
   const limit = parseInt(searchParams.get('limit') || '10', 10);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
-  console.log('Limit:', limit, 'Page:', page);
+  const roleParam = searchParams.get('role');
+  const role = roleParam !== null ? Number(roleParam) : 0;
+  const search = searchParams.get('search') || '';
 
-  // Type the useSelector with RootState
+  // For debugging/logic, you can use these vars anywhere in your JS/TS below!
+  console.log('Limit:', limit, 'Page:', page, 'Role:', role, 'Search:', search);
+
+  // Redux state
   const {
     users,
     lusers: loading,
@@ -57,10 +62,11 @@ const UsersTable = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchUsers({ limit, page }));
-  }, [dispatch, limit, page]);
-
-  console.log(users);
+    const params: Record<string, any> = { limit, page };
+    if (role !== -1) params.role = role;
+    if (search) params.search = search;
+    dispatch(fetchUsers(params));
+  }, [dispatch, limit, page, role, search]);
 
   if (error) {
     return (
@@ -72,6 +78,11 @@ const UsersTable = () => {
 
   return (
     <div className='rounded-lg border bg-card shadow-sm'>
+      {/* Optionally show active filters up top */}
+      <div className='flex flex-wrap gap-2 items-center p-2'>
+        {role !== -1 && <Badge>{roles[role]}</Badge>}
+        {search && <Badge variant='outline'>Search: {search}</Badge>}
+      </div>
       <Table className='w-full'>
         <TableHeader>
           <TableRow className='hover:bg-transparent border-b'>
@@ -91,12 +102,10 @@ const UsersTable = () => {
         </TableHeader>
         <TableBody>
           {loading
-            ? // Render skeleton rows while loading
-              Array.from({ length: 5 }).map((_, index) => (
+            ? Array.from({ length: 5 }).map((_, index) => (
                 <UsersTableSkeleton key={`skeleton-${index}`} />
               ))
-            : // Render actual user data
-              users.map((user, index) => {
+            : users.map((user, index) => {
                 const fullName = `${user.firstName} ${user.lastName}`;
                 const userRole = roles[user.role];
                 return (
@@ -126,7 +135,6 @@ const UsersTable = () => {
                         </div>
                       </div>
                     </TableCell>
-
                     {/* Contact Information */}
                     <TableCell>
                       <div className='flex flex-col gap-1.5 min-w-[200px]'>
@@ -142,7 +150,6 @@ const UsersTable = () => {
                         </div>
                       </div>
                     </TableCell>
-
                     {/* User Type/Role */}
                     <TableCell>
                       <Badge
@@ -154,7 +161,6 @@ const UsersTable = () => {
                         {userRole}
                       </Badge>
                     </TableCell>
-
                     {/* Building/Location */}
                     <TableCell>
                       <div className='flex items-center gap-2 min-w-[150px]'>
@@ -169,8 +175,6 @@ const UsersTable = () => {
               })}
         </TableBody>
       </Table>
-
-      {/* Pagination */}
       <div className='border-t px-4 py-3 bg-muted/30'>
         <CustomTablePagination
           total={total}
