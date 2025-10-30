@@ -46,7 +46,6 @@ const UsersTable = () => {
   const role = roleParam !== null ? Number(roleParam) : 0;
   const search = searchParams.get('search') || '';
 
-  // For debugging/logic, you can use these vars anywhere in your JS/TS below!
   console.log('Limit:', limit, 'Page:', page, 'Role:', role, 'Search:', search);
 
   // Redux state

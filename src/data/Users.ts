@@ -10,7 +10,7 @@ export const fetchUsers = async (params?: {
   role?: number;
 }) => {
   try {
-    const response = await axiosInstance.get('/Account/users/filter', {
+    const response = await axiosInstance.get('/Account/users', {
       headers: { key: API_KEY, value: API_VALUE },
       params,
     });
