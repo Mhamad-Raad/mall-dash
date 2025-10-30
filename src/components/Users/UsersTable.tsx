@@ -43,7 +43,7 @@ const UsersTable = () => {
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   const roleParam = searchParams.get('role');
-  const role = roleParam !== null ? Number(roleParam) : 0;
+  const role = roleParam !== null ? Number(roleParam) : null;
   const search = searchParams.get('search') || '';
 
   console.log('Limit:', limit, 'Page:', page, 'Role:', role, 'Search:', search);
@@ -79,7 +79,7 @@ const UsersTable = () => {
     <div className='rounded-lg border bg-card shadow-sm'>
       {/* Optionally show active filters up top */}
       <div className='flex flex-wrap gap-2 items-center p-2'>
-        {role !== -1 && <Badge>{roles[role]}</Badge>}
+        {role !== -1 && <Badge>{role ? roles[role] : 'all'}</Badge>}
         {search && <Badge variant='outline'>Search: {search}</Badge>}
       </div>
       <Table className='w-full'>
