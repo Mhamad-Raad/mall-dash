@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -76,35 +77,33 @@ const UsersTable = () => {
   }
 
   return (
-    <div className='rounded-lg border bg-card shadow-sm'>
-      {/* Optionally show active filters up top */}
-      <div className='flex flex-wrap gap-2 items-center p-2'>
-        {role !== -1 && <Badge>{role ? roles[role] : 'all'}</Badge>}
-        {search && <Badge variant='outline'>Search: {search}</Badge>}
-      </div>
-      <Table className='w-full'>
-        <TableHeader>
-          <TableRow className='hover:bg-transparent border-b'>
-            <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
-              User
-            </TableHead>
-            <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
-              Contact
-            </TableHead>
-            <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
-              Role
-            </TableHead>
-            <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
-              Location
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading
-            ? Array.from({ length: 5 }).map((_, index) => (
-                <UsersTableSkeleton key={`skeleton-${index}`} />
-              ))
-            : users.map((user, index) => {
+    <div className='rounded-lg border bg-card shadow-sm flex flex-col'>
+
+      {/* Scrollable table area with fixed height */}
+      <ScrollArea className='h-[500px]'>
+        <Table className='w-full'>
+          <TableHeader>
+            <TableRow className='hover:bg-transparent border-b'>
+              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+                User
+              </TableHead>
+              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+                Contact
+              </TableHead>
+              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+                Role
+              </TableHead>
+              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+                Location
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <UsersTableSkeleton key={`skeleton-${index}`} />
+                ))
+              : users.map((user, index) => {
                 const fullName = `${user.firstName} ${user.lastName}`;
                 const userRole = roles[user.role];
                 return (
@@ -174,6 +173,9 @@ const UsersTable = () => {
               })}
         </TableBody>
       </Table>
+      </ScrollArea>
+
+      {/* Pagination */}
       <div className='border-t px-4 py-3 bg-muted/30'>
         <CustomTablePagination
           total={total}
