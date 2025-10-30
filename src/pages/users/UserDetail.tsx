@@ -21,8 +21,7 @@ import {
 import type { UserType } from '@/interfaces/Users.interface';
 import { initialUser } from '@/constants/Users';
 
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'sonner';
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -77,22 +76,23 @@ const UserDetail = () => {
   // Listen for update/delete outcomes & show notifications
   useEffect(() => {
     if (updatingError) {
-      toast.error(updatingError, { position: 'top-right' });
+      toast.error(updatingError);
+      setShowUpdateModal(false); // Close modal even on error
     }
     if (!updating && showUpdateModal && !updatingError) {
       // If updating goes from true to false and there was no error
       setShowUpdateModal(false);
-      toast.success('User updated successfully!', { position: 'top-right' });
+      toast.success('User updated successfully!');
     }
   }, [updating, updatingError]);
 
   useEffect(() => {
     if (deletingError) {
-      toast.error(deletingError, { position: 'top-right' });
+      toast.error(deletingError);
     }
     if (!deleting && showDeleteModal && !deletingError) {
       setShowDeleteModal(false);
-      toast.success('User deleted!', { position: 'top-right' });
+      toast.success('User deleted!');
       navigate('/users');
     }
   }, [deleting, deletingError, navigate]);

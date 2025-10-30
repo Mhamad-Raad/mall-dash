@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import Layout from '@/components/Layout/DashboardLayout';
 import {
   getStoredTokens,
@@ -67,11 +66,6 @@ const LoadingPage = () => {
   return (
     <>
       <Layout />
-      <ToastContainer
-        position='bottom-right'
-        autoClose={5000}
-        hideProgressBar={false}
-      />
     </>
   );
 };

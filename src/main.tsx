@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 
 import { ThemeProvider } from './components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 
 import { store } from './store/store.ts';
 
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
       <Provider store={store}>
         <App />
+        <Toaster />
       </Provider>
     </ThemeProvider>
   </StrictMode>
