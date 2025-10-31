@@ -1,9 +1,23 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Lock, Image as ImageIcon } from 'lucide-react';
+import { User, Mail, Lock, Image as ImageIcon, Phone } from 'lucide-react';
 
-export default function AdminForm() {
+type AdminFormProps = {
+  formData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    phoneNumber: string;
+    role: number;
+    photo?: File | null;
+  };
+  onInputChange: (field: string, value: unknown) => void;
+};
+
+export default function AdminForm({ formData, onInputChange }: AdminFormProps) {
   return (
     <>
       {/* Profile Picture */}
@@ -21,6 +35,9 @@ export default function AdminForm() {
             type='file'
             accept='image/*'
             className='flex-1'
+            onChange={(e) =>
+              onInputChange('photo', e.target.files?.[0] || null)
+            }
           />
         </div>
       </div>
@@ -33,14 +50,24 @@ export default function AdminForm() {
             <User className='size-4 text-muted-foreground' />
             First Name
           </Label>
-          <Input id='admin-firstname' placeholder='Enter first name' />
+          <Input
+            id='admin-firstname'
+            placeholder='Enter first name'
+            value={formData.firstName}
+            onChange={(e) => onInputChange('firstName', e.target.value)}
+          />
         </div>
         <div className='space-y-2'>
           <Label htmlFor='admin-lastname' className='flex items-center gap-2'>
             <User className='size-4 text-muted-foreground' />
             Last Name
           </Label>
-          <Input id='admin-lastname' placeholder='Enter last name' />
+          <Input
+            id='admin-lastname'
+            placeholder='Enter last name'
+            value={formData.lastName}
+            onChange={(e) => onInputChange('lastName', e.target.value)}
+          />
         </div>
       </div>
 
@@ -56,18 +83,53 @@ export default function AdminForm() {
             id='admin-email'
             type='email'
             placeholder='admin@example.com'
+            value={formData.email}
+            onChange={(e) => onInputChange('email', e.target.value)}
           />
         </div>
         <div className='space-y-2'>
-          <Label htmlFor='admin-password' className='flex items-center gap-2'>
-            <Lock className='size-4 text-muted-foreground' />
-            Password
+          <Label htmlFor='admin-phone' className='flex items-center gap-2'>
+            <Phone className='size-4 text-muted-foreground' />
+            Phone Number
           </Label>
           <Input
-            id='admin-password'
-            type='password'
-            placeholder='Enter secure password'
+            id='admin-phone'
+            type='tel'
+            placeholder='Enter phone number'
+            value={formData.phoneNumber}
+            onChange={(e) => onInputChange('phoneNumber', e.target.value)}
           />
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='admin-password' className='flex items-center gap-2'>
+              <Lock className='size-4 text-muted-foreground' />
+              Password
+            </Label>
+            <Input
+              id='admin-password'
+              type='password'
+              placeholder='Enter secure password'
+              value={formData.password}
+              onChange={(e) => onInputChange('password', e.target.value)}
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label
+              htmlFor='admin-confirm-password'
+              className='flex items-center gap-2'
+            >
+              <Lock className='size-4 text-muted-foreground' />
+              Confirm Password
+            </Label>
+            <Input
+              id='admin-confirm-password'
+              type='password'
+              placeholder='Re-enter password'
+              value={formData.confirmPassword}
+              onChange={(e) => onInputChange('confirmPassword', e.target.value)}
+            />
+          </div>
         </div>
       </div>
     </>

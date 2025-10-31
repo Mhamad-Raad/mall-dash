@@ -1,6 +1,12 @@
-import * as React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { UserPlus, ArrowLeft, Save } from 'lucide-react';
 import UserTypeSelector from '@/components/Users/UserTypeSelector';
@@ -8,12 +14,63 @@ import AdminForm from '@/components/Users/forms/AdminForm';
 import CustomerForm from '@/components/Users/forms/CustomerForm';
 import VendorForm from '@/components/Users/forms/VendorForm';
 
+import { createUser } from '@/data/Users';
+
 export default function CreateUser() {
-  const [type, setType] = React.useState('Customer');
   const navigate = useNavigate();
+
+  const [type, setType] = useState('Customer');
+  const [adminFormData, setAdminFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    role: 1,
+    photo: null,
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Handler to update form data from child
+  const handleAdminInputChange = (field: string, value: unknown) => {
+    setAdminFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleBack = () => {
     navigate('/users');
+  };
+
+  const handleCreateUser = async () => {
+    setLoading(true);
+    setError(null);
+
+    let data = {};
+    if (type === 'Admin') {
+      const { confirmPassword, photo, ...userData } = adminFormData;
+      if (adminFormData.password !== adminFormData.confirmPassword) {
+        setError('Passwords do not match');
+        setLoading(false);
+        return;
+      }
+      data = userData;
+    } else {
+      setError('Only Admin user creation is implemented');
+      setLoading(false);
+      return;
+    }
+
+    const res = await createUser(data as any);
+
+    setLoading(false);
+
+    if (res.error) {
+      setError(res.error);
+    } else {
+      navigate('/users');
+    }
   };
 
   return (
@@ -34,26 +91,40 @@ export default function CreateUser() {
               <UserPlus className='size-5' />
             </div>
             <div className='min-w-0'>
-              <h1 className='text-xl sm:text-2xl font-bold tracking-tight'>Create New User</h1>
+              <h1 className='text-xl sm:text-2xl font-bold tracking-tight'>
+                Create New User
+              </h1>
               <p className='text-xs sm:text-sm text-muted-foreground'>
                 Add a new user to the system
               </p>
             </div>
           </div>
         </div>
-        
         <div className='flex gap-2 self-end sm:self-auto'>
           <Button variant='outline' onClick={handleBack} className='gap-2'>
             <span className='hidden sm:inline'>Cancel</span>
             <span className='sm:hidden'>Cancel</span>
           </Button>
-          <Button className='gap-2'>
+          <Button
+            className='gap-2'
+            onClick={handleCreateUser}
+            disabled={loading}
+          >
             <Save className='size-4' />
-            <span className='hidden sm:inline'>Save User</span>
+            {loading ? (
+              <span>Creating...</span>
+            ) : (
+              <span className='hidden sm:inline'>Create User</span>
+            )}
           </Button>
         </div>
       </div>
-
+      {/* Error Message */}
+      {error && (
+        <div className='bg-red-100 text-red-600 px-4 py-2 rounded border my-2'>
+          {error}
+        </div>
+      )}
       {/* Main Content */}
       <div className='space-y-6'>
         {/* User Type Selection */}
@@ -68,7 +139,12 @@ export default function CreateUser() {
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-6'>
-            {type === 'Admin' && <AdminForm />}
+            {type === 'Admin' && (
+              <AdminForm
+                formData={adminFormData}
+                onInputChange={handleAdminInputChange}
+              />
+            )}
             {type === 'Customer' && <CustomerForm />}
             {type === 'Vendor' && <VendorForm />}
           </CardContent>
