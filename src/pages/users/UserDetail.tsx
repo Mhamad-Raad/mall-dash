@@ -7,7 +7,7 @@ import ContactInfoCard from '@/components/Users/UserDetail/ContactInfoCard';
 import LocationRoleCard from '@/components/Users/UserDetail/LocationRoleCard';
 import UserDetailSkeleton from '@/components/Users/UserDetail/UserDetailSkeloton';
 import UserErrorCard from '@/components/Users/UserDetail/UserErrorCard';
-import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+import ConfirmModal, { type ChangeDetail } from '@/components/ui/Modals/ConfirmModal';
 
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store/store';
@@ -20,6 +20,7 @@ import {
 
 import type { UserType } from '@/interfaces/Users.interface';
 import { initialUser } from '@/constants/Users';
+import roles from '@/constants/roles';
 
 import { toast } from 'sonner';
 
@@ -49,6 +50,44 @@ const UserDetail = () => {
   const hasChanges = useMemo(() => {
     const keys = Object.keys(user) as Array<keyof UserType>;
     return keys.some((key) => user[key] !== formData[key]);
+  }, [user, formData]);
+
+  // Calculate the specific changes for display in modal
+  const changes = useMemo((): ChangeDetail[] => {
+    // Safety check - only calculate if user is loaded
+    if (!user || !user._id) return [];
+    
+    const changesList: ChangeDetail[] = [];
+    
+    const fieldLabels: Record<string, string> = {
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email',
+      phoneNumber: 'Phone Number',
+      role: 'Role',
+    };
+
+    // Check each editable field
+    (['firstName', 'lastName', 'email', 'phoneNumber', 'role'] as const).forEach((key) => {
+      if (user[key] !== formData[key]) {
+        let oldVal = user[key];
+        let newVal = formData[key];
+
+        // Format role as label
+        if (key === 'role' && typeof oldVal === 'number' && typeof newVal === 'number') {
+          oldVal = roles[oldVal] || `Role ${oldVal}`;
+          newVal = roles[newVal] || `Role ${newVal}`;
+        }
+
+        changesList.push({
+          field: fieldLabels[key],
+          oldValue: String(oldVal ?? ''),
+          newValue: String(newVal ?? ''),
+        });
+      }
+    });
+
+    return changesList;
   }, [user, formData]);
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -157,6 +196,7 @@ const UserDetail = () => {
         cancelLabel='Cancel'
         onCancel={handletoggleUpdateModal}
         onConfirm={handleUpdateUser}
+        changes={changes}
       />
       <ConfirmModal
         open={showDeleteModal}
