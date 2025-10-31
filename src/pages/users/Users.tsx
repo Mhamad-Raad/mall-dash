@@ -7,7 +7,7 @@ import type { AppDispatch, RootState } from '@/store/store';
 
 import UsersFilters from '@/components/Users/UsersFilters';
 import UsersTable from '@/components/Users/UsersTable';
-import { User as UserIcon } from 'lucide-react';
+import EmptyState from '@/components/Users/EmptyState';
 
 import { fetchUsers } from '@/store/slices/usersSlice';
 
@@ -42,17 +42,7 @@ const Users = () => {
 
       {/* Users Table OR Empty State */}
       <div className='flex-1 min-h-0'>
-        {hasNoUsers ? (
-          <div className='flex flex-col items-center justify-center h-full text-center p-8'>
-            <UserIcon className='w-12 h-12 text-muted-foreground mb-4' />
-            <h2 className='text-xl font-semibold mb-2'>No users found</h2>
-            <p className='text-muted-foreground mb-4'>
-              Try adjusting your filters or create a new user.
-            </p>
-          </div>
-        ) : (
-          <UsersTable />
-        )}
+        {hasNoUsers ? <EmptyState /> : <UsersTable />}
       </div>
     </section>
   );
