@@ -19,7 +19,6 @@ interface UserProfileCardProps {
 }
 
 const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
-  console.log(formData);
   return (
     <Card className='mb-6'>
       <CardHeader className='pb-4'>

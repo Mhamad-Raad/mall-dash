@@ -3,6 +3,8 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle2, Info, Loader2, X } from 'lucide-react';
@@ -101,6 +103,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <X className='h-4 w-4' />
         </button>
 
+        <DialogTitle className='sr-only'>{title}</DialogTitle>
+        <DialogDescription className='sr-only'>{description}</DialogDescription>
+
         {/* Icon at top */}
         <div className='flex flex-col items-center gap-4 pt-6'>
           <div className={`${styles.iconBg} rounded-full p-3 ring-8 ${styles.ringClass}`}>
@@ -108,10 +113,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </div>
 
           <div className='space-y-4 text-center w-full px-4'>
-            <h2 className='text-xl font-semibold text-foreground'>
+            <h2 className='text-xl font-semibold text-foreground' aria-hidden='true'>
               {title}
             </h2>
-            <p className='text-base text-foreground/70 leading-relaxed'>
+            <p className='text-base text-foreground/70 leading-relaxed' aria-hidden='true'>
               {description}
             </p>
             
