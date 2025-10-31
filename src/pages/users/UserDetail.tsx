@@ -170,7 +170,7 @@ const UserDetail = () => {
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       <UserDetailHeader
-        onBack={() => navigate('/users')}
+        onBack={() => navigate(-1)}
         onSave={handletoggleUpdateModal}
         onDelete={handletoggleDeleteModal}
         hasChanges={hasChanges}
