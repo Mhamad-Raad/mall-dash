@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -80,8 +80,8 @@ const UsersTable = () => {
     <div className='rounded-lg border bg-card shadow-sm flex flex-col'>
 
       {/* Scrollable table area - responsive height based on viewport */}
-      <ScrollArea className='h-[calc(100vh-280px)]'>
-        <Table className='w-full'>
+      <ScrollArea className='h-[calc(100vh-280px)] md:h-[calc(100vh-280px)]'>
+        <Table className='w-full min-w-[700px]'>
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b'>
               <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
@@ -173,6 +173,7 @@ const UsersTable = () => {
               })}
         </TableBody>
       </Table>
+      <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
       {/* Pagination */}
