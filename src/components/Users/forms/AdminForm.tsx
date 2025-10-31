@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Lock, Image as ImageIcon } from 'lucide-react';
+import { User, Mail, Lock, Image as ImageIcon, Phone } from 'lucide-react';
 
 type AdminFormProps = {
   formData: {
@@ -85,6 +85,19 @@ export default function AdminForm({ formData, onInputChange }: AdminFormProps) {
             placeholder='admin@example.com'
             value={formData.email}
             onChange={(e) => onInputChange('email', e.target.value)}
+          />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='admin-phone' className='flex items-center gap-2'>
+            <Phone className='size-4 text-muted-foreground' />
+            Phone Number
+          </Label>
+          <Input
+            id='admin-phone'
+            type='tel'
+            placeholder='Enter phone number'
+            value={formData.phoneNumber}
+            onChange={(e) => onInputChange('phoneNumber', e.target.value)}
           />
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
