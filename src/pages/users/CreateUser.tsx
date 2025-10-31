@@ -14,6 +14,8 @@ import AdminForm from '@/components/Users/forms/AdminForm';
 import CustomerForm from '@/components/Users/forms/CustomerForm';
 import VendorForm from '@/components/Users/forms/VendorForm';
 
+import { createUser } from '@/data/Users';
+
 export default function CreateUser() {
   const navigate = useNavigate();
 
@@ -26,17 +28,11 @@ export default function CreateUser() {
     confirmPassword: '',
     phoneNumber: '',
     role: 1,
-    photo: null, // Or add photo if you plan to upload one
+    photo: null,
   });
 
-  const handleCreateUser = () => {
-    let data = {};
-    if (type === 'Admin') {
-      data = adminFormData;
-      // ... call createUser(data)
-    }
-    // Handle for other types
-  };
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Handler to update form data from child
   const handleAdminInputChange = (field: string, value: unknown) => {
@@ -45,6 +41,36 @@ export default function CreateUser() {
 
   const handleBack = () => {
     navigate('/users');
+  };
+
+  const handleCreateUser = async () => {
+    setLoading(true);
+    setError(null);
+
+    let data = {};
+    if (type === 'Admin') {
+      const { confirmPassword, photo, ...userData } = adminFormData;
+      if (adminFormData.password !== adminFormData.confirmPassword) {
+        setError('Passwords do not match');
+        setLoading(false);
+        return;
+      }
+      data = userData;
+    } else {
+      setError('Only Admin user creation is implemented');
+      setLoading(false);
+      return;
+    }
+
+    const res = await createUser(data as any);
+
+    setLoading(false);
+
+    if (res.error) {
+      setError(res.error);
+    } else {
+      navigate('/users');
+    }
   };
 
   return (
@@ -74,19 +100,31 @@ export default function CreateUser() {
             </div>
           </div>
         </div>
-
         <div className='flex gap-2 self-end sm:self-auto'>
           <Button variant='outline' onClick={handleBack} className='gap-2'>
             <span className='hidden sm:inline'>Cancel</span>
             <span className='sm:hidden'>Cancel</span>
           </Button>
-          <Button className='gap-2' onClick={handleCreateUser}>
+          <Button
+            className='gap-2'
+            onClick={handleCreateUser}
+            disabled={loading}
+          >
             <Save className='size-4' />
-            <span className='hidden sm:inline'>Create User</span>
+            {loading ? (
+              <span>Creating...</span>
+            ) : (
+              <span className='hidden sm:inline'>Create User</span>
+            )}
           </Button>
         </div>
       </div>
-
+      {/* Error Message */}
+      {error && (
+        <div className='bg-red-100 text-red-600 px-4 py-2 rounded border my-2'>
+          {error}
+        </div>
+      )}
       {/* Main Content */}
       <div className='space-y-6'>
         {/* User Type Selection */}
