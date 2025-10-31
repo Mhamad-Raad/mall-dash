@@ -13,6 +13,8 @@ import type { UserType } from '@/interfaces/Users.interface';
 
 import roles from '@/constants/roles';
 
+import { User as UserIcon } from 'lucide-react';
+
 interface UserProfileCardProps {
   formData: UserType;
   onInputChange: (field: string, value: string | number) => void;
@@ -25,11 +27,18 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
         <div className='flex flex-col md:flex-row items-start md:items-center gap-6'>
           <Avatar className='h-24 w-24 border-4 border-background shadow-xl'>
             <AvatarImage
-              src={formData.src}
+              src={formData.src || '/default-user.png'} // Use your own default image path
               alt={`${formData?.firstName}'s profile picture`}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/default-user.png';
+              }}
             />
-            <AvatarFallback className='text-2xl font-bold bg-primary/10 text-primary'>
-              {formData.fallback}
+            <AvatarFallback className='text-2xl font-bold bg-primary/10 text-primary flex items-center justify-center'>
+              {formData.fallback ? (
+                formData.fallback
+              ) : (
+                <UserIcon className='w-12 h-12 text-muted-foreground' />
+              )}
             </AvatarFallback>
           </Avatar>
           <div className='flex-1 w-full'>
