@@ -19,18 +19,6 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
     navigate(`/buildings/${buildingId}`);
   };
 
-  const getTotalApartments = (building: typeof buildings[0]) => {
-    return building.floors.reduce((total, floor) => total + floor.apartments.length, 0);
-  };
-
-  const getTotalOccupants = (building: typeof buildings[0]) => {
-    return building.floors.reduce(
-      (total, floor) =>
-        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
-      0
-    );
-  };
-
   return (
     <Card className='shadow-lg border-2'>
       <CardHeader className='border-b'>
@@ -80,19 +68,19 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center gap-2'>
                       <Layers className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-semibold text-base'>{building.floors.length}</span>
+                      <span className='font-semibold text-base'>{building.numberOfFloors}</span>
                     </div>
                   </TableCell>
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center gap-2'>
                       <Home className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-semibold text-base'>{getTotalApartments(building)}</span>
+                      <span className='font-semibold text-base'>{building.totalApartments}</span>
                     </div>
                   </TableCell>
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center gap-2'>
                       <Users className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-semibold text-base'>{getTotalOccupants(building)}</span>
+                      <span className='font-semibold text-base'>{building.occupants}</span>
                     </div>
                   </TableCell>
                 </TableRow>

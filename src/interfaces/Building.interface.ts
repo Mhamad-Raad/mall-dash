@@ -23,6 +23,15 @@ export interface Building {
   floors: Floor[];
 }
 
+// API response interface for buildings list
+export interface BuildingListItem {
+  id: number;
+  name: string;
+  numberOfFloors: number;
+  totalApartments: number;
+  occupants: number;
+}
+
 export interface BuildingsTableProps {
-  buildings: Building[];
+  buildings: BuildingListItem[];
 }

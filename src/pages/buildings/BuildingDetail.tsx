@@ -7,8 +7,34 @@ import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
-import { buildingsData } from './Buildings';
-import type { Apartment, Occupant } from '@/interfaces/Building.interface';
+import type { Apartment, Occupant, Building } from '@/interfaces/Building.interface';
+
+// Temporary mock data for building detail (will be replaced with API data)
+const buildingsData: Building[] = [
+  {
+    id: 1,
+    name: 'Test',
+    floors: [
+      {
+        id: 1,
+        floorNumber: 1,
+        apartments: [
+          { id: 1, apartmentNumber: 101, name: 'Suite 101', occupants: [{ id: 1, name: 'John Doe', email: 'john@example.com' }] },
+          { id: 2, apartmentNumber: 102, name: 'Suite 102', occupants: [] },
+          { id: 3, apartmentNumber: 103, occupants: [{ id: 2, name: 'Jane Smith', email: 'jane@example.com' }] },
+        ],
+      },
+      {
+        id: 2,
+        floorNumber: 2,
+        apartments: [
+          { id: 4, apartmentNumber: 201, occupants: [{ id: 3, name: 'Bob Johnson', email: 'bob@example.com' }] },
+          { id: 5, apartmentNumber: 202, occupants: [] },
+        ],
+      },
+    ],
+  },
+];
 
 const BuildingDetail = () => {
   const { id } = useParams();
