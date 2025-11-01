@@ -48,8 +48,23 @@ const UserDetail = () => {
 
   // Compare local form data with redux user
   const hasChanges = useMemo(() => {
-    const keys = Object.keys(user) as Array<keyof UserType>;
-    return keys.some((key) => user[key] !== formData[key]);
+    if (!user || !user._id) return false;
+    
+    // Compare only the editable fields
+    const editableFields: Array<keyof UserType> = [
+      'firstName',
+      'lastName',
+      'email',
+      'phoneNumber',
+      'buildingName',
+      'role',
+    ];
+    
+    return editableFields.some((key) => {
+      const userValue = user[key] ?? '';
+      const formValue = formData[key] ?? '';
+      return userValue !== formValue;
+    });
   }, [user, formData]);
 
   // Calculate the specific changes for display in modal
@@ -146,7 +161,10 @@ const UserDetail = () => {
   }, [deleting, deletingError, navigate]);
 
   // Modal togglers
-  const handletoggleUpdateModal = () => setShowUpdateModal((v) => !v);
+  const handletoggleUpdateModal = () => {
+    if (!hasChanges) return; // Don't open modal if no changes
+    setShowUpdateModal((v) => !v);
+  };
   const handletoggleDeleteModal = () => setShowDeleteModal((v) => !v);
 
   // Handlers for modal confirm
