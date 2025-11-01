@@ -29,7 +29,7 @@ const LocationCard = ({ formData, onInputChange }: LocationCardProps) => {
           </Label>
           <Input
             id='building'
-            value={formData?.buildingName}
+            value={formData?.buildingName || ''}
             onChange={(e) => onInputChange('buildingName', e.target.value)}
             className='pl-6'
           />

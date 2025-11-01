@@ -109,7 +109,16 @@ const UserDetail = () => {
 
   // Sync local form data with loaded user
   useEffect(() => {
-    if (user) setFormData(user);
+    if (user) {
+      setFormData({
+        ...user,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        email: user.email ?? '',
+        phoneNumber: user.phoneNumber ?? '',
+        buildingName: user.buildingName ?? '',
+      });
+    }
   }, [user]);
 
   // Listen for update/delete outcomes & show notifications
