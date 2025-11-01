@@ -56,11 +56,11 @@ const UsersTable = () => {
   }
 
   return (
-    <div className='rounded-lg border bg-card shadow-sm flex flex-col'>
+    <div className='rounded-lg border bg-card shadow-sm flex flex-col overflow-hidden'>
       {/* Scrollable table area - responsive height based on viewport */}
-      <ScrollArea className='h-[calc(100vh-280px)] md:h-[calc(100vh-280px)]'>
+      <ScrollArea className='h-[calc(100vh-280px)] md:h-[calc(100vh-280px)] [&>div]:rounded-t-lg'>
         <Table className='w-full min-w-[700px]'>
-          <TableHeader>
+          <TableHeader className='[&_tr:first-child>th:first-child]:rounded-tl-lg [&_tr:first-child>th:last-child]:rounded-tr-lg'>
             <TableRow className='hover:bg-transparent border-b'>
               <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
                 User

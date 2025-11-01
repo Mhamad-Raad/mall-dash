@@ -7,11 +7,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import ApartmentCard from './ApartmentCard';
-import type { Floor, Apartment } from '@/interfaces/Building.interface';
+import type { BuildingDetailFloor, BuildingDetailApartment } from '@/interfaces/Building.interface';
 
 interface BuildingFloorsProps {
-  floors: Floor[];
-  onApartmentEdit: (apartment: Apartment) => void;
+  floors: BuildingDetailFloor[];
+  onApartmentEdit: (apartment: BuildingDetailApartment) => void;
 }
 
 const BuildingFloors = ({ floors, onApartmentEdit }: BuildingFloorsProps) => {

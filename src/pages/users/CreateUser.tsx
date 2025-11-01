@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Card,
   CardHeader,
@@ -32,7 +33,6 @@ export default function CreateUser() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Handler to update form data from child
   const handleAdminInputChange = (field: string, value: unknown) => {
@@ -45,19 +45,22 @@ export default function CreateUser() {
 
   const handleCreateUser = async () => {
     setLoading(true);
-    setError(null);
 
     let data = {};
     if (type === 'Admin') {
       const { confirmPassword, photo, ...userData } = adminFormData;
       if (adminFormData.password !== adminFormData.confirmPassword) {
-        setError('Passwords do not match');
+        toast.error('Passwords do not match', {
+          description: 'Please make sure both password fields are identical.',
+        });
         setLoading(false);
         return;
       }
       data = userData;
     } else {
-      setError('Only Admin user creation is implemented');
+      toast.warning('Feature Not Available', {
+        description: 'Only Admin user creation is currently implemented.',
+      });
       setLoading(false);
       return;
     }
@@ -67,8 +70,13 @@ export default function CreateUser() {
     setLoading(false);
 
     if (res.error) {
-      setError(res.error);
+      toast.error('Failed to Create User', {
+        description: res.error || 'An error occurred while creating the user.',
+      });
     } else {
+      toast.success('User Created Successfully!', {
+        description: `${adminFormData.firstName} ${adminFormData.lastName} has been added to the system.`,
+      });
       navigate('/users');
     }
   };
@@ -119,12 +127,6 @@ export default function CreateUser() {
           </Button>
         </div>
       </div>
-      {/* Error Message */}
-      {error && (
-        <div className='bg-red-100 text-red-600 px-4 py-2 rounded border my-2'>
-          {error}
-        </div>
-      )}
       {/* Main Content */}
       <div className='space-y-6'>
         {/* User Type Selection */}
