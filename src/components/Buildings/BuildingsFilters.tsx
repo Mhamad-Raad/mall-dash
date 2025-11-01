@@ -55,9 +55,7 @@ const BuildingsFilters = () => {
   }, [searchParams]);
 
   const handleOnCreate = () => {
-    // Navigate to create building page when ready
-    // navigate('/buildings/create');
-    console.log('Create building clicked');
+    navigate('/buildings/create');
   };
 
   return (
