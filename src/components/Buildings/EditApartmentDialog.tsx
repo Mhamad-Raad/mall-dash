@@ -11,18 +11,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { Apartment, Occupant } from '@/interfaces/Building.interface';
+import type { BuildingDetailApartment, Occupant } from '@/interfaces/Building.interface';
 
 interface EditApartmentDialogProps {
-  apartment: Apartment | null;
+  apartment: BuildingDetailApartment | null;
   isOpen: boolean;
   onClose: () => void;
-  occupants: Occupant[];
-  apartmentName: string;
-  onApartmentNameChange: (newName: string) => void;
+  occupant: Occupant | null;
+  apartmentName?: string;
+  onApartmentNameChange?: (newName: string) => void;
   onAddOccupant: () => void;
-  onRemoveOccupant: (occupantId: number) => void;
-  onOccupantChange: (occupantId: number, field: 'name' | 'email', value: string) => void;
+  onRemoveOccupant: () => void;
+  onOccupantChange: (field: 'name' | 'email', value: string) => void;
   onSave: () => void;
 }
 
@@ -30,9 +30,7 @@ const EditApartmentDialog = ({
   apartment,
   isOpen,
   onClose,
-  occupants,
-  apartmentName,
-  onApartmentNameChange,
+  occupant,
   onAddOccupant,
   onRemoveOccupant,
   onOccupantChange,
@@ -47,73 +45,52 @@ const EditApartmentDialog = ({
             Edit Apartment {apartment?.apartmentNumber}
           </DialogTitle>
           <DialogDescription>
-            Manage apartment details and occupants. Edit apartment name, add, edit, or remove
-            occupants.
+            Manage apartment occupant. Add or edit occupant information.
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className='flex-1 overflow-auto pr-4'>
           <div className='space-y-4 py-4'>
-            {/* Apartment Name Section */}
-            <div className='space-y-2'>
-              <Label htmlFor='apartment-name' className='text-sm font-semibold'>
-                Apartment Name
-              </Label>
-              <Input
-                id='apartment-name'
-                type='text'
-                value={apartmentName}
-                onChange={(e) => onApartmentNameChange(e.target.value)}
-                placeholder='Enter apartment name (e.g., Sunset Suite, Ocean View)'
-              />
-            </div>
-
             <div className='border-t pt-4 space-y-4'>
               <div className='flex items-center justify-between'>
                 <h3 className='text-sm font-semibold flex items-center gap-2'>
                   <Users className='h-4 w-4' />
-                  Occupants
+                  Occupant
                 </h3>
-                <Button onClick={onAddOccupant} size='sm' variant='outline'>
-                  <Plus className='h-4 w-4 mr-2' />
-                  Add Occupant
-                </Button>
+                {!occupant && (
+                  <Button onClick={onAddOccupant} size='sm' variant='outline'>
+                    <Plus className='h-4 w-4 mr-2' />
+                    Add Occupant
+                  </Button>
+                )}
               </div>
 
-              {occupants.length === 0 ? (
-                <div className='text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg'>
-                  <Users className='h-12 w-12 mx-auto mb-2 opacity-50' />
-                  <p className='text-sm'>No occupants yet</p>
-                  <p className='text-xs mt-1'>Click "Add Occupant" to add someone</p>
-                </div>
-              ) : (
-                <div className='space-y-4'>
-                  {occupants.map((occupant) => (
-                <Card key={occupant.id} className='border-2'>
+              {occupant ? (
+                <Card className='border-2'>
                   <CardContent className='p-4'>
                     <div className='flex items-start gap-4'>
                       <div className='flex-1 space-y-3'>
                         <div>
-                          <Label htmlFor={`name-${occupant.id}`} className='text-xs font-semibold'>
+                          <Label htmlFor='occupant-name' className='text-xs font-semibold'>
                             Name *
                           </Label>
                           <Input
-                            id={`name-${occupant.id}`}
+                            id='occupant-name'
                             value={occupant.name}
-                            onChange={(e) => onOccupantChange(occupant.id, 'name', e.target.value)}
+                            onChange={(e) => onOccupantChange('name', e.target.value)}
                             placeholder='Enter occupant name'
                             className='mt-1'
                           />
                         </div>
                         <div>
-                          <Label htmlFor={`email-${occupant.id}`} className='text-xs font-semibold'>
-                            Email
+                          <Label htmlFor='occupant-email' className='text-xs font-semibold'>
+                            Email *
                           </Label>
                           <Input
-                            id={`email-${occupant.id}`}
+                            id='occupant-email'
                             type='email'
-                            value={occupant.email || ''}
-                            onChange={(e) => onOccupantChange(occupant.id, 'email', e.target.value)}
+                            value={occupant.email}
+                            onChange={(e) => onOccupantChange('email', e.target.value)}
                             placeholder='Enter email address'
                             className='mt-1'
                           />
@@ -122,15 +99,21 @@ const EditApartmentDialog = ({
                       <Button
                         variant='ghost'
                         size='icon'
-                        onClick={() => onRemoveOccupant(occupant.id)}
+                        onClick={onRemoveOccupant}
                         className='text-destructive hover:text-destructive hover:bg-destructive/10'
                       >
                         <X className='h-4 w-4' />
                       </Button>
                     </div>
                   </CardContent>
-                    </Card>
-                  ))}
+                </Card>
+              ) : (
+                <div className='text-center py-8 border rounded-lg bg-muted/30'>
+                  <p className='text-sm text-muted-foreground mb-3'>No occupant assigned</p>
+                  <Button onClick={onAddOccupant} size='sm' variant='default'>
+                    <Plus className='h-4 w-4 mr-2' />
+                    Add Occupant
+                  </Button>
                 </div>
               )}
             </div>

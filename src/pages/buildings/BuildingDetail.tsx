@@ -7,10 +7,10 @@ import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
-import type { Apartment, Occupant, Building } from '@/interfaces/Building.interface';
+import type { Occupant, BuildingDetail, BuildingDetailApartment } from '@/interfaces/Building.interface';
 
 // Temporary mock data for building detail (will be replaced with API data)
-const buildingsData: Building[] = [
+const buildingsDetailData: BuildingDetail[] = [
   {
     id: 1,
     name: 'Test',
@@ -19,17 +19,39 @@ const buildingsData: Building[] = [
         id: 1,
         floorNumber: 1,
         apartments: [
-          { id: 1, apartmentNumber: 101, name: 'Suite 101', occupants: [{ id: 1, name: 'John Doe', email: 'john@example.com' }] },
-          { id: 2, apartmentNumber: 102, name: 'Suite 102', occupants: [] },
-          { id: 3, apartmentNumber: 103, occupants: [{ id: 2, name: 'Jane Smith', email: 'jane@example.com' }] },
-        ],
-      },
-      {
-        id: 2,
-        floorNumber: 2,
-        apartments: [
-          { id: 4, apartmentNumber: 201, occupants: [{ id: 3, name: 'Bob Johnson', email: 'bob@example.com' }] },
-          { id: 5, apartmentNumber: 202, occupants: [] },
+          {
+            id: 1,
+            apartmentNumber: 1,
+            occupant: {
+              id: '43d42906-bb98-4664-a567-57f28676dcc9',
+              name: 'Margaret Jones',
+              email: 'adminMargaret123@maldash.com',
+            },
+          },
+          {
+            id: 2,
+            apartmentNumber: 2,
+            occupant: {
+              id: '9a10d735-3f12-4f05-a827-a1b555316e3c',
+              name: 'Kevin Peterson',
+              email: 'vendorKevin123@maldash.com',
+            },
+          },
+          {
+            id: 3,
+            apartmentNumber: 3,
+            occupant: null,
+          },
+          {
+            id: 4,
+            apartmentNumber: 4,
+            occupant: null,
+          },
+          {
+            id: 5,
+            apartmentNumber: 5,
+            occupant: null,
+          },
         ],
       },
     ],
@@ -39,13 +61,13 @@ const buildingsData: Building[] = [
 const BuildingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
-  const [editedOccupants, setEditedOccupants] = useState<Occupant[]>([]);
+  const [selectedApartment, setSelectedApartment] = useState<BuildingDetailApartment | null>(null);
+  const [editedOccupant, setEditedOccupant] = useState<Occupant | null>(null);
   const [editedApartmentName, setEditedApartmentName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Find the building by ID
-  const building = buildingsData.find((b) => b.id === Number(id));
+  const building = buildingsDetailData.find((b) => b.id === Number(id));
 
   // If building not found, show error state
   if (!building) {
@@ -70,37 +92,35 @@ const BuildingDetail = () => {
   const getTotalOccupants = () => {
     return building.floors.reduce(
       (total, floor) =>
-        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
+        total + floor.apartments.filter((apt) => apt.occupant !== null).length,
       0
     );
   };
 
-  const handleApartmentClick = (apartment: Apartment) => {
+  const handleApartmentClick = (apartment: BuildingDetailApartment) => {
     setSelectedApartment(apartment);
-    setEditedOccupants([...apartment.occupants]);
-    setEditedApartmentName(apartment.name || '');
+    setEditedOccupant(apartment.occupant ? { ...apartment.occupant } : null);
+    setEditedApartmentName('');
     setIsDialogOpen(true);
   };
 
   const handleAddOccupant = () => {
     const newOccupant: Occupant = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       name: '',
       email: '',
     };
-    setEditedOccupants([...editedOccupants, newOccupant]);
+    setEditedOccupant(newOccupant);
   };
 
-  const handleRemoveOccupant = (occupantId: number) => {
-    setEditedOccupants(editedOccupants.filter((occ) => occ.id !== occupantId));
+  const handleRemoveOccupant = () => {
+    setEditedOccupant(null);
   };
 
-  const handleOccupantChange = (occupantId: number, field: 'name' | 'email', value: string) => {
-    setEditedOccupants(
-      editedOccupants.map((occ) =>
-        occ.id === occupantId ? { ...occ, [field]: value } : occ
-      )
-    );
+  const handleOccupantChange = (field: 'name' | 'email', value: string) => {
+    if (editedOccupant) {
+      setEditedOccupant({ ...editedOccupant, [field]: value });
+    }
   };
 
   const handleSave = () => {
@@ -113,8 +133,7 @@ const BuildingDetail = () => {
           (apt) => apt.id === selectedApartment.id
         );
         if (apartmentIndex !== -1) {
-          building.floors[floorIndex].apartments[apartmentIndex].occupants = editedOccupants;
-          building.floors[floorIndex].apartments[apartmentIndex].name = editedApartmentName;
+          building.floors[floorIndex].apartments[apartmentIndex].occupant = editedOccupant;
         }
       }
     }
@@ -149,7 +168,7 @@ const BuildingDetail = () => {
         apartment={selectedApartment}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        occupants={editedOccupants}
+        occupant={editedOccupant}
         apartmentName={editedApartmentName}
         onApartmentNameChange={setEditedApartmentName}
         onAddOccupant={handleAddOccupant}
