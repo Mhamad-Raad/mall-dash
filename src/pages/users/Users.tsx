@@ -20,7 +20,7 @@ const Users = () => {
     eusers: error,
   } = useSelector((state: RootState) => state.users);
 
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const limit = parseInt(searchParams.get('limit') || '40', 10);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   const roleParam = searchParams.get('role');

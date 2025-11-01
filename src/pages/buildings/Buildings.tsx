@@ -58,7 +58,7 @@ const Buildings = () => {
   }, [searchParams]);
 
   // Pagination and filters (extract from URL)
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const limit = parseInt(searchParams.get('limit') || '40', 10);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   useEffect(() => {
