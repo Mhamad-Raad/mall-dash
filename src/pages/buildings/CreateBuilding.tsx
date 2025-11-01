@@ -205,6 +205,7 @@ const CreateBuilding = () => {
                           onChange={(e) => handleFloorNumberChange(floor.id, e.target.value)}
                           disabled={isSubmitting}
                           required
+                          className='[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
                         />
                       </div>
 
@@ -221,6 +222,7 @@ const CreateBuilding = () => {
                           onChange={(e) => handleApartmentCountChange(floor.id, e.target.value)}
                           disabled={isSubmitting}
                           required
+                          className='[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
                         />
                       </div>
                     </div>
