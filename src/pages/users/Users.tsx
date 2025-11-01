@@ -32,7 +32,8 @@ const Users = () => {
     if (role !== -1) params.role = role;
     if (search) params.search = search;
     dispatch(fetchUsers(params));
-  }, [dispatch, limit, page, role, search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, page, role, search]);
 
   const hasNoUsers = !loading && users.length === 0 && !error;
   return (
