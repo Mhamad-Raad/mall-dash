@@ -7,10 +7,10 @@ import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
-import type { Occupant, BuildingDetail, BuildingDetailApartment } from '@/interfaces/Building.interface';
+import type { Occupant, BuildingDetail as BuildingDetailType, BuildingDetailApartment } from '@/interfaces/Building.interface';
 
 // Temporary mock data for building detail (will be replaced with API data)
-const buildingsDetailData: BuildingDetail[] = [
+const buildingsDetailData: BuildingDetailType[] = [
   {
     id: 1,
     name: 'Test',
