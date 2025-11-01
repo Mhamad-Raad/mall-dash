@@ -62,7 +62,9 @@ const Buildings = () => {
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   useEffect(() => {
-    dispatch(fetchBuildings({ page, limit, searchName: debounced }));
+    if (limit && page) {
+      dispatch(fetchBuildings({ page, limit, searchName: debounced }));
+    }
   }, [dispatch, limit, page, debounced]);
 
   return (

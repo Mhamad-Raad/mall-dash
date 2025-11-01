@@ -31,7 +31,9 @@ const Users = () => {
     const params: Record<string, any> = { limit, page };
     if (role !== -1) params.role = role;
     if (search) params.search = search;
-    dispatch(fetchUsers(params));
+    if (limit && page) {
+      dispatch(fetchUsers(params));
+    }
   }, [dispatch, limit, page, role, search]);
 
   const hasNoUsers = !loading && users.length === 0 && !error;
