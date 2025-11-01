@@ -62,38 +62,18 @@ const BuildingDetail = () => {
     setIsDialogOpen(true);
   };
 
-  const handleAddOccupant = () => {
-    const newOccupant: Occupant = {
-      id: Date.now(),
-      name: '',
-      email: '',
-    };
-    setEditedOccupants([...editedOccupants, newOccupant]);
-  };
+  const handleAddOccupant = () => {};
 
-  const handleRemoveOccupant = (occupantId: number) => {
-    setEditedOccupants(editedOccupants.filter((occ) => occ.id !== occupantId));
-  };
+  const handleRemoveOccupant = () => {};
 
-  const handleOccupantChange = (
-    occupantId: number,
-    field: 'name' | 'email',
-    value: string
-  ) => {
-    setEditedOccupants(
-      editedOccupants.map((occ) =>
-        occ.id === occupantId ? { ...occ, [field]: value } : occ
-      )
-    );
-  };
+  const handleOccupantChange = () => {};
 
   const handleSave = () => {
+    // You can save the edited data here. Example: dispatch an update thunk or just close the dialog.
     setIsDialogOpen(false);
   };
 
-  const handleBuildingNameChange = (newName: string) => {
-    building.name = newName;
-  };
+  const handleBuildingNameChange = () => {};
 
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
