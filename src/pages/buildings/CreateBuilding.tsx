@@ -9,8 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Floor {
   id: string;
-  floorNumber: number;
-  numberOfApartments: number;
+  floorNumber: number | '';
+  numberOfApartments: number | '';
 }
 
 const CreateBuilding = () => {
@@ -23,7 +23,7 @@ const CreateBuilding = () => {
 
   const handleAddFloor = () => {
     const newFloorNumber = floors.length > 0 
-      ? Math.max(...floors.map(f => f.floorNumber)) + 1 
+      ? Math.max(...floors.map(f => typeof f.floorNumber === 'number' ? f.floorNumber : 0)) + 1 
       : 1;
     
     setFloors([
@@ -42,17 +42,23 @@ const CreateBuilding = () => {
   };
 
   const handleFloorNumberChange = (id: string, value: string) => {
-    const numValue = parseInt(value) || 0;
-    setFloors(floors.map(floor => 
-      floor.id === id ? { ...floor, floorNumber: numValue } : floor
-    ));
+    // Only allow empty string or positive integers
+    if (value === '' || /^\d+$/.test(value)) {
+      const numValue = value === '' ? '' : parseInt(value);
+      setFloors(floors.map(floor => 
+        floor.id === id ? { ...floor, floorNumber: numValue as number } : floor
+      ));
+    }
   };
 
   const handleApartmentCountChange = (id: string, value: string) => {
-    const numValue = parseInt(value) || 0;
-    setFloors(floors.map(floor => 
-      floor.id === id ? { ...floor, numberOfApartments: numValue } : floor
-    ));
+    // Only allow empty string or positive integers
+    if (value === '' || /^\d+$/.test(value)) {
+      const numValue = value === '' ? '' : parseInt(value);
+      setFloors(floors.map(floor => 
+        floor.id === id ? { ...floor, numberOfApartments: numValue as number } : floor
+      ));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,7 +76,10 @@ const CreateBuilding = () => {
     }
 
     const hasInvalidFloor = floors.some(
-      floor => floor.floorNumber < 1 || floor.numberOfApartments < 1
+      floor => (typeof floor.floorNumber === 'number' ? floor.floorNumber : 0) < 1 || 
+               (typeof floor.numberOfApartments === 'number' ? floor.numberOfApartments : 0) < 1 ||
+               floor.floorNumber === '' || 
+               floor.numberOfApartments === ''
     );
 
     if (hasInvalidFloor) {
@@ -84,8 +93,8 @@ const CreateBuilding = () => {
     const buildingData = {
       name: buildingName,
       floors: floors.map(floor => ({
-        floorNumber: floor.floorNumber,
-        numberOfApartments: floor.numberOfApartments
+        floorNumber: typeof floor.floorNumber === 'number' ? floor.floorNumber : 1,
+        numberOfApartments: typeof floor.numberOfApartments === 'number' ? floor.numberOfApartments : 1
       }))
     };
 
@@ -271,7 +280,10 @@ const CreateBuilding = () => {
               <div>
                 <p className='text-muted-foreground'>Total Apartments</p>
                 <p className='font-semibold'>
-                  {floors.reduce((sum, floor) => sum + floor.numberOfApartments, 0)}
+                  {floors.reduce((sum, floor) => {
+                    const apartments = typeof floor.numberOfApartments === 'number' ? floor.numberOfApartments : 0;
+                    return sum + apartments;
+                  }, 0)}
                 </p>
               </div>
             </div>
