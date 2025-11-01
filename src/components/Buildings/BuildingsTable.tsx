@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
 import { Building2, Layers, Home, Users } from 'lucide-react';
 import {
   Table,
@@ -10,25 +12,18 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import type { BuildingsTableProps } from '@/interfaces/Building.interface';
 
-const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
+import type { RootState } from '@/store/store';
+
+const BuildingsTable = () => {
+  const { buildings, total } = useSelector(
+    (state: RootState) => state.buildings
+  );
+
   const navigate = useNavigate();
 
   const handleRowClick = (buildingId: number) => {
     navigate(`/buildings/${buildingId}`);
-  };
-
-  const getTotalApartments = (building: typeof buildings[0]) => {
-    return building.floors.reduce((total, floor) => total + floor.apartments.length, 0);
-  };
-
-  const getTotalOccupants = (building: typeof buildings[0]) => {
-    return building.floors.reduce(
-      (total, floor) =>
-        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
-      0
-    );
   };
 
   return (
@@ -63,9 +58,9 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
             <TableBody>
               {buildings.map((building) => (
                 <TableRow
-                  key={building.id}
+                  key={building?.id}
                   className='cursor-pointer hover:bg-muted/50 transition-colors'
-                  onClick={() => handleRowClick(building.id)}
+                  onClick={() => handleRowClick(building?.id)}
                 >
                   <TableCell className='font-medium'>
                     <div className='flex items-center gap-3'>
@@ -73,26 +68,34 @@ const BuildingsTable = ({ buildings }: BuildingsTableProps) => {
                         <Building2 className='h-5 w-5 text-primary' />
                       </div>
                       <div className='flex flex-col'>
-                        <span className='font-bold text-base'>{building.name}</span>
+                        <span className='font-bold text-base'>
+                          {building?.name}
+                        </span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center gap-2'>
                       <Layers className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-semibold text-base'>{building.floors.length}</span>
+                      <span className='font-semibold text-base'>
+                        {building?.numberOfFloors}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center gap-2'>
                       <Home className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-semibold text-base'>{getTotalApartments(building)}</span>
+                      <span className='font-semibold text-base'>
+                        {building?.totalApartments}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className='text-center'>
                     <div className='flex items-center justify-center gap-2'>
                       <Users className='h-4 w-4 text-muted-foreground' />
-                      <span className='font-semibold text-base'>{getTotalOccupants(building)}</span>
+                      <span className='font-semibold text-base'>
+                        {building?.occupants}
+                      </span>
                     </div>
                   </TableCell>
                 </TableRow>

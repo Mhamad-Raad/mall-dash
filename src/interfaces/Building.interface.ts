@@ -26,3 +26,11 @@ export interface Building {
 export interface BuildingsTableProps {
   buildings: Building[];
 }
+
+export interface BuildingType {
+  id: number;
+  name: string;
+  numberOfFloors: number;
+  totalApartments: number;
+  occupants: 0;
+}

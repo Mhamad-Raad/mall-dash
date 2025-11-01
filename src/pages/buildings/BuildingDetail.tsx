@@ -7,44 +7,58 @@ import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
-import { buildingsData } from './Buildings';
 import type { Apartment, Occupant } from '@/interfaces/Building.interface';
 
 const BuildingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
+  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(
+    null
+  );
   const [editedOccupants, setEditedOccupants] = useState<Occupant[]>([]);
   const [editedApartmentName, setEditedApartmentName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Find the building by ID
-  const building = buildingsData.find((b) => b.id === Number(id));
+  const building = {};
 
   // If building not found, show error state
   if (!building) {
     return (
       <div className='container mx-auto p-6 max-w-6xl'>
-        <Button variant='ghost' className='mb-6' onClick={() => navigate('/buildings')}>
+        <Button
+          variant='ghost'
+          className='mb-6'
+          onClick={() => navigate('/buildings')}
+        >
           <ArrowLeft className='mr-2 h-4 w-4' />
           Back to Buildings
         </Button>
         <Card className='p-12 text-center'>
           <CardTitle className='text-2xl mb-2'>Building Not Found</CardTitle>
-          <CardDescription>The building you're looking for doesn't exist.</CardDescription>
+          <CardDescription>
+            The building you're looking for doesn't exist.
+          </CardDescription>
         </Card>
       </div>
     );
   }
 
   const getTotalApartments = () => {
-    return building.floors.reduce((total, floor) => total + floor.apartments.length, 0);
+    return building.floors.reduce(
+      (total, floor) => total + floor.apartments.length,
+      0
+    );
   };
 
   const getTotalOccupants = () => {
     return building.floors.reduce(
       (total, floor) =>
-        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
+        total +
+        floor.apartments.reduce(
+          (floorTotal, apt) => floorTotal + apt.occupants.length,
+          0
+        ),
       0
     );
   };
@@ -69,7 +83,11 @@ const BuildingDetail = () => {
     setEditedOccupants(editedOccupants.filter((occ) => occ.id !== occupantId));
   };
 
-  const handleOccupantChange = (occupantId: number, field: 'name' | 'email', value: string) => {
+  const handleOccupantChange = (
+    occupantId: number,
+    field: 'name' | 'email',
+    value: string
+  ) => {
     setEditedOccupants(
       editedOccupants.map((occ) =>
         occ.id === occupantId ? { ...occ, [field]: value } : occ
@@ -87,8 +105,10 @@ const BuildingDetail = () => {
           (apt) => apt.id === selectedApartment.id
         );
         if (apartmentIndex !== -1) {
-          building.floors[floorIndex].apartments[apartmentIndex].occupants = editedOccupants;
-          building.floors[floorIndex].apartments[apartmentIndex].name = editedApartmentName;
+          building.floors[floorIndex].apartments[apartmentIndex].occupants =
+            editedOccupants;
+          building.floors[floorIndex].apartments[apartmentIndex].name =
+            editedApartmentName;
         }
       }
     }
@@ -116,7 +136,10 @@ const BuildingDetail = () => {
       />
 
       {/* Floors and Apartments */}
-      <BuildingFloors floors={building.floors} onApartmentEdit={handleApartmentClick} />
+      <BuildingFloors
+        floors={building.floors}
+        onApartmentEdit={handleApartmentClick}
+      />
 
       {/* Edit Apartment Dialog */}
       <EditApartmentDialog
