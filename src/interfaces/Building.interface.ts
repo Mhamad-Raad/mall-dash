@@ -33,4 +33,5 @@ export interface BuildingType {
   numberOfFloors: number;
   totalApartments: number;
   occupants: 0;
+  floors?: Floor[]
 }

@@ -1,17 +1,28 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/store/store';
+
 import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
+import BuildingDetailSkeleton from '@/components/Buildings/BuildingDetailSkeleton';
+import BuildingDetailError from '@/components/Buildings/BuildingDetailError';
 import type { Apartment, Occupant } from '@/interfaces/Building.interface';
 
+import { getBuildingById, clearBuilding } from '@/store/slices/buildingSlice';
+
 const BuildingDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // expects id of building
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { building, loading, error } = useSelector(
+    (state: RootState) => state.building
+  );
+
+  // Dialog and editing states
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(
     null
   );
@@ -19,53 +30,34 @@ const BuildingDetail = () => {
   const [editedApartmentName, setEditedApartmentName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Find the building by ID
-  const building = {};
+  // Fetch building on mount (and when id changes)
+  useEffect(() => {
+    if (id) dispatch(getBuildingById(Number(id)));
+    return () => {
+      dispatch(clearBuilding());
+    };
+  }, [dispatch, id]);
 
-  // If building not found, show error state
-  if (!building) {
+  // Loading state
+  if (loading) {
+    return <BuildingDetailSkeleton />;
+  }
+
+  // Error or not found
+  if (error || !building) {
     return (
-      <div className='container mx-auto p-6 max-w-6xl'>
-        <Button
-          variant='ghost'
-          className='mb-6'
-          onClick={() => navigate('/buildings')}
-        >
-          <ArrowLeft className='mr-2 h-4 w-4' />
-          Back to Buildings
-        </Button>
-        <Card className='p-12 text-center'>
-          <CardTitle className='text-2xl mb-2'>Building Not Found</CardTitle>
-          <CardDescription>
-            The building you're looking for doesn't exist.
-          </CardDescription>
-        </Card>
-      </div>
+      <BuildingDetailError
+        error={error || "The building you're looking for doesn't exist."}
+        onBack={() => navigate('/buildings')}
+      />
     );
   }
 
-  const getTotalApartments = () => {
-    return building.floors.reduce(
-      (total, floor) => total + floor.apartments.length,
-      0
-    );
-  };
-
-  const getTotalOccupants = () => {
-    return building.floors.reduce(
-      (total, floor) =>
-        total +
-        floor.apartments.reduce(
-          (floorTotal, apt) => floorTotal + apt.occupants.length,
-          0
-        ),
-      0
-    );
-  };
-
   const handleApartmentClick = (apartment: Apartment) => {
     setSelectedApartment(apartment);
-    setEditedOccupants([...apartment.occupants]);
+    setEditedOccupants(
+      Array.isArray(apartment?.occupants) ? apartment.occupants : []
+    );
     setEditedApartmentName(apartment.name || '');
     setIsDialogOpen(true);
   };
@@ -96,22 +88,6 @@ const BuildingDetail = () => {
   };
 
   const handleSave = () => {
-    if (selectedApartment) {
-      const floorIndex = building.floors.findIndex((floor) =>
-        floor.apartments.some((apt) => apt.id === selectedApartment.id)
-      );
-      if (floorIndex !== -1) {
-        const apartmentIndex = building.floors[floorIndex].apartments.findIndex(
-          (apt) => apt.id === selectedApartment.id
-        );
-        if (apartmentIndex !== -1) {
-          building.floors[floorIndex].apartments[apartmentIndex].occupants =
-            editedOccupants;
-          building.floors[floorIndex].apartments[apartmentIndex].name =
-            editedApartmentName;
-        }
-      }
-    }
     setIsDialogOpen(false);
   };
 
@@ -129,17 +105,10 @@ const BuildingDetail = () => {
       />
 
       {/* Summary Cards */}
-      <BuildingSummaryCards
-        totalOccupants={getTotalOccupants()}
-        totalFloors={building.floors.length}
-        totalApartments={getTotalApartments()}
-      />
+      <BuildingSummaryCards />
 
       {/* Floors and Apartments */}
-      <BuildingFloors
-        floors={building.floors}
-        onApartmentEdit={handleApartmentClick}
-      />
+      <BuildingFloors onApartmentEdit={handleApartmentClick} />
 
       {/* Edit Apartment Dialog */}
       <EditApartmentDialog
