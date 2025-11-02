@@ -100,8 +100,8 @@ const UsersFilters = () => {
   return (
     <div className='flex flex-col gap-4'>
       {/* Header with Title and Create Button */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+        <div className='flex items-center gap-3 flex-1'>
           <div className='p-2 rounded-lg bg-primary/10 text-primary'>
             <UsersIcon className='size-5' />
           </div>
@@ -114,71 +114,78 @@ const UsersFilters = () => {
             </p>
           </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <Button type='button' className='gap-2' onClick={handleOnCreate}>
-            <Plus className='size-4' />
-            <span className='hidden sm:inline font-semibold'>Add User</span>
-          </Button>
-        </div>
+        <Button
+          type='button'
+          className='gap-2 w-full sm:w-auto'
+          onClick={handleOnCreate}
+        >
+          <Plus className='size-4' />
+          <span className='hidden sm:inline font-semibold'>Add User</span>
+        </Button>
       </div>
       {/* Filters Section */}
-      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-muted/30 rounded-lg border'>
-        <div className='flex items-center gap-2 flex-1 w-full'>
-          <Filter className='size-4 text-muted-foreground' />
-          <span className='text-sm font-medium text-muted-foreground'>
-            Filters:
-          </span>
-        </div>
-        <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-wrap'>
-          {/* Search Input */}
-          <div className='relative flex-1 sm:min-w-[250px]'>
-            <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3'>
-              <Search className='size-4' />
-            </div>
-            <Input
-              type='text'
-              placeholder='Search users by name or email...'
-              className='pl-9 bg-background'
-              value={typedSearch}
-              onChange={(e) => setTypedSearch(e.target.value)}
-            />
+      <div className='bg-muted/30 rounded-lg border p-4'>
+        <div className='flex flex-col gap-3'>
+          <div className='flex items-center gap-2 mb-2'>
+            <Filter className='size-4 text-muted-foreground' />
+            <span className='text-sm font-medium text-muted-foreground'>
+              Filters:
+            </span>
           </div>
-          {/* BuildingsSearch Filter Input */}
-          <AutoComplete
-            fetchOptions={fetchBuildingNames}
-            onSelectOption={handleBuildingNameSelect}
-            placeholder='Search building name...'
-            debounceMs={200}
-          />
-          {/* Role Filter */}
-          <Select
-            value={String(role)}
-            onValueChange={(val) => setRole(Number(val))}
-          >
-            <SelectTrigger className='w-full sm:w-[160px] bg-background'>
-              <SelectValue
-                placeholder='Select role'
-                children={role === -1 ? 'All Roles' : roles[role] || 'Unknown'}
+          <div className='w-full grid gap-3 sm:grid-cols-2 md:grid-cols-3'>
+            {/* Search Input */}
+            <div className='relative w-full'>
+              <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3'>
+                <Search className='size-4' />
+              </div>
+              <Input
+                type='text'
+                placeholder='Search users by name or email...'
+                className='pl-9 bg-background w-full'
+                value={typedSearch}
+                onChange={(e) => setTypedSearch(e.target.value)}
               />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='-1'>
-                <div className='flex items-center gap-2'>
-                  <span>All Roles</span>
-                  <Badge variant='secondary' className='ml-auto text-xs'>
-                    All
-                  </Badge>
-                </div>
-              </SelectItem>
-              {roles.map((roleName, idx) => (
-                <SelectItem key={roleName} value={String(idx)}>
+            </div>
+            {/* BuildingsSearch Filter Input */}
+            <AutoComplete
+              fetchOptions={fetchBuildingNames}
+              onSelectOption={handleBuildingNameSelect}
+              placeholder='Search building name...'
+              debounceMs={200}
+              className='w-full'
+            />
+            {/* Role Filter */}
+            <Select
+              value={String(role)}
+              onValueChange={(val) => setRole(Number(val))}
+            >
+              <SelectTrigger className='w-full bg-background'>
+                <SelectValue
+                  placeholder='Select role'
+                  children={
+                    role === -1 ? 'All Roles' : roles[role] || 'Unknown'
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='-1'>
                   <div className='flex items-center gap-2'>
-                    <span>{roleName}</span>
+                    <span>All Roles</span>
+                    <Badge variant='secondary' className='ml-auto text-xs'>
+                      All
+                    </Badge>
                   </div>
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                {roles.map((roleName, idx) => (
+                  <SelectItem key={roleName} value={String(idx)}>
+                    <div className='flex items-center gap-2'>
+                      <span>{roleName}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     </div>
