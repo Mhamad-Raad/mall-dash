@@ -29,3 +29,17 @@ export const fetchBuildingById = async (id: number) => {
     return { error: error.response?.data?.message || error.message };
   }
 };
+
+export const fetchBuildingsByName = async (searchName: string) => {
+  try {
+    const response = await axiosInstance.get('/Building', {
+      params: {
+        limit: 5,
+        searchName: searchName,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};

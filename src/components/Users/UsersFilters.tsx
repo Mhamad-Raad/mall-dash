@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Select,
@@ -9,14 +10,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Search,
-  Plus,
-  Filter,
-  Download,
-  Users as UsersIcon,
-} from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { Search, Plus, Filter, Users as UsersIcon } from 'lucide-react';
+
+import AutoComplete from '@/components/AutoComplete';
+import { fetchBuildingsByName } from '@/data/Buildings';
 
 const roles = ['SuperAdmin', 'Admin', 'Vendor', 'Tenant'];
 
@@ -28,6 +25,8 @@ const UsersFilters = () => {
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
   // typedSearch is what user is typing, search is debounced value synced to URL
   const [typedSearch, setTypedSearch] = useState(search);
+
+  const [byBuildingName, setByBuildingName] = useState<string>('');
 
   const [role, setRole] = useState(() =>
     searchParams.get('role') !== null ? Number(searchParams.get('role')) : -1
@@ -54,6 +53,11 @@ const UsersFilters = () => {
     } else {
       params.delete('search');
     }
+    if (byBuildingName) {
+      params.set('buildingNameSearch', byBuildingName);
+    } else {
+      params.delete('buildingNameSearch');
+    }
     if (role !== -1) {
       params.set('role', String(role));
     } else {
@@ -64,7 +68,7 @@ const UsersFilters = () => {
       replace: true,
     });
     // eslint-disable-next-line
-  }, [search, role]);
+  }, [search, byBuildingName, role]);
 
   // Sync state if URL changes externally (browser nav)
   useEffect(() => {
@@ -74,11 +78,23 @@ const UsersFilters = () => {
     setRole(
       searchParams.get('role') !== null ? Number(searchParams.get('role')) : -1
     );
+    setByBuildingName(searchParams.get('buildingNameSearch') || '');
     // eslint-disable-next-line
   }, [searchParams]);
 
   const handleOnCreate = () => {
     navigate('/users/create');
+  };
+
+  // Async fetching function for AutoComplete
+  const fetchBuildingNames = async (input: string) => {
+    if (!input) return [];
+    const res = await fetchBuildingsByName(input);
+    return Array.isArray(res?.data) ? res.data.map((b: any) => b.name) : [];
+  };
+
+  const handleBuildingNameSelect = (value: string) => {
+    setByBuildingName(value);
   };
 
   return (
@@ -99,10 +115,6 @@ const UsersFilters = () => {
           </div>
         </div>
         <div className='flex items-center gap-2'>
-          <Button type='button' variant='outline' className='gap-2'>
-            <Download className='size-4' />
-            <span className='hidden sm:inline'>Export</span>
-          </Button>
           <Button type='button' className='gap-2' onClick={handleOnCreate}>
             <Plus className='size-4' />
             <span className='hidden sm:inline font-semibold'>Add User</span>
@@ -131,6 +143,13 @@ const UsersFilters = () => {
               onChange={(e) => setTypedSearch(e.target.value)}
             />
           </div>
+          {/* BuildingsSearch Filter Input */}
+          <AutoComplete
+            fetchOptions={fetchBuildingNames}
+            onSelectOption={handleBuildingNameSelect}
+            placeholder='Search building name...'
+            debounceMs={200}
+          />
           {/* Role Filter */}
           <Select
             value={String(role)}

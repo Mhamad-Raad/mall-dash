@@ -6,8 +6,9 @@ const API_VALUE = import.meta.env.VITE_API_VALUE;
 export const fetchUsers = async (params?: {
   page?: number;
   limit?: number;
-  search?: string;
+  searchTerm?: string;
   role?: number;
+  buildingNameSearch?: string;
 }) => {
   try {
     const response = await axiosInstance.get('/Account/users', {
