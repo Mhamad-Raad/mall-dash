@@ -73,8 +73,6 @@ const BuildingDetail = () => {
     setIsDialogOpen(false);
   };
 
-  const handleBuildingNameChange = () => {};
-
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       {/* Header Section */}
