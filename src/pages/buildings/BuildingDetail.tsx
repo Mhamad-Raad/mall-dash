@@ -44,7 +44,7 @@ const BuildingDetail = () => {
   }
 
   // Error or not found
-  if (error || !building) {
+  if (error && !building) {
     return (
       <BuildingDetailError
         error={error || "The building you're looking for doesn't exist."}

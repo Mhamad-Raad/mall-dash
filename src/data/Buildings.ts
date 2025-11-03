@@ -55,7 +55,24 @@ export const updateBuildingName = async (id: number, name: string) => {
     );
     return response.data;
   } catch (error: any) {
-    // Optionally, return the error so you can display messages
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
+
+export const addBuildingFloor = async (buildingId: number) => {
+  try {
+    const response = await axiosInstance.post(`/Building/${buildingId}/floor`);
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
+
+export const deleteBuildingFloor = async (floorId: number) => {
+  try {
+    const response = await axiosInstance.delete(`/Building/floor/${floorId}`);
+    return response.data;
+  } catch (error: any) {
     return { error: error?.response?.data?.message || error.message };
   }
 };
