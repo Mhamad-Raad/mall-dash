@@ -1,3 +1,5 @@
+import type { StringToBoolean } from 'class-variance-authority/types';
+
 export interface Occupant {
   id: string;
   name: string;
@@ -6,9 +8,7 @@ export interface Occupant {
 
 export interface Apartment {
   id: number;
-  apartmentNumber: number;
-  name?: string;
-  occupants: Occupant[];
+  apartmentName?: string;
   occupant: Occupant | null; // New API format uses single occupant
 }
 
@@ -26,8 +26,8 @@ export interface Building {
 
 // API response interface for building detail
 export interface BuildingDetailApartment {
+  apartmentName: String;
   id: number;
-  apartmentNumber: number;
   occupant: Occupant | null;
 }
 
@@ -62,5 +62,5 @@ export interface BuildingType {
   numberOfFloors: number;
   totalApartments: number;
   occupants: 0;
-  floors?: Floor[]
+  floors?: Floor[];
 }

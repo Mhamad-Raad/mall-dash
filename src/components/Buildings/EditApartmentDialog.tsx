@@ -47,7 +47,7 @@ const EditApartmentDialog = ({
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <Home className='h-5 w-5 text-primary' />
-            Edit Apartment {apartment?.apartmentNumber}
+            Edit Apartment {apartment?.apartmentName}
           </DialogTitle>
           <DialogDescription>
             Manage apartment occupants. Add or edit occupant information.

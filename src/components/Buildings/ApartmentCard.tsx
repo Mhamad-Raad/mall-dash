@@ -13,10 +13,10 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
     // Render nothing or a minimal fallback - up to your UX preference
     return null;
   }
-  // occupants: fall back to empty array if missing
-  const occupants = Array.isArray(apartment.occupants)
-    ? apartment.occupants
-    : [];
+  // // occupants: fall back to empty array if missing
+  // const occupants = Array.isArray(apartment.occupants)
+  //   ? apartment.occupants
+  //   : [];
 
   return (
     <Card
@@ -31,48 +31,31 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
                 <Home className='h-5 w-5 text-primary' />
               </div>
               <div>
-                <p className='font-bold text-lg'>
-                  {apartment.name || `Apt ${apartment.apartmentNumber ?? ''}`}
-                </p>
-                {apartment.name && (
-                  <p className='text-xs text-muted-foreground'>
-                    Apt #{apartment.apartmentNumber ?? ''}
-                  </p>
-                )}
+                <p className='font-bold text-lg'>{apartment.apartmentName}</p>
               </div>
             </div>
             <Pencil className='h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity' />
           </div>
-          {occupants.length > 0 ? (
+          {apartment?.occupant ? (
             <div className='border-t pt-3 mt-1'>
               <div className='flex items-center gap-2 mb-2'>
                 <Users className='h-3.5 w-3.5 text-muted-foreground' />
                 <p className='text-xs font-semibold text-muted-foreground uppercase'>
-                  Occupants ({occupants.length})
+                  Occupant
                 </p>
               </div>
               <div className='space-y-2'>
-                {occupants.map((occupant) => (
-                  <div
-                    key={
-                      occupant?.id ??
-                      occupant?.email ??
-                      occupant?.name ??
-                      Math.random()
-                    }
-                    className='flex items-start gap-2'
-                  >
-                    <Badge variant='secondary' className='text-xs'>
-                      {occupant?.name ?? 'No name'}
-                    </Badge>
-                  </div>
-                ))}
+                <div className='flex items-start gap-2'>
+                  <Badge variant='secondary' className='text-xs'>
+                    {apartment?.occupant?.name ?? 'No name'}
+                  </Badge>
+                </div>
               </div>
             </div>
           ) : (
             <div className='border-t pt-3 mt-1'>
               <p className='text-xs text-muted-foreground italic'>
-                No occupants
+                No occupant
               </p>
             </div>
           )}

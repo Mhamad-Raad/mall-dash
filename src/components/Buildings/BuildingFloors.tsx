@@ -71,6 +71,8 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
     }
   };
 
+  console.log(building);
+
   return (
     <div className='space-y-6'>
       {/* Title & Add */}
@@ -132,15 +134,13 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                 </AccordionTrigger>
                 <AccordionContent className='px-6 pb-6'>
                   <div className='grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 pt-4'>
-                    {[...(floor?.apartments ?? [])]
-                      .sort((a, b) => a.apartmentNumber - b.apartmentNumber)
-                      .map((apartment) => (
-                        <ApartmentCard
-                          key={apartment?.id}
-                          apartment={apartment}
-                          onEdit={onApartmentEdit}
-                        />
-                      ))}
+                    {[...(floor?.apartments ?? [])].map((apartment) => (
+                      <ApartmentCard
+                        key={apartment?.id}
+                        apartment={apartment}
+                        onEdit={onApartmentEdit}
+                      />
+                    ))}
                   </div>
                 </AccordionContent>
               </AccordionItem>

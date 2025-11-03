@@ -54,11 +54,13 @@ const BuildingDetail = () => {
   }
 
   const handleApartmentClick = (apartment: Apartment) => {
-    setSelectedApartment(apartment);
-    setEditedOccupants(
-      Array.isArray(apartment?.occupants) ? apartment.occupants : []
-    );
-    setEditedApartmentName(apartment.name || '');
+    const normalizedApartment = {
+      ...apartment,
+      apartmentName: apartment.apartmentName || '',
+    };
+    setSelectedApartment(normalizedApartment);
+
+    setEditedApartmentName(apartment.apartmentName || '');
     setIsDialogOpen(true);
   };
 
@@ -86,7 +88,7 @@ const BuildingDetail = () => {
 
       {/* Edit Apartment Dialog */}
       <EditApartmentDialog
-        apartment={selectedApartment}
+        apartment={selectedApartment as any}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         occupants={editedOccupants}
