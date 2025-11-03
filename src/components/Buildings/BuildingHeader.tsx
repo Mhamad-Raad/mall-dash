@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Building2, ArrowLeft, Pencil, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,58 +13,46 @@ import {
 import ConfirmModal, {
   type ChangeDetail,
 } from '@/components/ui/Modals/ConfirmModal';
-import type { RootState } from '@/store/store';
+import { putBuildingName } from '@/store/slices/buildingSlice';
+import type { RootState, AppDispatch } from '@/store/store';
 
 const BuildingHeader = () => {
   const navigate = useNavigate();
-  const { building } = useSelector((state: RootState) => state.building);
+  const dispatch = useDispatch<AppDispatch>();
+  const { building, loading, error } = useSelector(
+    (state: RootState) => state.building
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(building?.name || '');
-  const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    type: 'error' | 'success';
-    message: string;
-  } | null>(null);
-
-  // Modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleBackNavigation = () => navigate('/buildings');
 
   const handleEditClick = () => {
     setIsEditing(true);
-    setFeedback(null);
+    setSuccess(null);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditedName(building?.name || '');
-    setFeedback(null);
+    setSuccess(null);
   };
 
-  // Called after modal confirms
-  const doConfirmUpdate = async () => {
-    setLoading(true);
-    setShowConfirmModal(false);
-    setFeedback(null);
-    try {
-      // await api call here
-      setIsEditing(false);
-      setFeedback({ type: 'success', message: 'Building name updated.' });
-      // Re-fetch or update Redux store here
-    } catch (error: any) {
-      setFeedback({
-        type: 'error',
-        message: error.message || 'Failed to update name.',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // After modal confirms, dispatch the redux thunk
   const handleModalConfirm = async () => {
-    await doConfirmUpdate();
+    setShowConfirmModal(false);
+    if (!building?.id) return;
+    const resultAction = await dispatch(
+      putBuildingName({ id: building.id, name: editedName.trim() })
+    );
+    if (putBuildingName.fulfilled.match(resultAction)) {
+      setIsEditing(false);
+      setSuccess('Building name updated.');
+    }
+    // Optionally handle error via redux error state
   };
 
   const handleShowModal = () => {
@@ -160,15 +148,13 @@ const BuildingHeader = () => {
                     <X className='w-5 h-5 text-destructive' />
                   </Button>
                 </div>
-                {feedback && (
+                {(error || success) && (
                   <div
                     className={`mt-2 text-sm ${
-                      feedback.type === 'success'
-                        ? 'text-green-500'
-                        : 'text-destructive'
+                      error ? 'text-destructive' : 'text-green-500'
                     }`}
                   >
-                    {feedback.message}
+                    {error || success}
                   </div>
                 )}
                 {/* Confirmation Modal for changing name */}

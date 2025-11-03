@@ -43,3 +43,19 @@ export const fetchBuildingsByName = async (searchName: string) => {
     return { error: error.response?.data?.message || error.message };
   }
 };
+
+export const updateBuildingName = async (id: number, name: string) => {
+  try {
+    const response = await axiosInstance.put(
+      `/Building/BuildingName/${id}`,
+      { name },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    // Optionally, return the error so you can display messages
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
