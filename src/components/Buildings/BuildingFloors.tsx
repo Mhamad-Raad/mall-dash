@@ -138,7 +138,7 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                       <ApartmentCard
                         key={apartment?.id}
                         apartment={apartment}
-                        onEdit={onApartmentEdit}
+                        onEdit={() => onApartmentEdit(apartment)}
                       />
                     ))}
                   </div>

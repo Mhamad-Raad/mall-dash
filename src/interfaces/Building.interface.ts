@@ -1,5 +1,3 @@
-import type { StringToBoolean } from 'class-variance-authority/types';
-
 export interface Occupant {
   id: string;
   name: string;
@@ -25,16 +23,11 @@ export interface Building {
 }
 
 // API response interface for building detail
-export interface BuildingDetailApartment {
-  apartmentName: String;
-  id: number;
-  occupant: Occupant | null;
-}
 
 export interface BuildingDetailFloor {
   id: number;
   floorNumber: number;
-  apartments: BuildingDetailApartment[];
+  apartments: Apartment[];
 }
 
 export interface BuildingDetail {

@@ -54,21 +54,11 @@ const BuildingDetail = () => {
   }
 
   const handleApartmentClick = (apartment: Apartment) => {
-    const normalizedApartment = {
-      ...apartment,
-      apartmentName: apartment.apartmentName || '',
-    };
-    setSelectedApartment(normalizedApartment);
-
-    setEditedApartmentName(apartment.apartmentName || '');
+    setSelectedApartment(apartment);
     setIsDialogOpen(true);
   };
 
   const handleAddOccupant = () => {};
-
-  const handleRemoveOccupant = () => {};
-
-  const handleOccupantChange = () => {};
 
   const handleSave = () => {
     // You can save the edited data here. Example: dispatch an update thunk or just close the dialog.
@@ -91,12 +81,6 @@ const BuildingDetail = () => {
         apartment={selectedApartment as any}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        occupants={editedOccupants}
-        apartmentName={editedApartmentName}
-        onApartmentNameChange={setEditedApartmentName}
-        onAddOccupant={handleAddOccupant}
-        onRemoveOccupant={handleRemoveOccupant}
-        onOccupantChange={handleOccupantChange}
         onSave={handleSave}
       />
     </div>
