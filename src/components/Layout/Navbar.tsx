@@ -1,13 +1,11 @@
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell } from 'lucide-react';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 import ThemeButton from '../ui/ThemeButton';
 import LocaleToggle from '../locale-button';
+import NotificationPopover from './NotificationPopover';
 
 export default function Navbar() {
   const location = useLocation();
@@ -64,19 +62,7 @@ export default function Navbar() {
       <div className='flex items-center gap-1 sm:gap-2'>
 
         {/* Notifications */}
-        <Button
-          variant='ghost'
-          size='icon'
-          className='relative hover:bg-muted/50 transition-colors'
-        >
-          <Bell className='size-4' />
-          <Badge 
-            variant='destructive' 
-            className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]'
-          >
-            3
-          </Badge>
-        </Button>
+        <NotificationPopover />
 
         {/* Divider */}
         <div className='hidden sm:block h-6 w-px bg-border mx-1' />
