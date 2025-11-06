@@ -4,11 +4,17 @@ import { ArrowLeft, Save, Trash2, Store as StoreIcon, Clock, MapPin, Phone, Mail
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { VendorType } from '@/interfaces/Vendor.interface';
 
 // Mock data - replace with API call
@@ -66,19 +72,6 @@ const VendorDetail = () => {
     }
   };
 
-  const getVendorTypeColor = (type: string) => {
-    const typeLower = type.toLowerCase();
-    if (typeLower === 'restaurant')
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
-    if (typeLower === 'market')
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-    if (typeLower === 'bakery')
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
-    if (typeLower === 'cafe')
-      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
-    return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-  };
-
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       {/* Header */}
@@ -117,9 +110,18 @@ const VendorDetail = () => {
                   className='text-2xl font-bold h-auto py-2 mb-2'
                 />
                 <div className='flex items-center gap-2 mt-2'>
-                  <Badge variant='outline' className={getVendorTypeColor(vendor.type)}>
-                    {vendor.type}
-                  </Badge>
+                  <Select value={vendor.type} onValueChange={(value) => handleInputChange('type', value)}>
+                    <SelectTrigger className='w-[180px]'>
+                      <SelectValue placeholder='Select type' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='Restaurant'>Restaurant</SelectItem>
+                      <SelectItem value='Market'>Market</SelectItem>
+                      <SelectItem value='Bakery'>Bakery</SelectItem>
+                      <SelectItem value='Cafe'>Cafe</SelectItem>
+                      <SelectItem value='Other'>Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <span className='text-sm text-muted-foreground'>ID: {vendor._id}</span>
                 </div>
               </div>
