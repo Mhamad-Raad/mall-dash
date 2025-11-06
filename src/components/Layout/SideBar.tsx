@@ -9,6 +9,7 @@ import {
   CreditCard,
   ShoppingCart,
   Building2,
+  Store,
 } from 'lucide-react';
 
 import {
@@ -47,6 +48,11 @@ const mainNavItems = [
     title: 'Buildings',
     url: '/buildings',
     icon: Building2,
+  },
+  {
+    title: 'Vendors',
+    url: '/vendors',
+    icon: Store,
   },
   {
     title: 'Products',

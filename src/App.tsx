@@ -10,6 +10,8 @@ import UserDetail from './pages/users/UserDetail';
 import Buildings from './pages/buildings/Buildings';
 import BuildingDetail from './pages/buildings/BuildingDetail';
 import CreateBuilding from './pages/buildings/CreateBuilding';
+import Vendors from './pages/vendors/Vendors';
+import VendorDetail from './pages/vendors/VendorDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -50,6 +52,14 @@ const router = createBrowserRouter([
       {
         path: '/buildings/:id',
         element: <BuildingDetail />,
+      },
+      {
+        path: '/vendors',
+        element: <Vendors />,
+      },
+      {
+        path: '/vendors/:id',
+        element: <VendorDetail />,
       },
       {
         path: '*',
