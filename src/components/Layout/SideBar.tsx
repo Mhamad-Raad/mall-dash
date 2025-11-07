@@ -6,7 +6,6 @@ import {
   BarChart3,
   Settings,
   FileText,
-  CreditCard,
   ShoppingCart,
   Building2,
   Store,
@@ -74,13 +73,8 @@ const managementItems = [
     icon: BarChart3,
   },
   {
-    title: 'Billing',
-    url: '#',
-    icon: CreditCard,
-  },
-  {
     title: 'Reports',
-    url: '#',
+    url: '/reports',
     icon: FileText,
   },
 ];
