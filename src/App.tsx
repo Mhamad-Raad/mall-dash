@@ -12,6 +12,7 @@ import BuildingDetail from './pages/buildings/BuildingDetail';
 import CreateBuilding from './pages/buildings/CreateBuilding';
 import Vendors from './pages/vendors/Vendors';
 import VendorDetail from './pages/vendors/VendorDetail';
+import Settings from './pages/Settings';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -60,6 +61,10 @@ const router = createBrowserRouter([
       {
         path: '/vendors/:id',
         element: <VendorDetail />,
+      },
+      {
+        path: '/settings',
+        element: <Settings />,
       },
       {
         path: '*',

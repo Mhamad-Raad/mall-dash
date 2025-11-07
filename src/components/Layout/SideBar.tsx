@@ -89,7 +89,7 @@ const managementItems = [
 const settingsItems = [
   {
     title: 'Settings',
-    url: '#',
+    url: '/settings',
     icon: Settings,
   },
 ];
