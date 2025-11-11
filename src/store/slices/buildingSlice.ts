@@ -6,6 +6,8 @@ import {
   updateApartment,
   addBuildingFloor,
   deleteBuildingFloor,
+  addApartmentToFloor,
+  deleteApartment,
 } from '@/data/Buildings';
 
 interface BuildingState {
@@ -83,6 +85,32 @@ export const removeBuildingFloor = createAsyncThunk(
   }
 );
 
+export const addApartmentToFloorThunk = createAsyncThunk(
+  'building/addApartmentToFloor',
+  async (
+    params: { floorId: number; apartmentName: string },
+    { rejectWithValue }
+  ) => {
+    const result = await addApartmentToFloor(
+      params.floorId,
+      params.apartmentName
+    );
+    if (result.error) return rejectWithValue(result.error);
+    // Only a message is returned, so just return params (refetch is recommended after this)
+    return params;
+  }
+);
+
+export const deleteApartmentThunk = createAsyncThunk(
+  'building/deleteApartment',
+  async (apartmentId: number, { rejectWithValue }) => {
+    const result = await deleteApartment(apartmentId);
+    if (result.error) return rejectWithValue(result.error);
+    // Only returns message, so pass back id for local state handling
+    return { id: apartmentId };
+  }
+);
+
 const buildingSlice = createSlice({
   name: 'building',
   initialState,
@@ -123,14 +151,12 @@ const buildingSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // =========== UNIFIED APARTMENT UPDATE ===========
       .addCase(updateApartmentThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(updateApartmentThunk.fulfilled, (state, action) => {
         state.loading = false;
-        // Find and update the target apartment in floors
         if (state.building?.floors) {
           state.building.floors = state.building.floors.map((floor: any) => ({
             ...floor,
@@ -139,8 +165,7 @@ const buildingSlice = createSlice({
                   apt.id === action.payload.id
                     ? {
                         ...apt,
-                        apartmentName: action.payload.apartmentName,
-                        occupant: action.payload.updatedApartment.occupant, // From backend response
+                        ...action.payload.updatedApartment,
                       }
                     : apt
                 )
@@ -183,6 +208,40 @@ const buildingSlice = createSlice({
         state.error =
           (action.payload as { error?: string; status?: number })?.error ||
           'Unknown error';
+      })
+      .addCase(addApartmentToFloorThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addApartmentToFloorThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(addApartmentToFloorThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteApartmentThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteApartmentThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.building?.floors) {
+          state.building.floors = state.building.floors.map((floor: any) => ({
+            ...floor,
+            apartments: Array.isArray(floor.apartments)
+              ? floor.apartments.filter(
+                  (apt: any) => apt.id !== action.payload.id
+                )
+              : floor.apartments,
+          }));
+        }
+        state.error = null;
+      })
+      .addCase(deleteApartmentThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

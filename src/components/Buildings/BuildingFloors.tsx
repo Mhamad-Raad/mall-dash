@@ -11,9 +11,13 @@ import {
 } from '@/components/ui/accordion';
 import ApartmentCard from './ApartmentCard';
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+import AddApartmentModal from './AddApartmentModal';
+
 import {
   postBuildingFloor,
   removeBuildingFloor,
+  addApartmentToFloorThunk,
+  getBuildingById,
 } from '@/store/slices/buildingSlice';
 import type { RootState, AppDispatch } from '@/store/store';
 
@@ -24,6 +28,8 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
   );
 
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showAddApartmentModal, setShowAddApartmentModal] = useState(false);
+  const [addAptTargetFloor, setAddAptTargetFloor] = useState<any>(null);
 
   const floors = Array.isArray(building?.floors) ? building.floors : [];
 
@@ -71,7 +77,21 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
     }
   };
 
-  console.log(building);
+  const addApartmnet = async (apartmentName: string) => {
+    setShowAddApartmentModal(false);
+    if (addAptTargetFloor?.id) {
+      await dispatch(
+        addApartmentToFloorThunk({
+          floorId: addAptTargetFloor.id,
+          apartmentName,
+        })
+      );
+      if (building?.id) {
+        await dispatch(getBuildingById(building.id));
+      }
+    }
+    setAddAptTargetFloor(null);
+  };
 
   return (
     <div className='space-y-6'>
@@ -141,6 +161,17 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                         onEdit={() => onApartmentEdit(apartment)}
                       />
                     ))}
+                    <button
+                      type='button'
+                      className='flex flex-col items-center justify-center border-2 border-dashed border-primary/40 rounded-xl min-h-[130px] py-8 bg-muted/40 hover:bg-primary/10 transition text-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+                      onClick={() => {
+                        setAddAptTargetFloor(floor);
+                        setShowAddApartmentModal(true);
+                      }}
+                    >
+                      <Plus className='w-8 h-8 mb-2' />
+                      <span className='font-semibold'>Add Apartment</span>
+                    </button>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -192,6 +223,16 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
               ]
             : []
         }
+      />
+
+      <AddApartmentModal
+        open={showAddApartmentModal}
+        floorNumber={addAptTargetFloor?.floorNumber || 0}
+        onCancel={() => {
+          setShowAddApartmentModal(false);
+          setAddAptTargetFloor(null);
+        }}
+        onConfirm={addApartmnet}
       />
     </div>
   );

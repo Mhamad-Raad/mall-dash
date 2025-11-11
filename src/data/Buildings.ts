@@ -95,3 +95,32 @@ export const updateApartment = async (
     return { error: error?.response?.data?.message || error.message };
   }
 };
+
+export const addApartmentToFloor = async (
+  floorId: number,
+  apartmentName: string
+) => {
+  try {
+    const response = await axiosInstance.post(
+      `/Building/floor/${floorId}/apartment`,
+      { apartmentName },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
+
+export const deleteApartment = async (apartmentId: number) => {
+  try {
+    const response = await axiosInstance.delete(
+      `/Building/apartment/${apartmentId}`
+    );
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
