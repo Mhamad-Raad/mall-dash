@@ -27,6 +27,7 @@ export interface EditApartmentDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (occupant: any, name: string) => void;
+  onDelete?: (apartmentId: number) => void;
   apartmentName: string;
   setApartmentName: (name: string) => void;
 }
@@ -38,6 +39,7 @@ const EditApartmentDialog = ({
   onSave,
   apartmentName,
   setApartmentName,
+  onDelete,
 }: EditApartmentDialogProps) => {
   const [pendingOccupant, setPendingOccupant] = useState<
     UserResult | null | 'remove'
@@ -200,6 +202,15 @@ const EditApartmentDialog = ({
           >
             Cancel
           </Button>
+          {apartment?.id && onDelete && (
+            <Button
+              variant='destructive'
+              onClick={() => onDelete(apartment.id)}
+              className='w-full sm:w-auto'
+            >
+              Delete Apartment
+            </Button>
+          )}
           <Button onClick={handleSave} className='w-full sm:w-auto'>
             Save Changes
           </Button>

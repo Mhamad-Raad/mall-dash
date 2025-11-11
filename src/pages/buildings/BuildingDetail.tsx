@@ -9,12 +9,15 @@ import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
 import BuildingDetailSkeleton from '@/components/Buildings/BuildingDetailSkeleton';
 import BuildingDetailError from '@/components/Buildings/BuildingDetailError';
+import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+
 import type { Apartment } from '@/interfaces/Building.interface';
 
 import {
   getBuildingById,
   clearBuilding,
   updateApartmentThunk,
+  deleteApartmentThunk,
 } from '@/store/slices/buildingSlice';
 
 const BuildingDetail = () => {
@@ -25,13 +28,16 @@ const BuildingDetail = () => {
     (state: RootState) => state.building
   );
 
-  // Popup state
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(
     null
   );
   const [editedApartmentName, setEditedApartmentName] = useState<string>('');
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteApartmentId, setDeleteApartmentId] = useState<number | null>(
+    null
+  );
+  const [showDeleteApartmentModal, setShowDeleteApartmentModal] =
+    useState(false);
 
   useEffect(() => {
     if (id) dispatch(getBuildingById(Number(id)));
@@ -76,6 +82,25 @@ const BuildingDetail = () => {
     setSelectedApartment(null);
   };
 
+  const handleDeleteApartment = (id: number) => {
+    setDeleteApartmentId(id);
+    setShowDeleteApartmentModal(true);
+  };
+
+  const confirmDeleteApartment = async () => {
+    setShowDeleteApartmentModal(false);
+    setIsDialogOpen(false);
+    try {
+      if (deleteApartmentId) {
+        await dispatch(deleteApartmentThunk(deleteApartmentId));
+        if (building?.id) await dispatch(getBuildingById(building.id));
+      }
+    } finally {
+      setDeleteApartmentId(null);
+      setSelectedApartment(null);
+    }
+  };
+
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
       <BuildingHeader />
@@ -86,8 +111,31 @@ const BuildingDetail = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSave={handleSave}
+        onDelete={handleDeleteApartment}
         apartmentName={editedApartmentName}
         setApartmentName={setEditedApartmentName}
+      />
+
+      <ConfirmModal
+        open={showDeleteApartmentModal}
+        onCancel={() => {
+          setShowDeleteApartmentModal(false);
+          setDeleteApartmentId(null);
+        }}
+        onConfirm={confirmDeleteApartment}
+        title='Delete Apartment'
+        description='Are you sure you want to permanently delete this apartment?'
+        confirmLabel='Delete'
+        confirmType='danger'
+        cancelLabel='Cancel'
+        warning='This action cannot be undone.'
+        changes={[
+          {
+            field: 'Apartment',
+            oldValue: selectedApartment?.apartmentName || '',
+            newValue: 'Will be deleted',
+          },
+        ]}
       />
     </div>
   );
