@@ -76,3 +76,22 @@ export const deleteBuildingFloor = async (floorId: number) => {
     return { error: error?.response?.data?.message || error.message };
   }
 };
+
+export const updateApartment = async (
+  id: number,
+  apartmentName: string,
+  userId: string | number | null
+) => {
+  try {
+    const response = await axiosInstance.put(
+      `/Building/apartment/${id}`,
+      { apartmentName, userId },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};

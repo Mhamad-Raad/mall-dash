@@ -9,28 +9,30 @@ import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
 import BuildingDetailSkeleton from '@/components/Buildings/BuildingDetailSkeleton';
 import BuildingDetailError from '@/components/Buildings/BuildingDetailError';
-import type { Apartment, Occupant } from '@/interfaces/Building.interface';
+import type { Apartment } from '@/interfaces/Building.interface';
 
-import { getBuildingById, clearBuilding } from '@/store/slices/buildingSlice';
+import {
+  getBuildingById,
+  clearBuilding,
+  updateApartmentThunk,
+} from '@/store/slices/buildingSlice';
 
 const BuildingDetail = () => {
-  const { id } = useParams(); // expects id of building
+  const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-
   const { building, loading, error } = useSelector(
     (state: RootState) => state.building
   );
 
-  // Dialog and editing states
+  // Popup state
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(
     null
   );
-  const [editedOccupants, setEditedOccupants] = useState<Occupant[]>([]);
   const [editedApartmentName, setEditedApartmentName] = useState<string>('');
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch building on mount (and when id changes)
   useEffect(() => {
     if (id) dispatch(getBuildingById(Number(id)));
     return () => {
@@ -38,12 +40,9 @@ const BuildingDetail = () => {
     };
   }, [dispatch, id]);
 
-  // Loading state
   if (loading) {
     return <BuildingDetailSkeleton />;
   }
-
-  // Error or not found
   if (error && !building) {
     return (
       <BuildingDetailError
@@ -55,33 +54,40 @@ const BuildingDetail = () => {
 
   const handleApartmentClick = (apartment: Apartment) => {
     setSelectedApartment(apartment);
+    setEditedApartmentName(apartment?.apartmentName ?? '');
     setIsDialogOpen(true);
   };
 
-  const handleAddOccupant = () => {};
-
-  const handleSave = () => {
-    // You can save the edited data here. Example: dispatch an update thunk or just close the dialog.
+  // Runs when clicking save in dialog
+  const handleSave = async (occupant: any, name: string) => {
     setIsDialogOpen(false);
+    if (selectedApartment) {
+      await dispatch(
+        updateApartmentThunk({
+          id: selectedApartment.id,
+          apartmentName: name,
+          userId: occupant,
+        })
+      );
+    }
+    if (building?.id) {
+      await dispatch(getBuildingById(building.id));
+    }
+    setSelectedApartment(null);
   };
 
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
-      {/* Header Section */}
       <BuildingHeader />
-
-      {/* Summary Cards */}
       <BuildingSummaryCards />
-
-      {/* Floors and Apartments */}
       <BuildingFloors onApartmentEdit={handleApartmentClick} />
-
-      {/* Edit Apartment Dialog */}
       <EditApartmentDialog
         apartment={selectedApartment as any}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSave={handleSave}
+        apartmentName={editedApartmentName}
+        setApartmentName={setEditedApartmentName}
       />
     </div>
   );

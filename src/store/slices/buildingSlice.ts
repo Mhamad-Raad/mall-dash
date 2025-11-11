@@ -3,6 +3,7 @@ import type { Building } from '@/interfaces/Building.interface';
 import {
   fetchBuildingById,
   updateBuildingName,
+  updateApartment,
   addBuildingFloor,
   deleteBuildingFloor,
 } from '@/data/Buildings';
@@ -34,6 +35,27 @@ export const putBuildingName = createAsyncThunk(
     const result = await updateBuildingName(params.id, params.name);
     if (result.error) return rejectWithValue(result.error);
     return { ...result, name: params.name, id: params.id };
+  }
+);
+
+export const updateApartmentThunk = createAsyncThunk(
+  'building/updateApartment',
+  async (
+    params: {
+      id: number;
+      apartmentName: string;
+      userId: string | number | null;
+    },
+    { rejectWithValue }
+  ) => {
+    const result = await updateApartment(
+      params.id,
+      params.apartmentName,
+      params.userId
+    );
+    if (result.error) return rejectWithValue(result.error);
+
+    return { ...params, updatedApartment: result };
   }
 );
 
@@ -101,21 +123,48 @@ const buildingSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // --- Floor creation
+      // =========== UNIFIED APARTMENT UPDATE ===========
+      .addCase(updateApartmentThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateApartmentThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        // Find and update the target apartment in floors
+        if (state.building?.floors) {
+          state.building.floors = state.building.floors.map((floor: any) => ({
+            ...floor,
+            apartments: Array.isArray(floor.apartments)
+              ? floor.apartments.map((apt: any) =>
+                  apt.id === action.payload.id
+                    ? {
+                        ...apt,
+                        apartmentName: action.payload.apartmentName,
+                        occupant: action.payload.updatedApartment.occupant, // From backend response
+                      }
+                    : apt
+                )
+              : floor.apartments,
+          }));
+        }
+        state.error = null;
+      })
+      .addCase(updateApartmentThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(postBuildingFloor.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(postBuildingFloor.fulfilled, (state) => {
         state.loading = false;
-        // Add floor to list if needed or refetch via getBuildingById
         state.error = null;
       })
       .addCase(postBuildingFloor.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      // --- Floor deletion
       .addCase(removeBuildingFloor.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -131,7 +180,6 @@ const buildingSlice = createSlice({
       })
       .addCase(removeBuildingFloor.rejected, (state, action) => {
         state.loading = false;
-        // Always set the error (and never clear the building here!)
         state.error =
           (action.payload as { error?: string; status?: number })?.error ||
           'Unknown error';
