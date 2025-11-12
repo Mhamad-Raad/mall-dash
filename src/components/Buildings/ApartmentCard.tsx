@@ -1,6 +1,5 @@
-import { Home, Users, Pencil } from 'lucide-react';
+import { Home, User, Edit3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import type { Apartment } from '@/interfaces/Building.interface';
 
 interface ApartmentCardProps {
@@ -10,52 +9,60 @@ interface ApartmentCardProps {
 
 const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
   if (!apartment) {
-    // Render nothing or a minimal fallback - up to your UX preference
     return null;
   }
-  // // occupants: fall back to empty array if missing
-  // const occupants = Array.isArray(apartment.occupants)
-  //   ? apartment.occupants
-  //   : [];
+
+  const hasOccupant = !!apartment?.occupant;
 
   return (
     <Card
-      className='border-2 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md group'
+      className={`relative border-2 transition-all duration-300 cursor-pointer group overflow-hidden ${
+        hasOccupant ? 'hover:border-green-500 hover:shadow-green-500/20' : 'hover:border-primary/60'
+      } hover:shadow-xl hover:-translate-y-1`}
       onClick={() => onEdit(apartment)}
     >
+      {/* Status indicator bar */}
+      <div className={`absolute top-0 left-0 right-0 h-1.5 ${hasOccupant ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-muted to-muted-foreground/20'}`} />
+      
       <CardContent className='p-4'>
         <div className='flex flex-col gap-3'>
-          <div className='flex items-center justify-between gap-3'>
-            <div className='flex items-center gap-3'>
-              <div className='p-2 rounded-lg bg-primary/5 border'>
-                <Home className='h-5 w-5 text-primary' />
+          {/* Header */}
+          <div className='flex items-start justify-between gap-2'>
+            <div className='flex items-center gap-2.5 flex-1 min-w-0'>
+              <div className={`p-2 rounded-lg border-2 shadow-sm ${hasOccupant ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-800' : 'bg-gradient-to-br from-muted to-muted/50 border-muted-foreground/20'} transition-all duration-300 group-hover:scale-110`}>
+                <Home className={`h-4 w-4 ${hasOccupant ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} />
               </div>
-              <div>
-                <p className='font-bold text-lg'>{apartment.apartmentName}</p>
-              </div>
-            </div>
-            <Pencil className='h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity' />
-          </div>
-          {apartment?.occupant ? (
-            <div className='border-t pt-3 mt-1'>
-              <div className='flex items-center gap-2 mb-2'>
-                <Users className='h-3.5 w-3.5 text-muted-foreground' />
-                <p className='text-xs font-semibold text-muted-foreground uppercase'>
-                  Occupant
-                </p>
-              </div>
-              <div className='space-y-2'>
-                <div className='flex items-start gap-2'>
-                  <Badge variant='secondary' className='text-xs'>
-                    {apartment?.occupant?.name ?? 'No name'}
-                  </Badge>
+              <div className='min-w-0 flex-1'>
+                <p className='font-bold text-base truncate group-hover:text-primary transition-colors'>{apartment.apartmentName}</p>
+                <div className='flex items-center gap-1.5 mt-0.5'>
+                  <div className={`w-1.5 h-1.5 rounded-full ${hasOccupant ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
+                  <p className='text-xs font-medium text-muted-foreground'>
+                    {hasOccupant ? 'Occupied' : 'Vacant'}
+                  </p>
                 </div>
               </div>
             </div>
+            <div className='p-1.5 rounded-lg bg-muted/0 group-hover:bg-primary/10 transition-all duration-300'>
+              <Edit3 className='h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all' />
+            </div>
+          </div>
+
+          {/* Occupant Info */}
+          {hasOccupant ? (
+            <div className='rounded-lg bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200/60 dark:border-green-800/60 p-3 shadow-sm'>
+              <div className='flex items-center gap-2'>
+                <div className='p-1.5 rounded-full bg-primary/10 border border-primary/20'>
+                  <User className='h-3.5 w-3.5 text-primary' />
+                </div>
+                <span className='text-sm font-bold text-foreground truncate'>
+                  {apartment?.occupant?.name ?? 'Unknown'}
+                </span>
+              </div>
+            </div>
           ) : (
-            <div className='border-t pt-3 mt-1'>
-              <p className='text-xs text-muted-foreground italic'>
-                No occupant
+            <div className='rounded-lg bg-muted/40 border-2 border-dashed border-muted-foreground/30 p-2.5 text-center group-hover:border-primary/40 transition-colors'>
+              <p className='text-xs text-muted-foreground font-medium'>
+                No resident assigned
               </p>
             </div>
           )}
