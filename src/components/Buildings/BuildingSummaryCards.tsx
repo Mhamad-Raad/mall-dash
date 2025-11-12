@@ -31,8 +31,10 @@ const BuildingSummaryCards = () => {
   const { totalFloors, totalApartments, occupiedApartments } =
     getBuildingSummary(building);
 
-  const vacantApartments = totalApartments - occupiedApartments;
+  const vacantApartments = (totalApartments || 0) - (occupiedApartments || 0);
   const occupancyRate = totalApartments > 0 ? (occupiedApartments / totalApartments) * 100 : 0;
+  const occupiedPercentage = totalApartments > 0 ? ((occupiedApartments / totalApartments) * 100).toFixed(1) : '0.0';
+  const vacantPercentage = totalApartments > 0 ? ((vacantApartments / totalApartments) * 100).toFixed(1) : '0.0';
   
   // Calculate angles for the donut chart
   const occupiedAngle = totalApartments > 0 ? (occupiedApartments / totalApartments) * 360 : 0;
@@ -106,7 +108,7 @@ const BuildingSummaryCards = () => {
               {/* Center text */}
               <div className='absolute inset-0 flex flex-col items-center justify-center'>
                 <div className='text-4xl font-bold text-green-600 dark:text-green-400'>
-                  {occupancyRate.toFixed(1)}%
+                  {isNaN(occupancyRate) ? '0.0' : occupancyRate.toFixed(1)}%
                 </div>
                 <div className='text-xs text-muted-foreground'>Occupied</div>
               </div>
@@ -121,12 +123,12 @@ const BuildingSummaryCards = () => {
                 <div className='w-4 h-4 rounded-full bg-green-500' />
                 <div>
                   <p className='text-sm text-muted-foreground'>Occupied</p>
-                  <p className='text-2xl font-bold text-green-600 dark:text-green-400'>{occupiedApartments}</p>
+                  <p className='text-2xl font-bold text-green-600 dark:text-green-400'>{occupiedApartments || 0}</p>
                 </div>
               </div>
               <div className='text-right'>
                 <p className='text-sm text-muted-foreground'>
-                  {totalApartments > 0 ? ((occupiedApartments / totalApartments) * 100).toFixed(1) : '0.0'}%
+                  {occupiedPercentage}%
                 </p>
               </div>
             </div>
@@ -137,12 +139,12 @@ const BuildingSummaryCards = () => {
                 <div className='w-4 h-4 rounded-full bg-muted border-2 border-muted-foreground/40' />
                 <div>
                   <p className='text-sm text-muted-foreground'>Vacant</p>
-                  <p className='text-2xl font-bold'>{vacantApartments}</p>
+                  <p className='text-2xl font-bold'>{vacantApartments || 0}</p>
                 </div>
               </div>
               <div className='text-right'>
                 <p className='text-sm text-muted-foreground'>
-                  {totalApartments > 0 ? ((vacantApartments / totalApartments) * 100).toFixed(1) : '0.0'}%
+                  {vacantPercentage}%
                 </p>
               </div>
             </div>
@@ -157,7 +159,7 @@ const BuildingSummaryCards = () => {
                 <Home className='size-5 text-primary' />
                 <div>
                   <p className='text-sm text-muted-foreground'>Total Apartments</p>
-                  <p className='text-xl font-semibold text-primary'>{totalApartments}</p>
+                  <p className='text-xl font-semibold text-primary'>{totalApartments || 0}</p>
                 </div>
               </div>
 
@@ -166,7 +168,7 @@ const BuildingSummaryCards = () => {
                 <Layers className='size-5 text-muted-foreground' />
                 <div>
                   <p className='text-sm text-muted-foreground'>Floors</p>
-                  <p className='text-xl font-semibold'>{totalFloors}</p>
+                  <p className='text-xl font-semibold'>{totalFloors || 0}</p>
                 </div>
               </div>
             </div>

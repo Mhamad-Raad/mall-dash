@@ -143,19 +143,17 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                         </p>
                       </div>
                     </div>
-                    <Button
-                      variant='ghost'
-                      size='icon'
+                    <div
+                      role='button'
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteFloorClick(floor);
                       }}
-                      className='text-destructive hover:bg-destructive/10 hover:text-destructive transition-all'
+                      className='p-2 rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer'
                       title='Delete Floor'
-                      disabled={loading}
-                      >
+                    >
                       <Trash2 className='w-4 h-4' />
-                    </Button>
+                    </div>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className='px-6 pb-6 bg-muted/20'>
