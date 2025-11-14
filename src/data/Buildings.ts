@@ -149,3 +149,17 @@ export const createBuilding = async (params: {
     return { error: error?.response?.data?.message || error.message };
   }
 };
+
+export const deleteBuilding = async (id: number) => {
+  try {
+    const response = await axiosInstance.delete(`/Building/${id}`, {
+      headers: {
+        key: API_KEY,
+        value: API_VALUE,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};

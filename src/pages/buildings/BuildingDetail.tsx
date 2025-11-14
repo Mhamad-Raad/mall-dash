@@ -18,6 +18,7 @@ import {
   clearBuilding,
   updateApartmentThunk,
   deleteApartmentThunk,
+  deleteBuildingThunk,
 } from '@/store/slices/buildingSlice';
 
 const BuildingDetail = () => {
@@ -38,6 +39,16 @@ const BuildingDetail = () => {
   );
   const [showDeleteApartmentModal, setShowDeleteApartmentModal] =
     useState(false);
+
+  const [showDeleteBuildingModal, setShowDeleteBuildingModal] = useState(false);
+
+  const confirmDeleteBuilding = async () => {
+    setShowDeleteBuildingModal(false);
+    navigate('/buildings');
+    if (id) {
+      await dispatch(deleteBuildingThunk(Number(id)));
+    }
+  };
 
   useEffect(() => {
     if (id) dispatch(getBuildingById(Number(id)));
@@ -103,7 +114,9 @@ const BuildingDetail = () => {
 
   return (
     <div className='flex flex-col gap-6 p-4 md:p-6'>
-      <BuildingHeader />
+      <BuildingHeader
+        onDeleteBuilding={() => setShowDeleteBuildingModal(true)}
+      />
       <BuildingSummaryCards />
       <BuildingFloors onApartmentEdit={handleApartmentClick} />
       <EditApartmentDialog
@@ -133,6 +146,25 @@ const BuildingDetail = () => {
           {
             field: 'Apartment',
             oldValue: selectedApartment?.apartmentName || '',
+            newValue: 'Will be deleted',
+          },
+        ]}
+      />
+
+      <ConfirmModal
+        open={showDeleteBuildingModal}
+        onCancel={() => setShowDeleteBuildingModal(false)}
+        onConfirm={confirmDeleteBuilding}
+        title='Delete Building'
+        description='Are you sure you want to permanently delete this building?'
+        confirmLabel='Delete'
+        confirmType='danger'
+        cancelLabel='Cancel'
+        warning='This action cannot be undone.'
+        changes={[
+          {
+            field: 'Building Name',
+            oldValue: building?.name || '',
             newValue: 'Will be deleted',
           },
         ]}

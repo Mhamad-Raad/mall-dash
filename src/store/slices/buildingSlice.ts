@@ -8,6 +8,7 @@ import {
   deleteBuildingFloor,
   addApartmentToFloor,
   deleteApartment,
+  deleteBuilding,
 } from '@/data/Buildings';
 
 interface BuildingState {
@@ -108,6 +109,16 @@ export const deleteApartmentThunk = createAsyncThunk(
     if (result.error) return rejectWithValue(result.error);
     // Only returns message, so pass back id for local state handling
     return { id: apartmentId };
+  }
+);
+
+export const deleteBuildingThunk = createAsyncThunk(
+  'building/deleteBuilding',
+  async (id: number, { rejectWithValue }) => {
+    const result = await deleteBuilding(id);
+    if (result?.error) return rejectWithValue(result.error);
+    // Only returns message, so just return id for redirect/state update
+    return { id };
   }
 );
 
@@ -240,6 +251,19 @@ const buildingSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteApartmentThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteBuildingThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteBuildingThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+        state.building = null;
+      })
+      .addCase(deleteBuildingThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Building2, ArrowLeft, Pencil, Check, X } from 'lucide-react';
+import { Building2, ArrowLeft, Pencil, Check, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,8 +15,11 @@ import ConfirmModal, {
 } from '@/components/ui/Modals/ConfirmModal';
 import { putBuildingName } from '@/store/slices/buildingSlice';
 import type { RootState, AppDispatch } from '@/store/store';
+interface BuildingHeaderProps {
+  onDeleteBuilding?: () => void;
+}
 
-const BuildingHeader = () => {
+const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { building, loading, error } = useSelector(
@@ -90,21 +93,33 @@ const BuildingHeader = () => {
           <div className='p-4 rounded-xl bg-primary/10 border-2 border-primary/20'>
             <Building2 className='h-10 w-10 text-primary' />
           </div>
-          <div className='flex items-center gap-3'>
+          <div className='w-full flex items-center gap-3'>
             {!isEditing ? (
-              <>
-                <span className='text-3xl md:text-4xl font-bold'>
-                  {building?.name}
-                </span>
+              <div className='w-full flex items-center justify-between'>
+                <div className=''>
+                  <span className='text-3xl md:text-4xl font-bold'>
+                    {building?.name}
+                  </span>
+                  <Button
+                    variant='ghost'
+                    onClick={handleEditClick}
+                    size='icon'
+                    className='ml-2'
+                  >
+                    <Pencil className='w-5 h-5 text-muted-foreground' />
+                  </Button>
+                </div>
                 <Button
                   variant='ghost'
-                  onClick={handleEditClick}
                   size='icon'
-                  className='ml-2'
+                  onClick={onDeleteBuilding}
+                  className='ml-2 bg-destructive/10 text-destructive hover:bg-destructive/20'
+                  type='button'
+                  aria-label='Delete Building'
                 >
-                  <Pencil className='w-5 h-5 text-muted-foreground' />
+                  <Trash2 className='w-5 h-5' />
                 </Button>
-              </>
+              </div>
             ) : (
               <TooltipProvider>
                 <div className='flex items-center gap-2'>
