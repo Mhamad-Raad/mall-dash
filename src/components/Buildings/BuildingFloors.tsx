@@ -94,65 +94,69 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4'>
       {/* Title & Add */}
       <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <Layers className='h-6 w-6 text-primary' />
-          <h2 className='text-2xl font-bold'>Floors & Apartments</h2>
+        <div className='flex items-center gap-3'>
+          <div className='p-2 rounded-lg bg-primary/10 border border-primary/20'>
+            <Layers className='h-5 w-5 text-primary' />
+          </div>
+          <div>
+            <h2 className='text-xl font-bold'>Floors & Apartments</h2>
+            <p className='text-sm text-muted-foreground'>{floors.length} floor{floors.length !== 1 ? 's' : ''} total</p>
+          </div>
         </div>
         <Button
-          variant='outline'
+          variant='default'
           size='sm'
           onClick={handleAddFloorClick}
-          className='gap-1'
+          className='gap-2'
           disabled={loading}
         >
-          <Plus className='w-4 h-4 mr-1' />
+          <Plus className='w-4 h-4' />
           Add Floor
         </Button>
       </div>
       {error && (
-        <div className='text-destructive text-center py-2'>{error}</div>
+        <div className='bg-destructive/10 text-destructive border border-destructive/20 rounded-lg p-3 text-sm text-center'>
+          {error}
+        </div>
       )}
-      <Card className='border-2 shadow-lg'>
+      <Card className='border shadow-md overflow-hidden'>
         <Accordion type='multiple' className='w-full'>
           {[...floors]
             .sort((a, b) => a.floorNumber - b.floorNumber)
             .map((floor) => (
-              <AccordionItem key={floor?.id} value={`floor-${floor?.id}`}>
-                <AccordionTrigger className='px-6 hover:no-underline hover:bg-muted/50'>
+              <AccordionItem key={floor?.id} value={`floor-${floor?.id}`} className='border-b last:border-0'>
+                <AccordionTrigger className='px-6 py-4 hover:no-underline hover:bg-muted/30 transition-colors group'>
                   <div className='flex items-center justify-between w-full pr-4'>
-                    <div className='flex items-center gap-3'>
-                      <div className='p-2 rounded-lg bg-primary/10'>
+                    <div className='flex items-center gap-4'>
+                      <div className='p-2.5 rounded-xl bg-primary/10 border border-primary/20 group-hover:bg-primary/15 transition-colors'>
                         <Layers className='h-5 w-5 text-primary' />
                       </div>
                       <div className='text-left'>
-                        <p className='text-xl font-semibold'>
+                        <p className='text-lg font-semibold'>
                           Floor {floor?.floorNumber}
                         </p>
                         <p className='text-sm text-muted-foreground font-normal'>
-                          {floor?.apartments?.length || 0} apartment
-                          {floor?.apartments?.length !== 1 ? 's' : ''}
+                          {floor?.apartments?.length || 0} unit{floor?.apartments?.length !== 1 ? 's' : ''}
                         </p>
                       </div>
                     </div>
-                    <Button
-                      variant='ghost'
-                      size='icon'
+                    <div
+                      role='button'
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteFloorClick(floor);
                       }}
-                      className='text-destructive hover:bg-destructive/10'
+                      className='p-2 rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer'
                       title='Delete Floor'
-                      disabled={loading}
                     >
-                      <Trash2 className='w-5 h-5' />
-                    </Button>
+                      <Trash2 className='w-4 h-4' />
+                    </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className='px-6 pb-6'>
+                <AccordionContent className='px-6 pb-6 bg-muted/20'>
                   <div className='grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 pt-4'>
                     {[...(floor?.apartments ?? [])].map((apartment) => (
                       <ApartmentCard
@@ -161,17 +165,20 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                         onEdit={() => onApartmentEdit(apartment)}
                       />
                     ))}
-                    <button
-                      type='button'
-                      className='flex flex-col items-center justify-center border-2 border-dashed border-primary/40 rounded-xl min-h-[130px] py-8 bg-muted/40 hover:bg-primary/10 transition text-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+                    <Card 
+                      className='border-2 border-dashed border-primary/30 hover:border-primary/50 transition-all cursor-pointer hover:shadow-lg group bg-card hover:bg-primary/5'
                       onClick={() => {
                         setAddAptTargetFloor(floor);
                         setShowAddApartmentModal(true);
                       }}
                     >
-                      <Plus className='w-8 h-8 mb-2' />
-                      <span className='font-semibold'>Add Apartment</span>
-                    </button>
+                      <div className='p-5 flex flex-col items-center justify-center h-full min-h-[140px]'>
+                        <div className='p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors mb-2'>
+                          <Plus className='w-6 h-6 text-primary' />
+                        </div>
+                        <span className='font-semibold text-sm text-primary'>Add Apartment</span>
+                      </div>
+                    </Card>
                   </div>
                 </AccordionContent>
               </AccordionItem>
