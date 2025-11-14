@@ -3,13 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import type { UserFormData } from '@/interfaces/Users.interface';
 
 interface LocationCardProps {
-  formData: {
-    buildingName: string;
-    type: string;
-  };
-  onInputChange: (field: string, value: string | number) => void;
+  formData: UserFormData;
+  onInputChange: (field: keyof UserFormData, value: string | number) => void;
 }
 
 const LocationCard = ({ formData, onInputChange }: LocationCardProps) => {

@@ -3,13 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import type { UserFormData } from '@/interfaces/Users.interface';
 
 interface ContactInfoCardProps {
-  formData: {
-    email: string;
-    phoneNumber: string;
-  };
-  onInputChange: (field: string, value: string) => void;
+  formData: UserFormData;
+  onInputChange: (field: keyof UserFormData, value: string) => void;
 }
 
 const ContactInfoCard = ({ formData, onInputChange }: ContactInfoCardProps) => {

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -18,17 +19,33 @@ type AdminFormProps = {
 };
 
 export default function AdminForm({ formData, onInputChange }: AdminFormProps) {
+  const [preview, setPreview] = useState<string>('');
+
+  useEffect(() => {
+    if (formData.photo instanceof File) {
+      const url = URL.createObjectURL(formData.photo);
+      setPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreview('');
+    }
+  }, [formData.photo]);
+
   return (
     <>
       {/* Profile Picture */}
       <div className='space-y-2'>
         <Label htmlFor='admin-photo' className='flex items-center gap-2'>
           <ImageIcon className='size-4 text-muted-foreground' />
-          Profile Picture
+          Profile Picture (Optional)
         </Label>
         <div className='flex items-center gap-4'>
-          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed'>
-            <ImageIcon className='size-8 text-muted-foreground' />
+          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
+            {preview ? (
+              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+            ) : (
+              <ImageIcon className='size-8 text-muted-foreground' />
+            )}
           </div>
           <Input
             id='admin-photo'
@@ -40,6 +57,11 @@ export default function AdminForm({ formData, onInputChange }: AdminFormProps) {
             }
           />
         </div>
+        {formData.photo && (
+          <p className='text-xs text-muted-foreground'>
+            Selected: {formData.photo.name}
+          </p>
+        )}
       </div>
 
       <Separator />

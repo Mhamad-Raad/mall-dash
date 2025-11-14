@@ -4,9 +4,10 @@ export const initialUser: UserType = {
   firstName: '',
   lastName: '',
   role: 0,
-  src: '',
-  fallback: '',
+  profileImageUrl: '',
   phoneNumber: '',
   email: '',
   buildingName: '',
+  src: '',
+  fallback: '',
 };

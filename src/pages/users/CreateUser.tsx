@@ -56,7 +56,12 @@ export default function CreateUser() {
         setLoading(false);
         return;
       }
-      data = userData;
+
+      // Include ProfileImageUrl if photo is provided
+      data = {
+        ...userData,
+        ...(photo ? { ProfileImageUrl: photo } : {}),
+      };
     } else {
       toast.warning('Feature Not Available', {
         description: 'Only Admin user creation is currently implemented.',

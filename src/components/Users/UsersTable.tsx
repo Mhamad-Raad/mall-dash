@@ -84,6 +84,11 @@ const UsersTable = () => {
               : users.map((user, index) => {
                   const fullName = `${user.firstName} ${user.lastName}`;
                   const userRole = roles[user.role];
+                  // Generate initials for fallback
+                  const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+                  // Use profileImageUrl or src (backward compatibility)
+                  const avatarSrc = user.profileImageUrl || user.src;
+
                   return (
                     <TableRow
                       key={`${user?._id}-${index}`}
@@ -94,9 +99,16 @@ const UsersTable = () => {
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-3'>
                           <Avatar className='h-10 w-10 border-2 border-background shadow-sm'>
-                            <AvatarImage src={user.src} alt={fullName} />
+                            <AvatarImage
+                              src={avatarSrc}
+                              alt={fullName}
+                              onError={(e) => {
+                                // Hide broken images gracefully
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
                             <AvatarFallback className='text-xs font-semibold bg-primary/10 text-primary flex items-center justify-center'>
-                              {user.fallback || (
+                              {initials || user.fallback || (
                                 <UserIcon className='h-5 w-5 text-muted-foreground' />
                               )}
                             </AvatarFallback>
