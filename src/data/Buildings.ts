@@ -124,3 +124,28 @@ export const deleteApartment = async (apartmentId: number) => {
     return { error: error?.response?.data?.message || error.message };
   }
 };
+
+export const createBuilding = async (params: {
+  name: string;
+  floors: Array<{ floorNumber: number; numberOfApartments: number }>;
+}) => {
+  try {
+    const response = await axiosInstance.post(
+      '/Building',
+      {
+        name: params.name,
+        floors: params.floors,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          key: API_KEY,
+          value: API_VALUE,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};

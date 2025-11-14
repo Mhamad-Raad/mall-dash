@@ -7,10 +7,12 @@ import type { AppDispatch, RootState } from '@/store/store';
 import BuildingsTable from '@/components/Buildings/BuildingsTable';
 import BuildingsTableSkeleton from '@/components/Buildings/BuildingsTableSkeleton';
 import BuildingsEmptyState from '@/components/Buildings/BuildingsEmptyState';
+import CreateBuildingModal from '@/components/Buildings/CreateBuildingModal';
 
-import { Building2, Search } from 'lucide-react';
+import { Building2, Search, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 import { fetchBuildings } from '@/store/slices/buildingsSlice';
 
@@ -18,6 +20,9 @@ const Buildings = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Redux state
   const { buildings, loading, error } = useSelector(
@@ -77,8 +82,7 @@ const Buildings = () => {
             </span>
             All Buildings
           </CardTitle>
-          {/* Modern Search Input */}
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-3'>
             <div className='relative w-full max-w-xs'>
               <Input
                 className='pl-10 pr-4 py-2 rounded-full border-2 border-muted-foreground focus:border-primary transition-all shadow hover:shadow-md bg-background focus:bg-card'
@@ -91,6 +95,13 @@ const Buildings = () => {
                 <Search className='h-5 w-5' />
               </span>
             </div>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className='flex items-center gap-2'
+            >
+              <Plus className='h-4 w-4' />
+              Create
+            </Button>
           </div>
         </CardHeader>
         <CardContent className='p-0'>
@@ -107,6 +118,11 @@ const Buildings = () => {
           )}
         </CardContent>
       </Card>
+
+      <CreateBuildingModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+      />
     </section>
   );
 };
