@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { User, Mail, Lock, Image as ImageIcon, Phone, Shield } from 'lucide-react';
+import { User, Mail, Lock, Image as ImageIcon, Phone, Shield, X } from 'lucide-react';
 import roles from '@/constants/roles';
 
 type StaffFormProps = {
@@ -40,149 +40,179 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
   }, [formData.photo]);
 
   return (
-    <>
-      {/* Profile Picture */}
-      <div className='space-y-2'>
-        <Label htmlFor='admin-photo' className='flex items-center gap-2'>
-          <ImageIcon className='size-4 text-muted-foreground' />
-          Profile Picture (Optional)
-        </Label>
-        <div className='flex items-center gap-4'>
-          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
-            {preview ? (
-              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
-            ) : (
-              <ImageIcon className='size-8 text-muted-foreground' />
-            )}
-          </div>
-          <Input
+    <div className='space-y-8'>
+      {/* Profile Picture & Name Section */}
+      <div className='flex flex-col md:flex-row items-start gap-6 p-6 bg-muted/30 rounded-lg border'>
+        <div className='w-32 h-32 md:w-36 md:h-36 rounded-full shrink-0 self-center md:self-start relative'>
+          <input
             id='admin-photo'
             type='file'
             accept='image/*'
-            className='flex-1'
+            className='hidden'
             onChange={(e) =>
               onInputChange('photo', e.target.files?.[0] || null)
             }
           />
-        </div>
-        {formData.photo && (
-          <p className='text-xs text-muted-foreground'>
-            Selected: {formData.photo.name}
-          </p>
-        )}
-      </div>
-
-      <Separator />
-
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        <div className='space-y-2'>
-          <Label htmlFor='admin-firstname' className='flex items-center gap-2'>
-            <User className='size-4 text-muted-foreground' />
-            First Name
-          </Label>
-          <Input
-            id='admin-firstname'
-            placeholder='Enter first name'
-            value={formData.firstName}
-            onChange={(e) => onInputChange('firstName', e.target.value)}
-          />
-        </div>
-        <div className='space-y-2'>
-          <Label htmlFor='admin-lastname' className='flex items-center gap-2'>
-            <User className='size-4 text-muted-foreground' />
-            Last Name
-          </Label>
-          <Input
-            id='admin-lastname'
-            placeholder='Enter last name'
-            value={formData.lastName}
-            onChange={(e) => onInputChange('lastName', e.target.value)}
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className='space-y-4'>
-        <div className='space-y-2'>
-          <Label htmlFor='admin-email' className='flex items-center gap-2'>
-            <Mail className='size-4 text-muted-foreground' />
-            Email Address
-          </Label>
-          <Input
-            id='admin-email'
-            type='email'
-            placeholder='admin@example.com'
-            value={formData.email}
-            onChange={(e) => onInputChange('email', e.target.value)}
-          />
-        </div>
-        <div className='space-y-2'>
-          <Label htmlFor='admin-phone' className='flex items-center gap-2'>
-            <Phone className='size-4 text-muted-foreground' />
-            Phone Number
-          </Label>
-          <Input
-            id='admin-phone'
-            type='tel'
-            placeholder='Enter phone number'
-            value={formData.phoneNumber}
-            onChange={(e) => onInputChange('phoneNumber', e.target.value)}
-          />
-        </div>
-        <div className='space-y-2'>
-          <Label htmlFor='staff-role' className='flex items-center gap-2'>
-            <Shield className='size-4 text-muted-foreground' />
-            Role
-          </Label>
-          <Select
-            value={formData.role.toString()}
-            onValueChange={(value) => onInputChange('role', parseInt(value))}
+          <label
+            htmlFor='admin-photo'
+            className='w-full h-full rounded-full bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
           >
-            <SelectTrigger id='staff-role'>
-              <SelectValue placeholder='Select role' />
-            </SelectTrigger>
-            <SelectContent>
-              {roles.map((role, index) => (
-                <SelectItem key={index} value={index.toString()}>
-                  {role}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {preview ? (
+              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+            ) : (
+              <div className='flex flex-col items-center gap-2'>
+                <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
+                <span className='text-xs text-muted-foreground'>Upload Photo</span>
+              </div>
+            )}
+          </label>
+          {preview && (
+            <button
+              type='button'
+              onClick={(e) => {
+                e.preventDefault();
+                onInputChange('photo', null);
+              }}
+              className='absolute top-1 right-1 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg z-10'
+            >
+              <X className='size-4' />
+            </button>
+          )}
+        </div>
+        <div className='flex-1 space-y-4 w-full'>
+          <div className='space-y-2'>
+            <Label htmlFor='admin-firstname' className='text-sm font-medium'>
+              First Name <span className='text-destructive'>*</span>
+            </Label>
+            <Input
+              id='admin-firstname'
+              placeholder='John'
+              value={formData.firstName}
+              onChange={(e) => onInputChange('firstName', e.target.value)}
+              className='h-11'
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='admin-lastname' className='text-sm font-medium'>
+              Last Name <span className='text-destructive'>*</span>
+            </Label>
+            <Input
+              id='admin-lastname'
+              placeholder='Doe'
+              value={formData.lastName}
+              onChange={(e) => onInputChange('lastName', e.target.value)}
+              className='h-11'
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='staff-role' className='text-sm font-medium'>
+              User Role <span className='text-destructive'>*</span>
+            </Label>
+            <Select
+              value={formData.role.toString()}
+              onValueChange={(value) => onInputChange('role', parseInt(value))}
+            >
+              <SelectTrigger id='staff-role' className='h-11'>
+                <SelectValue placeholder='Select a role' />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((role, index) => (
+                  <SelectItem key={index} value={index.toString()}>
+                    {role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {formData.photo && (
+            <p className='text-xs text-muted-foreground'>
+              ✓ {formData.photo.name}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Contact Information */}
+      <div className='space-y-4'>
+        <div className='flex items-center gap-2 pb-2'>
+          <Mail className='size-5 text-primary' />
+          <h3 className='text-base font-semibold'>Contact Information</h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
-            <Label htmlFor='admin-password' className='flex items-center gap-2'>
-              <Lock className='size-4 text-muted-foreground' />
-              Password
+            <Label htmlFor='admin-email' className='text-sm font-medium'>
+              Email Address <span className='text-destructive'>*</span>
+            </Label>
+            <Input
+              id='admin-email'
+              type='email'
+              placeholder='john.doe@example.com'
+              value={formData.email}
+              onChange={(e) => onInputChange('email', e.target.value)}
+              className='h-11'
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='admin-phone' className='text-sm font-medium'>
+              Phone Number <span className='text-destructive'>*</span>
+            </Label>
+            <Input
+              id='admin-phone'
+              type='tel'
+              placeholder='+1 (555) 000-0000'
+              value={formData.phoneNumber}
+              onChange={(e) => onInputChange('phoneNumber', e.target.value)}
+              className='h-11'
+            />
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Security */}
+      <div className='space-y-4'>
+        <div className='flex items-center gap-2 pb-2'>
+          <Lock className='size-5 text-primary' />
+          <h3 className='text-base font-semibold'>Security</h3>
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='admin-password' className='text-sm font-medium'>
+              Password <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-password'
               type='password'
-              placeholder='Enter secure password'
+              placeholder='••••••••'
               value={formData.password}
               onChange={(e) => onInputChange('password', e.target.value)}
+              className='h-11'
             />
           </div>
           <div className='space-y-2'>
             <Label
               htmlFor='admin-confirm-password'
-              className='flex items-center gap-2'
+              className='text-sm font-medium'
             >
-              <Lock className='size-4 text-muted-foreground' />
-              Confirm Password
+              Confirm Password <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-confirm-password'
               type='password'
-              placeholder='Re-enter password'
+              placeholder='••••••••'
               value={formData.confirmPassword}
               onChange={(e) => onInputChange('confirmPassword', e.target.value)}
+              className='h-11'
             />
           </div>
         </div>
+        <p className='text-xs text-muted-foreground'>
+          Password must be at least 8 characters long
+        </p>
       </div>
-    </>
+    </div>
   );
 }

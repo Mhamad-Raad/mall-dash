@@ -9,7 +9,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
-import { User, Mail, Lock, Phone, Building2, Image as ImageIcon } from 'lucide-react';
+import { User, Mail, Lock, Phone, Building2, Image as ImageIcon, X } from 'lucide-react';
 
 const buildings = ['Sky Tower', 'Rose Heights', 'Emerald Plaza'];
 const floors = ['1', '2', '3', '4', '5'];
@@ -45,68 +45,73 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
   }, [formData.photo]);
 
   return (
-    <>
-      {/* Profile Picture */}
-      <div className='space-y-2'>
-        <Label htmlFor='customer-photo' className='flex items-center gap-2'>
-          <ImageIcon className='size-4 text-muted-foreground' />
-          Profile Picture (Optional)
-        </Label>
-        <div className='flex items-center gap-4'>
-          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
-            {preview ? (
-              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
-            ) : (
-              <ImageIcon className='size-8 text-muted-foreground' />
-            )}
-          </div>
-          <Input
+    <div className='space-y-8'>
+      {/* Profile Picture & Name Section */}
+      <div className='flex flex-col md:flex-row items-start gap-6 p-6 bg-muted/30 rounded-lg border'>
+        <div className='w-32 h-32 md:w-36 md:h-36 rounded-full shrink-0 self-center md:self-start relative'>
+          <input
             id='customer-photo'
             type='file'
             accept='image/*'
-            className='flex-1'
+            className='hidden'
             onChange={(e) => onInputChange('photo', e.target.files?.[0] || null)}
           />
+          <label
+            htmlFor='customer-photo'
+            className='w-full h-full rounded-full bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
+          >
+            {preview ? (
+              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+            ) : (
+              <div className='flex flex-col items-center gap-2'>
+                <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
+                <span className='text-xs text-muted-foreground'>Upload Photo</span>
+              </div>
+            )}
+          </label>
+          {preview && (
+            <button
+              type='button'
+              onClick={(e) => {
+                e.preventDefault();
+                onInputChange('photo', null);
+              }}
+              className='absolute top-1 right-1 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg z-10'
+            >
+              <X className='size-4' />
+            </button>
+          )}
         </div>
-        {formData.photo && (
-          <p className='text-xs text-muted-foreground'>
-            Selected: {formData.photo.name}
-          </p>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Personal Information */}
-      <div className='space-y-4'>
-        <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide'>
-          Personal Information
-        </h3>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='flex-1 space-y-4 w-full'>
           <div className='space-y-2'>
-            <Label htmlFor='customer-firstname' className='flex items-center gap-2'>
-              <User className='size-4 text-muted-foreground' />
-              First Name
+            <Label htmlFor='customer-firstname' className='text-sm font-medium'>
+              First Name <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-firstname'
-              placeholder='Enter first name'
+              placeholder='John'
               value={formData.firstName}
               onChange={(e) => onInputChange('firstName', e.target.value)}
+              className='h-11'
             />
           </div>
           <div className='space-y-2'>
-            <Label htmlFor='customer-lastname' className='flex items-center gap-2'>
-              <User className='size-4 text-muted-foreground' />
-              Last Name
+            <Label htmlFor='customer-lastname' className='text-sm font-medium'>
+              Last Name <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-lastname'
-              placeholder='Enter last name'
+              placeholder='Doe'
               value={formData.lastName}
               onChange={(e) => onInputChange('lastName', e.target.value)}
+              className='h-11'
             />
           </div>
+          {formData.photo && (
+            <p className='text-xs text-muted-foreground'>
+              ✓ {formData.photo.name}
+            </p>
+          )}
         </div>
       </div>
 
@@ -114,14 +119,14 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
 
       {/* Contact Information */}
       <div className='space-y-4'>
-        <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide'>
-          Contact Information
-        </h3>
-        <div className='space-y-4'>
+        <div className='flex items-center gap-2 pb-2'>
+          <Mail className='size-5 text-primary' />
+          <h3 className='text-base font-semibold'>Contact Information</h3>
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
-            <Label htmlFor='customer-phone' className='flex items-center gap-2'>
-              <Phone className='size-4 text-muted-foreground' />
-              Phone Number
+            <Label htmlFor='customer-phone' className='text-sm font-medium'>
+              Phone Number <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-phone'
@@ -129,12 +134,12 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
               placeholder='+1 (555) 000-0000'
               value={formData.phoneNumber}
               onChange={(e) => onInputChange('phoneNumber', e.target.value)}
+              className='h-11'
             />
           </div>
           <div className='space-y-2'>
-            <Label htmlFor='customer-email' className='flex items-center gap-2'>
-              <Mail className='size-4 text-muted-foreground' />
-              Email Address
+            <Label htmlFor='customer-email' className='text-sm font-medium'>
+              Email Address <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-email'
@@ -142,6 +147,7 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
               placeholder='customer@example.com'
               value={formData.email}
               onChange={(e) => onInputChange('email', e.target.value)}
+              className='h-11'
             />
           </div>
         </div>
@@ -151,58 +157,65 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
 
       {/* Security */}
       <div className='space-y-4'>
-        <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide'>
-          Security
-        </h3>
+        <div className='flex items-center gap-2 pb-2'>
+          <Lock className='size-5 text-primary' />
+          <h3 className='text-base font-semibold'>Security</h3>
+        </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
-            <Label htmlFor='customer-password' className='flex items-center gap-2'>
-              <Lock className='size-4 text-muted-foreground' />
-              Password
+            <Label htmlFor='customer-password' className='text-sm font-medium'>
+              Password <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-password'
               type='password'
-              placeholder='Enter password'
+              placeholder='••••••••'
               value={formData.password}
               onChange={(e) => onInputChange('password', e.target.value)}
+              className='h-11'
             />
           </div>
           <div className='space-y-2'>
             <Label
               htmlFor='customer-confirm'
-              className='flex items-center gap-2'
+              className='text-sm font-medium'
             >
-              <Lock className='size-4 text-muted-foreground' />
-              Confirm Password
+              Confirm Password <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-confirm'
               type='password'
-              placeholder='Confirm password'
+              placeholder='••••••••'
               value={formData.confirmPassword}
               onChange={(e) => onInputChange('confirmPassword', e.target.value)}
+              className='h-11'
             />
           </div>
         </div>
+        <p className='text-xs text-muted-foreground'>
+          Password must be at least 8 characters long
+        </p>
       </div>
 
       <Separator />
 
       {/* Address */}
       <div className='space-y-4'>
-        <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2'>
-          <Building2 className='size-4' />
-          Address (Optional)
-        </h3>
+        <div className='flex items-center gap-2 pb-2'>
+          <Building2 className='size-5 text-primary' />
+          <h3 className='text-base font-semibold'>Address Information</h3>
+          <span className='text-xs text-muted-foreground font-normal ml-auto'>(Optional)</span>
+        </div>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <div className='space-y-2'>
-            <Label htmlFor='customer-building'>Building</Label>
+            <Label htmlFor='customer-building' className='text-sm font-medium'>
+              Building
+            </Label>
             <Select
               value={formData.buildingId}
               onValueChange={(value) => onInputChange('buildingId', value)}
             >
-              <SelectTrigger id='customer-building'>
+              <SelectTrigger id='customer-building' className='h-11'>
                 <SelectValue placeholder='Select building' />
               </SelectTrigger>
               <SelectContent>
@@ -215,12 +228,14 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
             </Select>
           </div>
           <div className='space-y-2'>
-            <Label htmlFor='customer-floor'>Floor</Label>
+            <Label htmlFor='customer-floor' className='text-sm font-medium'>
+              Floor
+            </Label>
             <Select
               value={formData.floorId}
               onValueChange={(value) => onInputChange('floorId', value)}
             >
-              <SelectTrigger id='customer-floor'>
+              <SelectTrigger id='customer-floor' className='h-11'>
                 <SelectValue placeholder='Select floor' />
               </SelectTrigger>
               <SelectContent>
@@ -233,12 +248,14 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
             </Select>
           </div>
           <div className='space-y-2'>
-            <Label htmlFor='customer-apartment'>Apartment</Label>
+            <Label htmlFor='customer-apartment' className='text-sm font-medium'>
+              Apartment
+            </Label>
             <Select
               value={formData.apartmentId}
               onValueChange={(value) => onInputChange('apartmentId', value)}
             >
-              <SelectTrigger id='customer-apartment'>
+              <SelectTrigger id='customer-apartment' className='h-11'>
                 <SelectValue placeholder='Select apt' />
               </SelectTrigger>
               <SelectContent>
@@ -252,6 +269,6 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
