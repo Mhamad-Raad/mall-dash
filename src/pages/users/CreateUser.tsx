@@ -121,9 +121,10 @@ export default function CreateUser() {
   };
 
   return (
-    <div className='w-full p-4 md:p-6 space-y-6'>
-      {/* Header */}
-      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        {/* Header */}
         <div className='flex items-center gap-3 sm:gap-4'>
           <Button
             variant='outline'
@@ -147,10 +148,43 @@ export default function CreateUser() {
             </div>
           </div>
         </div>
-        <div className='flex gap-2 self-end sm:self-auto'>
+
+        {/* Main Content */}
+        <div className='space-y-6'>
+          {/* User Type Selection */}
+          <UserTypeSelector selectedType={type} onTypeChange={setType} />
+
+          {/* Form Fields */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-lg'>User Information</CardTitle>
+              <CardDescription>
+                Fill in the details for the new {type.toLowerCase()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='space-y-6'>
+              {type === 'Staff' && (
+                <StaffForm
+                  formData={staffFormData}
+                  onInputChange={handleStaffInputChange}
+                />
+              )}
+              {type === 'Customer' && (
+                <CustomerForm
+                  formData={customerFormData}
+                  onInputChange={handleCustomerInputChange}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
           <Button variant='outline' onClick={handleBack} className='gap-2'>
-            <span className='hidden sm:inline'>Cancel</span>
-            <span className='sm:hidden'>Cancel</span>
+            Cancel
           </Button>
           <Button
             className='gap-2'
@@ -158,42 +192,9 @@ export default function CreateUser() {
             disabled={loading}
           >
             <Save className='size-4' />
-            {loading ? (
-              <span>Creating...</span>
-            ) : (
-              <span className='hidden sm:inline'>Create User</span>
-            )}
+            {loading ? 'Creating...' : 'Create User'}
           </Button>
         </div>
-      </div>
-      {/* Main Content */}
-      <div className='space-y-6'>
-        {/* User Type Selection */}
-        <UserTypeSelector selectedType={type} onTypeChange={setType} />
-
-        {/* Form Fields */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg'>User Information</CardTitle>
-            <CardDescription>
-              Fill in the details for the new {type.toLowerCase()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-6'>
-            {type === 'Staff' && (
-              <StaffForm
-                formData={staffFormData}
-                onInputChange={handleStaffInputChange}
-              />
-            )}
-            {type === 'Customer' && (
-              <CustomerForm
-                formData={customerFormData}
-                onInputChange={handleCustomerInputChange}
-              />
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
