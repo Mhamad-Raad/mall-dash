@@ -73,9 +73,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
               <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold'>
                 Contact
               </TableHead>
-              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold'>
-                Location
-              </TableHead>
+
               <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold'>
                 Working Hours
               </TableHead>
@@ -102,13 +100,18 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                   <TableCell>
                     <div className='flex items-center gap-3 min-w-[200px]'>
                       <Avatar className='h-10 w-10 flex-shrink-0'>
-                        <AvatarImage src={vendor.logo} alt={vendor.businessName} />
+                        <AvatarImage
+                          src={vendor.logo}
+                          alt={vendor.businessName}
+                        />
                         <AvatarFallback className='bg-primary/10 text-primary font-semibold'>
                           {vendor.fallback}
                         </AvatarFallback>
                       </Avatar>
                       <div className='flex flex-col min-w-0'>
-                        <span className='font-medium truncate'>{vendor.businessName}</span>
+                        <span className='font-medium truncate'>
+                          {vendor.businessName}
+                        </span>
                         {vendor.description && (
                           <span className='text-xs text-muted-foreground truncate'>
                             {vendor.description}
@@ -125,7 +128,10 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
 
                   {/* Type */}
                   <TableCell>
-                    <Badge variant='outline' className={getVendorTypeColor(vendor.type)}>
+                    <Badge
+                      variant='outline'
+                      className={getVendorTypeColor(vendor.type)}
+                    >
                       {vendor.type}
                     </Badge>
                   </TableCell>
@@ -140,26 +146,6 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                       <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                         <Phone className='h-3.5 w-3.5 flex-shrink-0' />
                         <span className='truncate'>{vendor.phoneNumber}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  {/* Location */}
-                  <TableCell>
-                    <div className='flex items-center gap-2 min-w-[150px]'>
-                      <MapPin className='h-3.5 w-3.5 text-muted-foreground flex-shrink-0' />
-                      <div className='flex flex-col'>
-                        {vendor.buildingName && (
-                          <span className='text-sm truncate'>{vendor.buildingName}</span>
-                        )}
-                        {vendor.apartmentNumber && (
-                          <span className='text-xs text-muted-foreground'>
-                            Apt {vendor.apartmentNumber}
-                          </span>
-                        )}
-                        {!vendor.buildingName && !vendor.apartmentNumber && (
-                          <span className='text-sm text-muted-foreground'>-</span>
-                        )}
                       </div>
                     </div>
                   </TableCell>
@@ -183,7 +169,10 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
 
       {/* Pagination */}
       <div className='border-t px-4 py-3 bg-muted/30'>
-        <CustomTablePagination total={total} suggestions={[10, 20, 40, 50, 100]} />
+        <CustomTablePagination
+          total={total}
+          suggestions={[10, 20, 40, 50, 100]}
+        />
       </div>
     </div>
   );
