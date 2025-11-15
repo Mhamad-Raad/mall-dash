@@ -15,7 +15,6 @@ const Vendors = () => {
   const {
     vendors,
     lvendors: loading,
-    evendors: error,
     total,
   } = useSelector((state: RootState) => state.vendors);
 
@@ -49,11 +48,7 @@ const Vendors = () => {
 
       {/* Vendors Table */}
       <div className='flex-1 min-h-0'>
-        <VendorsTable
-          vendors={vendors}
-          total={total}
-          loading={loading}
-        />
+        <VendorsTable vendors={vendors} total={total} loading={loading} />
       </div>
     </section>
   );

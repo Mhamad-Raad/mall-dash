@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, MapPin, Clock, Store as StoreIcon } from 'lucide-react';
+import { Mail, Phone, Clock, Store as StoreIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
