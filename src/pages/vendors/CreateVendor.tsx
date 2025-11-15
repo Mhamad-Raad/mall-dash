@@ -1,6 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Store, Clock, User, FileText } from 'lucide-react';
+import { ArrowLeft, Store, Clock, User, FileText, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
+
+import { vendorTypes } from '@/constants/vendorTypes';
+import { createVendor } from '@/data/Vendor';
+import { fetchUsers } from '@/data/Users';
+import { convertToUTCFormat } from '@/lib/timeUtils';
 
 const CreateVendor = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [preview, setPreview] = useState<string>('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -26,18 +39,19 @@ const CreateVendor = () => {
     closeTime: '',
     type: '1',
     userId: '',
+    userName: '',
+    photo: null as File | null,
   });
 
-  const vendorTypes = [
-    { value: '1', label: 'Restaurant' },
-    { value: '2', label: 'Market' },
-    { value: '3', label: 'Bakery' },
-    { value: '4', label: 'Cafe' },
-    { value: '5', label: 'Clothing Store' },
-    { value: '6', label: 'Electronics' },
-    { value: '7', label: 'Pharmacy' },
-    { value: '8', label: 'Other' },
-  ];
+  useEffect(() => {
+    if (formData.photo instanceof File) {
+      const url = URL.createObjectURL(formData.photo);
+      setPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreview('');
+    }
+  }, [formData.photo]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -46,31 +60,52 @@ const CreateVendor = () => {
     }));
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, photo: file }));
+  };
+
+  const handlePhotoRemove = () => {
+    setFormData((prev) => ({ ...prev, photo: null }));
+  };
+
   const validateForm = () => {
     if (!formData.name.trim()) {
-      toast.error('Please enter vendor name');
+      toast.error('Validation Error', {
+        description: 'Please enter vendor name',
+      });
       return false;
     }
     if (!formData.description.trim()) {
-      toast.error('Please enter vendor description');
+      toast.error('Validation Error', {
+        description: 'Please enter vendor description',
+      });
       return false;
     }
     if (!formData.openingTime) {
-      toast.error('Please select opening time');
+      toast.error('Validation Error', {
+        description: 'Please select opening time',
+      });
       return false;
     }
     if (!formData.closeTime) {
-      toast.error('Please select closing time');
+      toast.error('Validation Error', {
+        description: 'Please select closing time',
+      });
       return false;
     }
     if (!formData.userId.trim()) {
-      toast.error('Please enter user ID');
+      toast.error('Validation Error', {
+        description: 'Please select a user to manage this vendor',
+      });
       return false;
     }
 
     // Validate time logic
     if (formData.openingTime >= formData.closeTime) {
-      toast.error('Closing time must be after opening time');
+      toast.error('Validation Error', {
+        description: 'Closing time must be after opening time',
+      });
       return false;
     }
 
@@ -79,37 +114,46 @@ const CreateVendor = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!', formData);
 
     if (!validateForm()) {
+      console.log('Validation failed');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Prepare the data to send to API
+      // Prepare the data to send to API with UTC time format
       const vendorData = {
         name: formData.name,
         description: formData.description,
-        openingTime: formData.openingTime,
-        closeTime: formData.closeTime,
+        openingTime: convertToUTCFormat(formData.openingTime),
+        closeTime: convertToUTCFormat(formData.closeTime),
         type: parseInt(formData.type),
         userId: formData.userId,
+        ...(formData.photo ? { ProfileImageUrl: formData.photo } : {}),
       };
 
-      console.log('Submitting vendor data:', vendorData);
+      console.log('Sending vendor data:', vendorData);
+      const res = await createVendor(vendorData);
+      console.log('Response:', res);
 
-      // TODO: Replace with actual API call
-      // await createVendor(vendorData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast.success('Vendor created successfully!');
-      navigate('/vendors');
+      if (res.error) {
+        toast.error('Failed to Create Vendor', {
+          description: res.error || 'An error occurred while creating the vendor.',
+        });
+      } else {
+        toast.success('Vendor Created Successfully!', {
+          description: `${formData.name} has been added to the system.`,
+        });
+        navigate('/vendors');
+      }
     } catch (error) {
       console.error('Error creating vendor:', error);
-      toast.error('Failed to create vendor. Please try again.');
+      toast.error('Failed to Create Vendor', {
+        description: 'An unexpected error occurred. Please try again.',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -132,7 +176,9 @@ const CreateVendor = () => {
           <ArrowLeft className='h-5 w-5' />
         </Button>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Create New Vendor</h1>
+          <h1 className='text-3xl font-bold tracking-tight'>
+            Create New Vendor
+          </h1>
           <p className='text-muted-foreground'>
             Add a new vendor to your mall directory
           </p>
@@ -176,13 +222,60 @@ const CreateVendor = () => {
                     id='description'
                     placeholder='Brief description of the vendor and their offerings...'
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('description', e.target.value)
+                    }
                     className='resize-none h-24'
                     required
                   />
                   <p className='text-xs text-muted-foreground'>
                     {formData.description.length}/500 characters
                   </p>
+                </div>
+
+                <div className='space-y-2'>
+                  <Label htmlFor='vendor-photo' className='flex items-center gap-2'>
+                    <ImageIcon className='size-4 text-muted-foreground' />
+                    Vendor Logo/Image (Optional)
+                  </Label>
+                  <div className='flex items-center gap-4'>
+                    <div className='w-20 h-20 rounded-lg bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
+                      {preview ? (
+                        <img
+                          src={preview}
+                          alt='Preview'
+                          className='w-full h-full object-cover'
+                        />
+                      ) : (
+                        <ImageIcon className='size-8 text-muted-foreground' />
+                      )}
+                    </div>
+                    <div className='flex-1 space-y-2'>
+                      <Input
+                        id='vendor-photo'
+                        type='file'
+                        accept='image/*'
+                        onChange={handlePhotoChange}
+                        disabled={isSubmitting}
+                      />
+                      {formData.photo && (
+                        <div className='flex items-center justify-between'>
+                          <p className='text-xs text-muted-foreground'>
+                            Selected: {formData.photo.name}
+                          </p>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='sm'
+                            onClick={handlePhotoRemove}
+                            disabled={isSubmitting}
+                          >
+                            <X className='size-4' />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className='space-y-2'>
@@ -198,7 +291,7 @@ const CreateVendor = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {vendorTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
+                        <SelectItem key={type.value} value={String(type.value)}>
                           {type.label}
                         </SelectItem>
                       ))}
@@ -229,7 +322,9 @@ const CreateVendor = () => {
                       id='openingTime'
                       type='time'
                       value={formData.openingTime}
-                      onChange={(e) => handleInputChange('openingTime', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('openingTime', e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -241,7 +336,9 @@ const CreateVendor = () => {
                       id='closeTime'
                       type='time'
                       value={formData.closeTime}
-                      onChange={(e) => handleInputChange('closeTime', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('closeTime', e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -249,7 +346,8 @@ const CreateVendor = () => {
                 <p className='text-sm text-muted-foreground'>
                   {formData.openingTime && formData.closeTime && (
                     <>
-                      Vendor will be open from {formData.openingTime} to {formData.closeTime}
+                      Vendor will be open from {formData.openingTime} to{' '}
+                      {formData.closeTime}
                     </>
                   )}
                 </p>
@@ -270,17 +368,46 @@ const CreateVendor = () => {
               <CardContent className='space-y-4'>
                 <div className='space-y-2'>
                   <Label htmlFor='userId'>
-                    User ID <span className='text-destructive'>*</span>
+                    Select User <span className='text-destructive'>*</span>
                   </Label>
-                  <Input
-                    id='userId'
-                    placeholder='Enter user ID'
-                    value={formData.userId}
-                    onChange={(e) => handleInputChange('userId', e.target.value)}
-                    required
+                  <ObjectAutoComplete
+                    fetchOptions={async (query) => {
+                      const res = await fetchUsers({ searchTerm: query, limit: 10 });
+                      if (res.error || !res.data) return [];
+                      return res.data;
+                    }}
+                    onSelectOption={(user: any) => {
+                      if (user) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          userId: user._id || user.id,
+                          userName: `${user.firstName} ${user.lastName}`,
+                        }));
+                      } else {
+                        setFormData((prev) => ({
+                          ...prev,
+                          userId: '',
+                          userName: '',
+                        }));
+                      }
+                    }}
+                    getOptionLabel={(user: any) =>
+                      `${user.firstName} ${user.lastName} (${user.email})`
+                    }
+                    placeholder='Search for a user by name or email...'
                   />
+                  {formData.userName && (
+                    <div className='mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md'>
+                      <p className='text-sm font-medium text-primary'>
+                        Selected User: {formData.userName}
+                      </p>
+                      <p className='text-xs text-muted-foreground mt-1'>
+                        User ID: {formData.userId}
+                      </p>
+                    </div>
+                  )}
                   <p className='text-xs text-muted-foreground'>
-                    The user ID of the person who will manage this vendor
+                    Search and select the user who will manage this vendor
                   </p>
                 </div>
               </CardContent>
@@ -299,19 +426,26 @@ const CreateVendor = () => {
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-muted-foreground'>Vendor Name</p>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Vendor Name
+                  </p>
                   <p className='text-sm font-semibold'>
                     {formData.name || 'Not set'}
                   </p>
                 </div>
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-muted-foreground'>Type</p>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Type
+                  </p>
                   <p className='text-sm'>
-                    {vendorTypes.find((t) => t.value === formData.type)?.label || 'Not selected'}
+                    {vendorTypes.find((t) => t.value === parseInt(formData.type))
+                      ?.label || 'Not selected'}
                   </p>
                 </div>
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-muted-foreground'>Hours</p>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Hours
+                  </p>
                   <p className='text-sm'>
                     {formData.openingTime && formData.closeTime
                       ? `${formData.openingTime} - ${formData.closeTime}`
@@ -319,11 +453,32 @@ const CreateVendor = () => {
                   </p>
                 </div>
                 <div className='space-y-2'>
-                  <p className='text-sm font-medium text-muted-foreground'>User ID</p>
-                  <p className='text-xs font-mono'>
-                    {formData.userId || 'Not assigned'}
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Assigned User
                   </p>
+                  <p className='text-sm'>
+                    {formData.userName || 'Not assigned'}
+                  </p>
+                  {formData.userId && (
+                    <p className='text-xs font-mono text-muted-foreground'>
+                      ID: {formData.userId}
+                    </p>
+                  )}
                 </div>
+                {formData.photo && (
+                  <div className='space-y-2'>
+                    <p className='text-sm font-medium text-muted-foreground'>
+                      Logo/Image
+                    </p>
+                    <div className='w-full h-32 rounded-lg bg-muted flex items-center justify-center border overflow-hidden'>
+                      <img
+                        src={preview}
+                        alt='Vendor preview'
+                        className='w-full h-full object-cover'
+                      />
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -353,9 +508,9 @@ const CreateVendor = () => {
             <Card className='bg-muted/50'>
               <CardContent className='pt-6'>
                 <p className='text-sm text-muted-foreground'>
-                  <span className='font-medium'>Note:</span> All fields marked with{' '}
-                  <span className='text-destructive'>*</span> are required. Make sure
-                  to provide accurate information for the vendor.
+                  <span className='font-medium'>Note:</span> All fields marked
+                  with <span className='text-destructive'>*</span> are required.
+                  Make sure to provide accurate information for the vendor.
                 </p>
               </CardContent>
             </Card>
