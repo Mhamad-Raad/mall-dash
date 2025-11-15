@@ -65,6 +65,7 @@ export const fetchVendors = async (params?: {
   page?: number;
   limit?: number;
   searchName?: string;
+  type?: number;
 }) => {
   try {
     const response = await axiosInstance.get('/Vendor', {

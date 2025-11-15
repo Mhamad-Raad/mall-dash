@@ -10,14 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { vendorTypes } from '@/constants/vendorTypes';
 
-const vendorTypes = [
-  { label: 'All Types', value: '-1' },
-  { label: 'Restaurant', value: 'Restaurant' },
-  { label: 'Market', value: 'Market' },
-  { label: 'Bakery', value: 'Bakery' },
-  { label: 'Cafe', value: 'Cafe' },
-  { label: 'Other', value: 'Other' },
+const vendorTypesWithAll = [
+  { label: 'All Types', value: -1 },
+  ...vendorTypes,
 ];
 
 export default function VendorsFilters() {
@@ -105,8 +102,8 @@ export default function VendorsFilters() {
             <SelectValue placeholder='Filter by type' />
           </SelectTrigger>
           <SelectContent>
-            {vendorTypes.map((vendorType) => (
-              <SelectItem key={vendorType.value} value={vendorType.value}>
+            {vendorTypesWithAll.map((vendorType) => (
+              <SelectItem key={vendorType.value} value={String(vendorType.value)}>
                 {vendorType.label}
               </SelectItem>
             ))}

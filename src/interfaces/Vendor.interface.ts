@@ -1,3 +1,20 @@
+// API Response Type
+export interface VendorAPIResponse {
+  id: number;
+  name: string;
+  description: string;
+  profileImageUrl: string | null;
+  openingTime: string; // "02:16:00"
+  closeTime: string; // "06:20:00"
+  type: string; // "Restaurant"
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  userName: string;
+}
+
+// UI Display Type (for backwards compatibility with existing components)
 export interface VendorType {
   _id: string;
   businessName: string;
@@ -19,4 +36,26 @@ export interface VendorType {
 
 export interface VendorsType {
   vendors: VendorType[];
+}
+
+// Helper function to convert API response to UI type
+export function mapVendorAPIToUI(apiVendor: VendorAPIResponse): VendorType {
+  return {
+    _id: apiVendor.id.toString(),
+    businessName: apiVendor.name,
+    ownerName: `${apiVendor.firstName} ${apiVendor.lastName}`,
+    email: apiVendor.userName,
+    phoneNumber: apiVendor.phone,
+    address: '', // Not provided in API
+    logo: apiVendor.profileImageUrl || '',
+    fallback: apiVendor.name.substring(0, 2).toUpperCase(),
+    workingHours: {
+      open: apiVendor.openingTime.substring(0, 5), // "02:16:00" -> "02:16"
+      close: apiVendor.closeTime.substring(0, 5), // "06:20:00" -> "06:20"
+    },
+    type: apiVendor.type,
+    description: apiVendor.description,
+    buildingName: undefined,
+    apartmentNumber: undefined,
+  };
 }
