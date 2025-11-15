@@ -2,9 +2,17 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Lock, Image as ImageIcon, Phone } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { User, Mail, Lock, Image as ImageIcon, Phone, Shield } from 'lucide-react';
+import roles from '@/constants/roles';
 
-type AdminFormProps = {
+type StaffFormProps = {
   formData: {
     firstName: string;
     lastName: string;
@@ -18,7 +26,7 @@ type AdminFormProps = {
   onInputChange: (field: string, value: unknown) => void;
 };
 
-export default function AdminForm({ formData, onInputChange }: AdminFormProps) {
+export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
   const [preview, setPreview] = useState<string>('');
 
   useEffect(() => {
@@ -121,6 +129,27 @@ export default function AdminForm({ formData, onInputChange }: AdminFormProps) {
             value={formData.phoneNumber}
             onChange={(e) => onInputChange('phoneNumber', e.target.value)}
           />
+        </div>
+        <div className='space-y-2'>
+          <Label htmlFor='staff-role' className='flex items-center gap-2'>
+            <Shield className='size-4 text-muted-foreground' />
+            Role
+          </Label>
+          <Select
+            value={formData.role.toString()}
+            onValueChange={(value) => onInputChange('role', parseInt(value))}
+          >
+            <SelectTrigger id='staff-role'>
+              <SelectValue placeholder='Select role' />
+            </SelectTrigger>
+            <SelectContent>
+              {roles.map((role, index) => (
+                <SelectItem key={index} value={index.toString()}>
+                  {role}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>

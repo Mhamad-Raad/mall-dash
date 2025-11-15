@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -14,26 +15,64 @@ const buildings = ['Sky Tower', 'Rose Heights', 'Emerald Plaza'];
 const floors = ['1', '2', '3', '4', '5'];
 const apartments = ['101', '202', '303', '404', '505'];
 
-export default function CustomerForm() {
+type CustomerFormProps = {
+  formData: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    phoneNumber: string;
+    buildingId: string;
+    floorId: string;
+    apartmentId: string;
+    photo?: File | null;
+  };
+  onInputChange: (field: string, value: unknown) => void;
+};
+
+export default function CustomerForm({ formData, onInputChange }: CustomerFormProps) {
+  const [preview, setPreview] = useState<string>('');
+
+  useEffect(() => {
+    if (formData.photo instanceof File) {
+      const url = URL.createObjectURL(formData.photo);
+      setPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreview('');
+    }
+  }, [formData.photo]);
+
   return (
     <>
       {/* Profile Picture */}
       <div className='space-y-2'>
         <Label htmlFor='customer-photo' className='flex items-center gap-2'>
           <ImageIcon className='size-4 text-muted-foreground' />
-          Profile Picture
+          Profile Picture (Optional)
         </Label>
         <div className='flex items-center gap-4'>
-          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed'>
-            <ImageIcon className='size-8 text-muted-foreground' />
+          <div className='w-20 h-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
+            {preview ? (
+              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+            ) : (
+              <ImageIcon className='size-8 text-muted-foreground' />
+            )}
           </div>
           <Input
             id='customer-photo'
             type='file'
             accept='image/*'
             className='flex-1'
+            onChange={(e) => onInputChange('photo', e.target.files?.[0] || null)}
           />
         </div>
+        {formData.photo && (
+          <p className='text-xs text-muted-foreground'>
+            Selected: {formData.photo.name}
+          </p>
+        )}
       </div>
 
       <Separator />
@@ -49,14 +88,24 @@ export default function CustomerForm() {
               <User className='size-4 text-muted-foreground' />
               First Name
             </Label>
-            <Input id='customer-firstname' placeholder='Enter first name' />
+            <Input
+              id='customer-firstname'
+              placeholder='Enter first name'
+              value={formData.firstName}
+              onChange={(e) => onInputChange('firstName', e.target.value)}
+            />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-lastname' className='flex items-center gap-2'>
               <User className='size-4 text-muted-foreground' />
               Last Name
             </Label>
-            <Input id='customer-lastname' placeholder='Enter last name' />
+            <Input
+              id='customer-lastname'
+              placeholder='Enter last name'
+              value={formData.lastName}
+              onChange={(e) => onInputChange('lastName', e.target.value)}
+            />
           </div>
         </div>
       </div>
@@ -78,6 +127,8 @@ export default function CustomerForm() {
               id='customer-phone'
               type='tel'
               placeholder='+1 (555) 000-0000'
+              value={formData.phoneNumber}
+              onChange={(e) => onInputChange('phoneNumber', e.target.value)}
             />
           </div>
           <div className='space-y-2'>
@@ -89,6 +140,8 @@ export default function CustomerForm() {
               id='customer-email'
               type='email'
               placeholder='customer@example.com'
+              value={formData.email}
+              onChange={(e) => onInputChange('email', e.target.value)}
             />
           </div>
         </div>
@@ -111,6 +164,8 @@ export default function CustomerForm() {
               id='customer-password'
               type='password'
               placeholder='Enter password'
+              value={formData.password}
+              onChange={(e) => onInputChange('password', e.target.value)}
             />
           </div>
           <div className='space-y-2'>
@@ -125,6 +180,8 @@ export default function CustomerForm() {
               id='customer-confirm'
               type='password'
               placeholder='Confirm password'
+              value={formData.confirmPassword}
+              onChange={(e) => onInputChange('confirmPassword', e.target.value)}
             />
           </div>
         </div>
@@ -136,18 +193,21 @@ export default function CustomerForm() {
       <div className='space-y-4'>
         <h3 className='font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2'>
           <Building2 className='size-4' />
-          Address
+          Address (Optional)
         </h3>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='customer-building'>Building</Label>
-            <Select>
+            <Select
+              value={formData.buildingId}
+              onValueChange={(value) => onInputChange('buildingId', value)}
+            >
               <SelectTrigger id='customer-building'>
                 <SelectValue placeholder='Select building' />
               </SelectTrigger>
               <SelectContent>
-                {buildings.map((b) => (
-                  <SelectItem key={b} value={b}>
+                {buildings.map((b, index) => (
+                  <SelectItem key={index} value={index.toString()}>
                     {b}
                   </SelectItem>
                 ))}
@@ -156,13 +216,16 @@ export default function CustomerForm() {
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-floor'>Floor</Label>
-            <Select>
+            <Select
+              value={formData.floorId}
+              onValueChange={(value) => onInputChange('floorId', value)}
+            >
               <SelectTrigger id='customer-floor'>
                 <SelectValue placeholder='Select floor' />
               </SelectTrigger>
               <SelectContent>
-                {floors.map((f) => (
-                  <SelectItem key={f} value={f}>
+                {floors.map((f, index) => (
+                  <SelectItem key={index} value={index.toString()}>
                     Floor {f}
                   </SelectItem>
                 ))}
@@ -171,13 +234,16 @@ export default function CustomerForm() {
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-apartment'>Apartment</Label>
-            <Select>
+            <Select
+              value={formData.apartmentId}
+              onValueChange={(value) => onInputChange('apartmentId', value)}
+            >
               <SelectTrigger id='customer-apartment'>
                 <SelectValue placeholder='Select apt' />
               </SelectTrigger>
               <SelectContent>
-                {apartments.map((a) => (
-                  <SelectItem key={a} value={a}>
+                {apartments.map((a, index) => (
+                  <SelectItem key={index} value={index.toString()}>
                     #{a}
                   </SelectItem>
                 ))}

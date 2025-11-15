@@ -11,17 +11,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { UserPlus, ArrowLeft, Save } from 'lucide-react';
 import UserTypeSelector from '@/components/Users/UserTypeSelector';
-import AdminForm from '@/components/Users/forms/AdminForm';
+import StaffForm from '@/components/Users/forms/StaffForm';
 import CustomerForm from '@/components/Users/forms/CustomerForm';
-import VendorForm from '@/components/Users/forms/VendorForm';
 
 import { createUser } from '@/data/Users';
 
 export default function CreateUser() {
   const navigate = useNavigate();
 
-  const [type, setType] = useState('Customer');
-  const [adminFormData, setAdminFormData] = useState({
+  const [type, setType] = useState('Staff');
+  const [staffFormData, setStaffFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
@@ -32,11 +31,29 @@ export default function CreateUser() {
     photo: null,
   });
 
+  const [customerFormData, setCustomerFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    buildingId: '',
+    floorId: '',
+    apartmentId: '',
+    photo: null,
+  });
+
   const [loading, setLoading] = useState(false);
 
-  // Handler to update form data from child
-  const handleAdminInputChange = (field: string, value: unknown) => {
-    setAdminFormData((prev) => ({ ...prev, [field]: value }));
+  // Handler to update staff form data
+  const handleStaffInputChange = (field: string, value: unknown) => {
+    setStaffFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handler to update customer form data
+  const handleCustomerInputChange = (field: string, value: unknown) => {
+    setCustomerFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleBack = () => {
@@ -47,9 +64,12 @@ export default function CreateUser() {
     setLoading(true);
 
     let data = {};
-    if (type === 'Admin') {
-      const { confirmPassword, photo, ...userData } = adminFormData;
-      if (adminFormData.password !== adminFormData.confirmPassword) {
+    let userName = '';
+
+    if (type === 'Staff') {
+      const { confirmPassword, photo, ...userData } = staffFormData;
+
+      if (staffFormData.password !== staffFormData.confirmPassword) {
         toast.error('Passwords do not match', {
           description: 'Please make sure both password fields are identical.',
         });
@@ -57,17 +77,31 @@ export default function CreateUser() {
         return;
       }
 
-      // Include ProfileImageUrl if photo is provided
+      userName = `${staffFormData.firstName} ${staffFormData.lastName}`;
       data = {
         ...userData,
         ...(photo ? { ProfileImageUrl: photo } : {}),
       };
-    } else {
-      toast.warning('Feature Not Available', {
-        description: 'Only Admin user creation is currently implemented.',
-      });
-      setLoading(false);
-      return;
+    } else if (type === 'Customer') {
+      const { confirmPassword, photo, buildingId, floorId, apartmentId, ...userData } = customerFormData;
+
+      if (customerFormData.password !== customerFormData.confirmPassword) {
+        toast.error('Passwords do not match', {
+          description: 'Please make sure both password fields are identical.',
+        });
+        setLoading(false);
+        return;
+      }
+
+      userName = `${customerFormData.firstName} ${customerFormData.lastName}`;
+      data = {
+        ...userData,
+        role: 3, // Tenant role index
+        ...(photo ? { ProfileImageUrl: photo } : {}),
+        ...(buildingId ? { buildingId: parseInt(buildingId) } : {}),
+        ...(floorId ? { floorId: parseInt(floorId) } : {}),
+        ...(apartmentId ? { apartmentId: parseInt(apartmentId) } : {}),
+      };
     }
 
     const res = await createUser(data as any);
@@ -80,7 +114,7 @@ export default function CreateUser() {
       });
     } else {
       toast.success('User Created Successfully!', {
-        description: `${adminFormData.firstName} ${adminFormData.lastName} has been added to the system.`,
+        description: `${userName} has been added to the system.`,
       });
       navigate('/users');
     }
@@ -146,14 +180,18 @@ export default function CreateUser() {
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-6'>
-            {type === 'Admin' && (
-              <AdminForm
-                formData={adminFormData}
-                onInputChange={handleAdminInputChange}
+            {type === 'Staff' && (
+              <StaffForm
+                formData={staffFormData}
+                onInputChange={handleStaffInputChange}
               />
             )}
-            {type === 'Customer' && <CustomerForm />}
-            {type === 'Vendor' && <VendorForm />}
+            {type === 'Customer' && (
+              <CustomerForm
+                formData={customerFormData}
+                onInputChange={handleCustomerInputChange}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
