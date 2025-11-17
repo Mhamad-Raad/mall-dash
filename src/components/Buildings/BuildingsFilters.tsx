@@ -5,12 +5,15 @@ import {
   Search,
   Plus,
   Filter,
-  Download,
   Building2,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
-const BuildingsFilters = () => {
+interface BuildingsFiltersProps {
+  onCreateClick?: () => void;
+}
+
+const BuildingsFilters = ({ onCreateClick }: BuildingsFiltersProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -55,58 +58,61 @@ const BuildingsFilters = () => {
   }, [searchParams]);
 
   const handleOnCreate = () => {
-    navigate('/buildings/create');
+    if (onCreateClick) {
+      onCreateClick();
+    } else {
+      navigate('/buildings/create');
+    }
   };
 
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-6'>
       {/* Header with Title and Create Button */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-primary/10 text-primary'>
-            <Building2 className='size-5' />
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+        <div className='flex items-center gap-4 flex-1'>
+          <div className='p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary shadow-sm'>
+            <Building2 className='size-6' />
           </div>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>
+            <h2 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text'>
               Buildings Management
             </h2>
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-sm text-muted-foreground mt-0.5'>
               Manage buildings, floors, and apartments
             </p>
           </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <Button type='button' variant='outline' className='gap-2'>
-            <Download className='size-4' />
-            <span className='hidden sm:inline'>Export</span>
-          </Button>
-          <Button type='button' className='gap-2' onClick={handleOnCreate}>
-            <Plus className='size-4' />
-            <span className='hidden sm:inline font-semibold'>Add Building</span>
-          </Button>
-        </div>
+        <Button type='button' className='gap-2 shadow-md hover:shadow-lg transition-shadow' size='lg' onClick={handleOnCreate}>
+          <Plus className='size-4' />
+          <span className='font-semibold'>Add Building</span>
+        </Button>
       </div>
+      
       {/* Filters Section */}
-      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-muted/30 rounded-lg border'>
-        <div className='flex items-center gap-2 flex-1 w-full'>
-          <Filter className='size-4 text-muted-foreground' />
-          <span className='text-sm font-medium text-muted-foreground'>
-            Filters:
-          </span>
-        </div>
-        <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-wrap'>
-          {/* Search Input */}
-          <div className='relative flex-1 sm:min-w-[250px]'>
-            <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3'>
-              <Search className='size-4' />
+      <div className='bg-gradient-to-br from-muted/50 to-muted/30 rounded-xl border shadow-sm p-5'>
+        <div className='flex flex-col gap-4'>
+          <div className='flex items-center gap-2.5 pb-3 border-b'>
+            <div className='p-1.5 rounded-md bg-primary/10'>
+              <Filter className='size-4 text-primary' />
             </div>
-            <Input
-              type='text'
-              placeholder='Search buildings by name...'
-              className='pl-9 bg-background'
-              value={typedSearch}
-              onChange={(e) => setTypedSearch(e.target.value)}
-            />
+            <span className='text-sm font-semibold text-foreground'>
+              Filter Buildings
+            </span>
+          </div>
+          <div className='w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {/* Search Input */}
+            <div className='relative w-full'>
+              <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3.5'>
+                <Search className='size-4' />
+              </div>
+              <Input
+                type='text'
+                placeholder='Search buildings...'
+                className='pl-10 bg-background w-full shadow-sm border-muted-foreground/20 focus-visible:border-primary/50 transition-colors h-11'
+                value={typedSearch}
+                onChange={(e) => setTypedSearch(e.target.value)}
+              />
+            </div>
           </div>
         </div>
       </div>
