@@ -4,6 +4,7 @@ import UserDetailHeader from '@/components/Users/UserDetail/UserDetailHeader';
 import UserProfileCard from '@/components/Users/UserDetail/UserProfileCard';
 import ContactInfoCard from '@/components/Users/UserDetail/ContactInfoCard';
 import LocationRoleCard from '@/components/Users/UserDetail/LocationRoleCard';
+import SecurityCard from '@/components/Users/UserDetail/SecurityCard';
 import UserDetailSkeleton from '@/components/Users/UserDetail/UserDetailSkeloton';
 import UserErrorCard from '@/components/Users/UserDetail/UserErrorCard';
 import ConfirmModal, {
@@ -30,6 +31,8 @@ const UserDetail = () => {
 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const {
     user,
@@ -50,6 +53,9 @@ const UserDetail = () => {
   const hasChanges = useMemo(() => {
     if (!user || !user._id) return false;
 
+    // Check if password is being changed
+    if (password && confirmPassword && password === confirmPassword) return true;
+
     // Check if image file was added
     if (formData.imageFile instanceof File) return true;
 
@@ -64,7 +70,7 @@ const UserDetail = () => {
       user.phoneNumber !== formData.phoneNumber ||
       user.role !== formData.role
     );
-  }, [user, formData]);
+  }, [user, formData, password, confirmPassword]);
 
   const changes = useMemo((): ChangeDetail[] => {
     if (!user || !user._id) return [];
@@ -93,6 +99,15 @@ const UserDetail = () => {
       });
     }
 
+    // Check password change
+    if (password && confirmPassword && password === confirmPassword) {
+      changesList.push({
+        field: 'Password',
+        oldValue: '••••••••',
+        newValue: 'New password set',
+      });
+    }
+
     // Check other fields
     (
       ['firstName', 'lastName', 'email', 'phoneNumber', 'role'] as const
@@ -116,7 +131,7 @@ const UserDetail = () => {
       }
     });
     return changesList;
-  }, [user, formData]);
+  }, [user, formData, password, confirmPassword]);
 
   const handleInputChange = (
     field: keyof UserFormData,
@@ -160,6 +175,9 @@ const UserDetail = () => {
     if (!updating && showUpdateModal && !updatingError) {
       setShowUpdateModal(false);
       toast.success('User updated successfully!');
+      // Clear password fields after successful update
+      setPassword('');
+      setConfirmPassword('');
     }
   }, [updating, updatingError]);
 
@@ -181,7 +199,12 @@ const UserDetail = () => {
   const handletoggleDeleteModal = () => setShowDeleteModal((v) => !v);
 
   const handleUpdateUser = async () => {
-    await dispatch(updateUser({ id: id || user._id, update: formData }));
+    // Include password in update if it's set and matches confirmation
+    const updateData = {
+      ...formData,
+      ...(password && confirmPassword && password === confirmPassword ? { password } : {}),
+    };
+    await dispatch(updateUser({ id: id || user._id, update: updateData }));
   };
 
   const handleDeleteUser = async () => {
@@ -210,6 +233,12 @@ const UserDetail = () => {
             onInputChange={handleInputChange}
           />
         </div>
+        <SecurityCard
+          password={password}
+          confirmPassword={confirmPassword}
+          onPasswordChange={setPassword}
+          onConfirmPasswordChange={setConfirmPassword}
+        />
       </div>
 
       {/* Sticky Footer with Action Buttons */}
