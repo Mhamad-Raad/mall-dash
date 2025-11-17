@@ -53,6 +53,9 @@ const UserDetail = () => {
     // Check if image file was added
     if (formData.imageFile instanceof File) return true;
 
+    // Check if image was removed (user had an image, but now it's cleared)
+    if (user.profileImageUrl && !formData.profileImageUrl && !formData.imageFile) return true;
+
     // Check other fields for changes
     return (
       user.firstName !== formData.firstName ||
@@ -80,6 +83,13 @@ const UserDetail = () => {
         field: 'Profile Image',
         oldValue: user.profileImageUrl ? 'Current image' : 'No image',
         newValue: formData.imageFile.name,
+      });
+    } else if (user.profileImageUrl && !formData.profileImageUrl) {
+      // Image was removed
+      changesList.push({
+        field: 'Profile Image',
+        oldValue: 'Current image',
+        newValue: 'Removed',
       });
     }
 
@@ -182,24 +192,45 @@ const UserDetail = () => {
   if (loading) return <UserDetailSkeleton />;
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6'>
-      <UserDetailHeader
-        onBack={() => navigate(-1)}
-        onSave={handletoggleUpdateModal}
-        onDelete={handletoggleDeleteModal}
-        hasChanges={hasChanges}
-      />
-      <UserProfileCard formData={formData} onInputChange={handleInputChange} />
-      <div className='grid gap-6 lg:grid-cols-2'>
-        <ContactInfoCard
-          formData={formData}
-          onInputChange={handleInputChange}
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        <UserDetailHeader
+          onBack={() => navigate(-1)}
+          hasChanges={hasChanges}
         />
-        <LocationRoleCard
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
+        <UserProfileCard formData={formData} onInputChange={handleInputChange} />
+        <div className='grid gap-6 lg:grid-cols-2'>
+          <ContactInfoCard
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+          <LocationRoleCard
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        </div>
       </div>
+
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
+          <button
+            onClick={handletoggleDeleteModal}
+            className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
+          >
+            Delete User
+          </button>
+          <button
+            onClick={handletoggleUpdateModal}
+            disabled={!hasChanges}
+            className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
       <ConfirmModal
         open={showUpdateModal}
         title='Update User'

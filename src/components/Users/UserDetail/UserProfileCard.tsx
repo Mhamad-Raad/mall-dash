@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardDescription, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import roles from '@/constants/roles';
-import { User as UserIcon } from 'lucide-react';
+import { Image as ImageIcon, X } from 'lucide-react';
 import type { UserFormData } from '@/interfaces/Users.interface';
 
 interface UserProfileCardProps {
@@ -34,97 +33,115 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) onInputChange('imageFile', file); // Only save the actual File
+    if (file) onInputChange('imageFile', file);
   };
 
-  const initials =
-    (formData.firstName?.[0] || '') + (formData.lastName?.[0] || '');
-
-  console.log('Rendering U', preview);
+  const handleRemoveImage = () => {
+    onInputChange('imageFile', null as any);
+    onInputChange('profileImageUrl', '');
+    // Reset the file input
+    const fileInput = document.getElementById('user-photo') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
 
   return (
-    <Card className='mb-6'>
-      <CardHeader className='pb-4'>
-        <div className='flex flex-col md:flex-row items-start md:items-center gap-6'>
-          <div className='relative'>
-            <Avatar className='h-24 w-24 border-4 border-background shadow-xl'>
-              <AvatarImage
-                src={preview || '/default-user.png'}
-                alt={`${formData.firstName}'s profile picture`}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/default-user.png';
-                }}
-              />
-              <AvatarFallback className='bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold'>
-                {initials.trim() ? (
-                  initials
-                ) : (
-                  <UserIcon className='w-12 h-12 text-muted-foreground' />
-                )}
-              </AvatarFallback>
-            </Avatar>
-            <label className='absolute bottom-0 right-0 bg-primary text-white rounded-full p-2 shadow cursor-pointer hover:bg-primary/90 transition'>
-              <Input
-                type='file'
-                accept='image/*'
-                className='hidden'
-                onChange={handleImageChange}
-              />
-              <span className='text-xs'>Edit</span>
+    <Card>
+      <CardHeader>
+        <CardTitle className='text-lg'>User Information</CardTitle>
+        <CardDescription>
+          View and update user profile details
+        </CardDescription>
+      </CardHeader>
+      <CardContent className='space-y-8'>
+        {/* Profile Picture & Name Section */}
+        <div className='flex flex-col md:flex-row items-start gap-6 p-6 bg-muted/30 rounded-lg border'>
+          <div className='w-32 h-32 md:w-36 md:h-36 rounded-full shrink-0 self-center md:self-start relative'>
+            <input
+              id='user-photo'
+              type='file'
+              accept='image/*'
+              className='hidden'
+              onChange={handleImageChange}
+            />
+            <label
+              htmlFor='user-photo'
+              className='w-full h-full rounded-full bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
+            >
+              {preview ? (
+                <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+              ) : (
+                <div className='flex flex-col items-center gap-2'>
+                  <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
+                  <span className='text-xs text-muted-foreground'>Upload Photo</span>
+                </div>
+              )}
             </label>
+            {preview && (
+              <button
+                type='button'
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleRemoveImage();
+                }}
+                className='absolute top-1 right-1 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg z-10'
+              >
+                <X className='size-4' />
+              </button>
+            )}
           </div>
-          <div className='flex-1 w-full'>
-            <div className='flex flex-col gap-3 mb-2'>
-              <div className='space-y-1'>
-                <Label htmlFor='firstName'>First Name</Label>
-                <Input
-                  id='firstName'
-                  value={formData.firstName}
-                  onChange={(e) => onInputChange('firstName', e.target.value)}
-                  className='text-2xl font-bold h-auto py-2'
-                />
-              </div>
-              <div className='space-y-1'>
-                <Label htmlFor='lastName'>Last Name</Label>
-                <Input
-                  id='lastName'
-                  value={formData.lastName}
-                  onChange={(e) => onInputChange('lastName', e.target.value)}
-                  className='text-2xl font-bold h-auto py-2'
-                />
-              </div>
-              <CardDescription className='text-base'>
-                User ID: {formData._id}
-              </CardDescription>
-              <div className='flex items-center gap-2'>
-                <Label
-                  htmlFor='userType'
-                  className='text-sm text-muted-foreground'
-                >
-                  Role:
-                </Label>
-                <Select
-                  value={String(formData.role)}
-                  onValueChange={(value) =>
-                    onInputChange('role', Number(value))
-                  }
-                >
-                  <SelectTrigger className='w-[180px]'>
-                    <SelectValue placeholder='Select role' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((role, index) => (
-                      <SelectItem value={String(index)} key={index}>
-                        {role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className='flex-1 space-y-4 w-full'>
+            <div className='space-y-2'>
+              <Label htmlFor='firstName' className='text-sm font-medium'>
+                First Name <span className='text-destructive'>*</span>
+              </Label>
+              <Input
+                id='firstName'
+                placeholder='John'
+                value={formData.firstName}
+                onChange={(e) => onInputChange('firstName', e.target.value)}
+                className='h-11'
+              />
             </div>
+            <div className='space-y-2'>
+              <Label htmlFor='lastName' className='text-sm font-medium'>
+                Last Name <span className='text-destructive'>*</span>
+              </Label>
+              <Input
+                id='lastName'
+                placeholder='Doe'
+                value={formData.lastName}
+                onChange={(e) => onInputChange('lastName', e.target.value)}
+                className='h-11'
+              />
+            </div>
+            <div className='space-y-2'>
+              <Label htmlFor='userRole' className='text-sm font-medium'>
+                User Role <span className='text-destructive'>*</span>
+              </Label>
+              <Select
+                value={String(formData.role)}
+                onValueChange={(value) => onInputChange('role', Number(value))}
+              >
+                <SelectTrigger id='userRole' className='h-11'>
+                  <SelectValue placeholder='Select a role' />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role, index) => (
+                    <SelectItem key={index} value={String(index)}>
+                      {role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {formData._id && (
+              <p className='text-xs text-muted-foreground'>
+                User ID: {formData._id}
+              </p>
+            )}
           </div>
         </div>
-      </CardHeader>
+      </CardContent>
     </Card>
   );
 };
