@@ -113,7 +113,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({
         onFocus={() => setShowOptions(true)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className='pr-10'
+        className='pr-10 shadow-sm border-muted-foreground/20 focus-visible:border-primary/50 transition-colors h-11'
         autoComplete='off'
       />
       {input.length > 0 && (
