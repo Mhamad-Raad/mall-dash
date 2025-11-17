@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import CustomTablePagination from '../CustomTablePagination';
+import VendorsTableSkeleton from './VendorsTableSkeleton';
 import type { VendorType } from '@/interfaces/Vendor.interface';
 
 const getVendorTypeColor = (type: string) => {
@@ -42,13 +43,37 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
 
   if (loading) {
     return (
-      <div className='rounded-xl border bg-card shadow-sm p-8'>
-        <div className='animate-pulse space-y-4'>
-          <div className='h-10 bg-muted rounded' />
-          <div className='h-16 bg-muted rounded' />
-          <div className='h-16 bg-muted rounded' />
-          <div className='h-16 bg-muted rounded' />
-        </div>
+      <div className='rounded-xl border bg-card shadow-sm flex flex-col overflow-hidden'>
+        <ScrollArea className='h-[calc(100vh-280px)] md:h-[calc(100vh-280px)]'>
+          <Table className='w-full min-w-[700px]'>
+            <TableHeader>
+              <TableRow className='hover:bg-transparent border-b bg-muted/50'>
+                <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
+                  Business
+                </TableHead>
+                <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
+                  Owner
+                </TableHead>
+                <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
+                  Type
+                </TableHead>
+                <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
+                  Contact
+                </TableHead>
+                <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
+                  Working Hours
+                </TableHead>
+                <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <VendorsTableSkeleton key={index} />
+              ))}
+            </TableBody>
+          </Table>
+          <ScrollBar orientation='horizontal' />
+        </ScrollArea>
       </div>
     );
   }
