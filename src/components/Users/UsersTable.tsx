@@ -24,13 +24,15 @@ import type { RootState } from '@/store/store';
 
 const getUserTypeColor = (type: string) => {
   const typeLower = type.toLowerCase();
-  if (typeLower === 'admin' || typeLower === 'superadmin')
-    return 'bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-500/20 dark:border-purple-500/30';
-  if (typeLower === 'manager')
-    return 'bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border-blue-500/20 dark:border-blue-500/30';
-  if (typeLower === 'user')
-    return 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-500/20 dark:border-emerald-500/30';
-  return 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300 border-gray-500/20 dark:border-gray-500/30';
+  if (typeLower === 'superadmin')
+    return 'bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-400 border-red-500/30 dark:border-red-500/40';
+  if (typeLower === 'admin')
+    return 'bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border-purple-500/30 dark:border-purple-500/40';
+  if (typeLower === 'vendor')
+    return 'bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/30 dark:border-blue-500/40';
+  if (typeLower === 'tenant')
+    return 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/30 dark:border-emerald-500/40';
+  return 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400 border-gray-500/30 dark:border-gray-500/40';
 };
 
 const UsersTable = () => {
