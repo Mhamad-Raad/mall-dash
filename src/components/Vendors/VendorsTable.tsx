@@ -1,6 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, Clock, Store as StoreIcon, ChevronRight } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Mail,
+  Phone,
+  Clock,
+  Store as StoreIcon,
+  ChevronRight,
+} from 'lucide-react';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
@@ -40,6 +46,8 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
   const handleRowClick = (vendorId: string) => {
     navigate(`/vendors/${vendorId}`);
   };
+
+  console.log('vendors', vendors);
 
   if (loading) {
     return (
@@ -128,9 +136,6 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                           src={vendor.logo}
                           alt={vendor.businessName}
                         />
-                        <AvatarFallback className='text-sm font-semibold bg-gradient-to-br from-primary/20 to-primary/10 text-primary'>
-                          {vendor.fallback}
-                        </AvatarFallback>
                       </Avatar>
                       <div className='flex flex-col gap-0.5 min-w-0'>
                         <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors truncate'>
@@ -147,14 +152,18 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
 
                   {/* Owner Name */}
                   <TableCell className='py-4'>
-                    <span className='text-sm font-medium text-foreground/80'>{vendor.ownerName}</span>
+                    <span className='text-sm font-medium text-foreground/80'>
+                      {vendor.ownerName}
+                    </span>
                   </TableCell>
 
                   {/* Type */}
                   <TableCell className='py-4'>
                     <Badge
                       variant='outline'
-                      className={`${getVendorTypeColor(vendor.type)} font-semibold text-xs px-3 py-1`}
+                      className={`${getVendorTypeColor(
+                        vendor.type
+                      )} font-semibold text-xs px-3 py-1`}
                     >
                       {vendor.type}
                     </Badge>
@@ -167,13 +176,17 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                         <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                           <Mail className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                         </div>
-                        <span className='text-xs text-foreground/80 truncate'>{vendor.email}</span>
+                        <span className='text-xs text-foreground/80 truncate'>
+                          {vendor.email}
+                        </span>
                       </div>
                       <div className='flex items-center gap-2.5'>
                         <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                           <Phone className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                         </div>
-                        <span className='text-xs font-medium text-foreground/80 truncate'>{vendor.phoneNumber}</span>
+                        <span className='text-xs font-medium text-foreground/80 truncate'>
+                          {vendor.phoneNumber}
+                        </span>
                       </div>
                     </div>
                   </TableCell>
@@ -189,7 +202,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                       </span>
                     </div>
                   </TableCell>
-                  
+
                   <TableCell className='py-4'>
                     <ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors' />
                   </TableCell>
