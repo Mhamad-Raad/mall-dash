@@ -1,5 +1,7 @@
 import { Building2, Home } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
+import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts';
 
 interface OccupancyChartProps {
   totalApartments: number;
@@ -10,40 +12,15 @@ interface OccupancyChartProps {
 export default function OccupancyChart({ totalApartments, occupied, totalBuildings }: OccupancyChartProps) {
   const vacant = totalApartments - occupied;
   const occupancyRate = (occupied / totalApartments) * 100;
-  
-  // Calculate angles for the donut chart
-  const occupiedAngle = (occupied / totalApartments) * 360;
 
-  // SVG path for donut segments
-  const radius = 80;
-  const innerRadius = 55;
-  const centerX = 100;
-  const centerY = 100;
+  const chartData = [{ occupancy: 'rate', occupied: occupancyRate, fill: 'var(--color-occupied)' }];
 
-  const createArc = (startAngle: number, endAngle: number) => {
-    const start = (startAngle - 90) * (Math.PI / 180);
-    const end = (endAngle - 90) * (Math.PI / 180);
-
-    const x1 = centerX + radius * Math.cos(start);
-    const y1 = centerY + radius * Math.sin(start);
-    const x2 = centerX + radius * Math.cos(end);
-    const y2 = centerY + radius * Math.sin(end);
-
-    const x3 = centerX + innerRadius * Math.cos(end);
-    const y3 = centerY + innerRadius * Math.sin(end);
-    const x4 = centerX + innerRadius * Math.cos(start);
-    const y4 = centerY + innerRadius * Math.sin(start);
-
-    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-
-    return `
-      M ${x1} ${y1}
-      A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}
-      L ${x3} ${y3}
-      A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4}
-      Z
-    `;
-  };
+  const chartConfig = {
+    occupied: {
+      label: 'Occupied',
+      color: 'var(--chart-2)',
+    },
+  } satisfies ChartConfig;
 
   return (
     <Card>
@@ -56,32 +33,52 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
       </CardHeader>
       <CardContent>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-          {/* Donut Chart */}
+          {/* Radial Chart */}
           <div className='flex items-center justify-center'>
-            <div className='relative'>
-              <svg width='280' height='280' viewBox='0 0 200 200'>
-                {/* Vacant segment */}
-                <path
-                  d={createArc(occupiedAngle, 360)}
-                  className='fill-muted transition-all duration-300 hover:opacity-80'
+            <ChartContainer config={chartConfig} className='mx-auto aspect-square w-full max-w-[300px]'>
+              <RadialBarChart
+                data={chartData}
+                startAngle={0}
+                endAngle={occupancyRate * 3.6}
+                innerRadius={100}
+                outerRadius={140}
+              >
+                <PolarGrid
+                  gridType='circle'
+                  radialLines={false}
+                  stroke='none'
+                  className='first:fill-muted last:fill-background'
+                  polarRadius={[106, 94]}
                 />
-                {/* Occupied segment */}
-                <path
-                  d={createArc(0, occupiedAngle)}
-                  className='fill-green-500 dark:fill-green-400 transition-all duration-300 hover:opacity-90'
-                />
-                {/* Center circle for donut effect */}
-                <circle cx={centerX} cy={centerY} r={innerRadius} className='fill-card' />
-              </svg>
-              
-              {/* Center text */}
-              <div className='absolute inset-0 flex flex-col items-center justify-center'>
-                <div className='text-4xl font-bold text-green-600 dark:text-green-400'>
-                  {occupancyRate.toFixed(1)}%
-                </div>
-                <div className='text-xs text-muted-foreground'>Occupied</div>
-              </div>
-            </div>
+                <RadialBar dataKey='occupied' background cornerRadius={10} />
+                <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                        return (
+                          <text x={viewBox.cx} y={viewBox.cy} textAnchor='middle' dominantBaseline='middle'>
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className='fill-foreground text-4xl font-bold'
+                            >
+                              {occupancyRate.toFixed(1)}%
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className='fill-muted-foreground'
+                            >
+                              Occupied
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </PolarRadiusAxis>
+              </RadialBarChart>
+            </ChartContainer>
           </div>
 
           {/* Stats */}
@@ -89,10 +86,10 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
             {/* Occupied */}
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
-                <div className='w-4 h-4 rounded-full bg-green-500' />
+                <div className='w-4 h-4 rounded-full bg-chart-2' />
                 <div>
                   <p className='text-sm text-muted-foreground'>Occupied</p>
-                  <p className='text-2xl font-bold text-green-600 dark:text-green-400'>{occupied}</p>
+                  <p className='text-2xl font-bold'>{occupied}</p>
                 </div>
               </div>
               <div className='text-right'>
@@ -105,7 +102,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
             {/* Vacant */}
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
-                <div className='w-4 h-4 rounded-full bg-muted border-2 border-muted-foreground/40' />
+                <div className='w-4 h-4 rounded-full bg-muted border-2 border-muted-foreground/20' />
                 <div>
                   <p className='text-sm text-muted-foreground'>Vacant</p>
                   <p className='text-2xl font-bold'>{vacant}</p>
