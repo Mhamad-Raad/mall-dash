@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout/DashboardLayout';
 import {
   getStoredTokens,
-  validateRefreshToken,
+  refreshAccessToken,
   clearTokens,
+  validateAppContext,
 } from '@/utils/authUtils';
 import Logo from '@/assets/Logo.jpg';
 import { Loader2 } from 'lucide-react';
@@ -21,26 +22,35 @@ const LoadingPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { refreshToken } = getStoredTokens();
-      if (!refreshToken) {
+      // First, validate app context
+      if (!validateAppContext()) {
         setIsAuthorized(false);
         return;
       }
-      const refreshTokenIsValid = await validateRefreshToken(refreshToken);
-      if (!refreshTokenIsValid) {
-        clearTokens();
-        setIsAuthorized(false);
+      
+      const { accessToken, refreshToken } = getStoredTokens();
+      
+      // If we have an access token, assume we're authenticated
+      // The axios interceptor will handle refresh if needed
+      if (accessToken) {
+        setIsAuthorized(true);
         return;
       }
-      setIsAuthorized(true);
+      
+      // If no access token but we have a refresh token, try to refresh
+      if (refreshToken) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          setIsAuthorized(true);
+          return;
+        }
+      }
+      
+      // No valid tokens - user needs to login
+      setIsAuthorized(false);
     };
 
-    // Give time for localStorage update after login
-    const timer = setTimeout(() => {
-      checkAuth();
-    }, 50);
-
-    return () => clearTimeout(timer);
+    checkAuth();
   }, []);
 
   useEffect(() => {

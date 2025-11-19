@@ -7,7 +7,7 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import { loginUser } from '@/data/Authorization';
-import { getStoredTokens, validateRefreshToken } from '@/utils/authUtils';
+import { getStoredTokens, refreshAccessToken, validateAppContext } from '@/utils/authUtils';
 import Logo from '@/assets/Logo.jpg';
 
 const Login = () => {
@@ -22,14 +22,29 @@ const Login = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { refreshToken } = getStoredTokens();
+      // First, validate app context
+      if (!validateAppContext()) {
+        setIsCheckingSession(false);
+        return;
+      }
+      
+      const { accessToken, refreshToken } = getStoredTokens();
+      
+      // If we have an access token, user is already logged in
+      if (accessToken) {
+        navigate('/');
+        return;
+      }
+      
+      // If we have a refresh token, try to refresh
       if (refreshToken) {
-        const refreshTokenIsValid = await validateRefreshToken(refreshToken);
-        if (refreshTokenIsValid) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
           navigate('/');
           return;
         }
       }
+      
       setIsCheckingSession(false);
     };
     checkSession();

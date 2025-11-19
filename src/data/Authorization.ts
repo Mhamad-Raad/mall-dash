@@ -29,6 +29,7 @@ export const loginUser = async ({
     if (data.accessToken && data.refreshToken) {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('appContext', APP_CONTEXT);
     }
 
     return data;
