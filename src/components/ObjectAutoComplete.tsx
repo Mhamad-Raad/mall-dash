@@ -11,6 +11,7 @@ interface ObjectAutoCompleteProps<T> {
   placeholder?: string;
   className?: string;
   debounceMs?: number;
+  initialValue?: string;
 }
 
 export function ObjectAutoComplete<T>({
@@ -20,8 +21,9 @@ export function ObjectAutoComplete<T>({
   placeholder = 'Search...',
   className = '',
   debounceMs = 200,
+  initialValue = '',
 }: ObjectAutoCompleteProps<T>) {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialValue);
   const [options, setOptions] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -30,6 +32,13 @@ export function ObjectAutoComplete<T>({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<any>(null);
+
+  // Update input when initialValue changes
+  useEffect(() => {
+    if (initialValue) {
+      setInput(initialValue);
+    }
+  }, [initialValue]);
 
   useEffect(() => {
     if (!input) {

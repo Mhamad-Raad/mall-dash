@@ -29,11 +29,13 @@ import {
   fetchVendorById,
   updateVendor,
   clearVendor,
+  deleteVendor,
 } from '@/store/slices/vendorSlice';
 import { vendorTypes } from '@/constants/vendorTypes';
 import { convertToUTCFormat } from '@/lib/timeUtils';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
+import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
 
 const VendorDetail = () => {
   const { id } = useParams();
@@ -55,6 +57,7 @@ const VendorDetail = () => {
     photo: null as File | null,
   });
   const [preview, setPreview] = useState<string>('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Fetch vendor on mount
   useEffect(() => {
@@ -222,10 +225,17 @@ const VendorDetail = () => {
   };
 
   const handleDelete = () => {
-    // TODO: Implement API call to delete vendor
-    if (window.confirm('Are you sure you want to delete this vendor?')) {
-      console.log('Deleting vendor:', id);
-      navigate('/vendors');
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    navigate('/vendors');
+    if (id) {
+      await dispatch(deleteVendor(id));
+      toast.success('Vendor Deleted', {
+        description: 'The vendor has been successfully deleted.',
+      });
     }
   };
 
@@ -470,6 +480,7 @@ const VendorDetail = () => {
                 `${user.firstName} ${user.lastName} (${user.email})`
               }
               placeholder='Search for a user by name or email...'
+              initialValue={formData.userName}
             />
             {formData.userName && (
               <div className='mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md'>
@@ -497,6 +508,25 @@ const VendorDetail = () => {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmModal
+        open={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title='Delete Vendor'
+        description='Are you sure you want to permanently delete this vendor?'
+        confirmLabel='Delete'
+        confirmType='danger'
+        cancelLabel='Cancel'
+        warning='This action cannot be undone.'
+        changes={[
+          {
+            field: 'Vendor Name',
+            oldValue: vendor?.businessName || '',
+            newValue: 'Will be deleted',
+          },
+        ]}
+      />
     </div>
   );
 };

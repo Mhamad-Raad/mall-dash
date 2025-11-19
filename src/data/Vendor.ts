@@ -154,3 +154,17 @@ export const updateVendor = async (
   }
 };
 
+export const deleteVendor = async (id: string) => {
+  try {
+    const response = await axiosInstance.delete(`/Vendor/${id}`, {
+      headers: {
+        key: API_KEY,
+        value: API_VALUE,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
+

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { VendorType, VendorAPIResponse } from '@/interfaces/Vendor.interface';
 import { mapVendorAPIToUI } from '@/interfaces/Vendor.interface';
-import { fetchVendorById as fetchVendorByIdAPI, updateVendor as updateVendorAPI } from '@/data/Vendor';
+import { fetchVendorById as fetchVendorByIdAPI, updateVendor as updateVendorAPI, deleteVendor as deleteVendorAPI } from '@/data/Vendor';
 
 interface VendorState {
   vendor: VendorType | null;
@@ -67,6 +67,23 @@ export const updateVendor = createAsyncThunk(
       return data;
     } catch (error) {
       return rejectWithValue('Failed to update vendor');
+    }
+  }
+);
+
+export const deleteVendor = createAsyncThunk(
+  'vendor/deleteVendor',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const data = await deleteVendorAPI(id);
+
+      if (data.error) {
+        return rejectWithValue(data.error);
+      }
+
+      return { id };
+    } catch (error) {
+      return rejectWithValue('Failed to delete vendor');
     }
   }
 );
