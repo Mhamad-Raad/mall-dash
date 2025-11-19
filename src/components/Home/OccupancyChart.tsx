@@ -1,4 +1,5 @@
 import { Building2, Home } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
 import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts';
@@ -13,7 +14,19 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
   const vacant = totalApartments - occupied;
   const occupancyRate = (occupied / totalApartments) * 100;
 
-  const chartData = [{ occupancy: 'rate', occupied: occupancyRate, fill: 'var(--color-occupied)' }];
+  const [displayRate, setDisplayRate] = useState(0);
+
+  useEffect(() => {
+    // Reset to 0 when data changes
+    setDisplayRate(0);
+    // Small delay then animate to actual value
+    const timer = setTimeout(() => {
+      setDisplayRate(occupancyRate);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [occupancyRate]);
+
+  const chartData = [{ occupancy: 'rate', occupied: displayRate, fill: 'var(--color-occupied)' }];
 
   const chartConfig = {
     occupied: {
@@ -39,7 +52,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
               <RadialBarChart
                 data={chartData}
                 startAngle={0}
-                endAngle={occupancyRate * 3.6}
+                endAngle={displayRate * 3.6}
                 innerRadius={100}
                 outerRadius={140}
               >

@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { Layers, Home } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
@@ -38,7 +39,19 @@ const BuildingSummaryCards = () => {
   const occupiedPercentage = totalApartments > 0 ? ((occupiedApartments / totalApartments) * 100).toFixed(1) : '0.0';
   const vacantPercentage = totalApartments > 0 ? ((vacantApartments / totalApartments) * 100).toFixed(1) : '0.0';
   
-  const chartData = [{ occupancy: 'rate', occupied: occupancyRate, fill: 'var(--color-occupied)' }];
+  const [displayRate, setDisplayRate] = useState(0);
+
+  useEffect(() => {
+    // Reset to 0 when building changes
+    setDisplayRate(0);
+    // Small delay then animate to actual value
+    const timer = setTimeout(() => {
+      setDisplayRate(occupancyRate);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [occupancyRate, building?.id]);
+  
+  const chartData = [{ occupancy: 'rate', occupied: displayRate, fill: 'var(--color-occupied)' }];
 
   const chartConfig = {
     occupied: {
@@ -57,7 +70,7 @@ const BuildingSummaryCards = () => {
               <RadialBarChart
                 data={chartData}
                 startAngle={0}
-                endAngle={occupancyRate * 3.6}
+                endAngle={displayRate * 3.6}
                 innerRadius={100}
                 outerRadius={140}
               >
