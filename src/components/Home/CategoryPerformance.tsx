@@ -104,6 +104,12 @@ const CategoryPerformance = ({ data }: CategoryPerformanceProps) => {
               );
             })}
           </div>
+
+          {/* Total Revenue */}
+          <div className='pt-3 border-t flex items-center justify-between'>
+            <span className='text-sm font-medium text-muted-foreground'>Total Revenue</span>
+            <span className='text-lg font-bold'>${totalRevenue.toLocaleString()}</span>
+          </div>
         </div>
       </CardContent>
     </Card>
