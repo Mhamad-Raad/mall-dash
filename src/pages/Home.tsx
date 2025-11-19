@@ -1,13 +1,9 @@
 import CardsHome from '@/components/Home/CardsHome';
 import RecentOrdersHome from '@/components/Home/RecentOrdersHome';
 import TopSellingHome from '@/components/Home/TopSellingHome';
-import ActivityChart from '@/components/Home/ActivityChart';
-import RevenueSummary from '@/components/Home/RevenueSummary';
-import MiniStatsCard from '@/components/Home/MiniStatsCard';
 import OrderStatusChart from '@/components/Home/OrderStatusChart';
 import CategoryPerformance from '@/components/Home/CategoryPerformance';
 import OccupancyChart from '@/components/Home/OccupancyChart';
-import { Package, TrendingUp, Users } from 'lucide-react';
 
 const cardsInfo = [
   {
@@ -156,53 +152,6 @@ const topSellingItems = [
   },
 ];
 
-// Weekly activity data for chart
-const weeklyOrders = [
-  { label: 'Mon', value: 45 },
-  { label: 'Tue', value: 52 },
-  { label: 'Wed', value: 38 },
-  { label: 'Thu', value: 65 },
-  { label: 'Fri', value: 58 },
-  { label: 'Sat', value: 72 },
-  { label: 'Sun', value: 48 },
-];
-
-// Revenue data
-const revenueData = {
-  totalRevenue: 45280,
-  monthlyGrowth: 12.5,
-  avgOrderValue: 85.5,
-  topVendorRevenue: {
-    name: 'Mini-Markety barzyakany 2',
-    amount: 15420,
-  },
-};
-
-// Mini stats data with sparklines
-const deliveryRate = {
-  title: 'Delivery Rate',
-  value: '94.5%',
-  change: 2.3,
-  sparklineData: [85, 88, 90, 87, 92, 94, 95, 93, 94, 96],
-  icon: <Package className='size-5' />,
-};
-
-const customerGrowth = {
-  title: 'Customer Growth',
-  value: '+12.5%',
-  change: 5.2,
-  sparklineData: [100, 105, 108, 112, 115, 118, 120, 125, 128, 132],
-  icon: <Users className='size-5' />,
-};
-
-const avgResponseTime = {
-  title: 'Avg Response',
-  value: '2.4m',
-  change: -8.1,
-  sparklineData: [5, 4.8, 4.5, 4, 3.5, 3.2, 2.8, 2.6, 2.5, 2.4],
-  icon: <TrendingUp className='size-5' />,
-};
-
 // Order status data
 const orderStatusData = [
   { status: 'Delivered', count: 156, color: '#22c55e' },
@@ -225,21 +174,6 @@ const Home = () => {
       {/* Stats Cards */}
       <CardsHome cards={cardsInfo} />
 
-      {/* Chart and Revenue Summary */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        <div className='lg:col-span-2 bg-card border rounded-lg p-6 shadow-sm'>
-          <ActivityChart data={weeklyOrders} title='Weekly Orders' trend={8.2} />
-        </div>
-        <div className='lg:col-span-1'>
-          <RevenueSummary
-            totalRevenue={revenueData.totalRevenue}
-            monthlyGrowth={revenueData.monthlyGrowth}
-            avgOrderValue={revenueData.avgOrderValue}
-            topVendorRevenue={revenueData.topVendorRevenue}
-          />
-        </div>
-      </div>
-
       {/* Occupancy Chart */}
       <OccupancyChart totalApartments={180} occupied={142} totalBuildings={3} />
 
@@ -253,14 +187,6 @@ const Home = () => {
           <h3 className='text-lg font-semibold mb-4'>Top Selling</h3>
           <TopSellingHome items={topSellingItems} />
         </div>
-      </div>
-
-      {/* Mini Charts Section */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {/* Mini Stats with Sparklines */}
-        <MiniStatsCard {...deliveryRate} />
-        <MiniStatsCard {...customerGrowth} />
-        <MiniStatsCard {...avgResponseTime} />
       </div>
 
       {/* Performance Charts */}
