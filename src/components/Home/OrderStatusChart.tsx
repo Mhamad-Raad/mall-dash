@@ -35,13 +35,13 @@ const OrderStatusChart = ({ data }: OrderStatusChartProps) => {
   return (
     <Card>
       <CardHeader>
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex items-center gap-2'>
             <Calendar className='size-5 text-primary' />
             <CardTitle className='text-lg'>Order Status Distribution</CardTitle>
           </div>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className='w-[180px]'>
+            <SelectTrigger className='w-full sm:w-[180px]'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -103,18 +103,18 @@ const OrderStatusChart = ({ data }: OrderStatusChartProps) => {
           </div>
 
           {/* Stats */}
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='space-y-3'>
             {data.map((item, index) => {
               const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) : '0.0';
               return (
-                <div key={index} className='flex items-center gap-3'>
-                  <div className='w-3 h-3 rounded-full' style={{ backgroundColor: `var(--chart-${index + 1})` }} />
-                  <div className='flex-1'>
-                    <p className='text-sm text-muted-foreground'>{item.status}</p>
-                    <div className='flex items-center justify-between'>
-                      <p className='text-xl font-bold'>{item.count}</p>
-                      <p className='text-sm text-muted-foreground'>{percentage}%</p>
-                    </div>
+                <div key={index} className='flex items-center justify-between gap-2'>
+                  <div className='flex items-center gap-2 flex-1 min-w-0'>
+                    <div className='w-3 h-3 rounded-full flex-shrink-0' style={{ backgroundColor: `var(--chart-${index + 1})` }} />
+                    <p className='text-sm font-medium truncate'>{item.status}</p>
+                  </div>
+                  <div className='flex items-center gap-3 flex-shrink-0'>
+                    <p className='text-base sm:text-lg font-bold'>{item.count}</p>
+                    <p className='text-xs text-muted-foreground w-12 text-right'>{percentage}%</p>
                   </div>
                 </div>
               );

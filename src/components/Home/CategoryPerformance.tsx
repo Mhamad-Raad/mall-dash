@@ -35,13 +35,13 @@ const CategoryPerformance = ({ data }: CategoryPerformanceProps) => {
   return (
     <Card>
       <CardHeader>
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex items-center gap-2'>
             <TrendingUp className='size-5 text-primary' />
             <CardTitle className='text-lg'>Top Categories</CardTitle>
           </div>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className='w-[180px]'>
+            <SelectTrigger className='w-full sm:w-[180px]'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -61,8 +61,9 @@ const CategoryPerformance = ({ data }: CategoryPerformanceProps) => {
       <CardContent>
         <div className='space-y-6'>
           {/* Bar Chart */}
-          <ChartContainer config={chartConfig}>
-            <BarChart data={chartData} margin={{ top: 20, right: 12, bottom: 0, left: 12 }}>
+          <div className='w-full overflow-x-auto'>
+            <ChartContainer config={chartConfig} className='h-[200px] sm:h-[250px] w-full min-w-[300px]'>
+              <BarChart data={chartData} margin={{ top: 20, right: 12, bottom: 0, left: 12 }}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey='category'
@@ -83,20 +84,21 @@ const CategoryPerformance = ({ data }: CategoryPerformanceProps) => {
               <Bar dataKey='value' radius={8} />
             </BarChart>
           </ChartContainer>
+          </div>
 
           {/* Category Stats */}
-          <div className='grid grid-cols-2 gap-4 pt-4 border-t'>
+          <div className='space-y-3 pt-4 border-t'>
             {data.map((item, index) => {
               const revenuePercent = ((item.value / totalRevenue) * 100).toFixed(1);
               return (
-                <div key={index} className='flex items-center gap-3'>
-                  <div className='w-3 h-3 rounded-full' style={{ backgroundColor: `var(--chart-${index + 1})` }} />
-                  <div className='flex-1'>
-                    <p className='text-sm text-muted-foreground'>{item.category}</p>
-                    <div className='flex items-center justify-between'>
-                      <p className='text-xl font-bold'>${(item.value / 1000).toFixed(1)}k</p>
-                      <p className='text-sm text-muted-foreground'>{revenuePercent}%</p>
-                    </div>
+                <div key={index} className='flex items-center justify-between gap-2'>
+                  <div className='flex items-center gap-2 flex-1 min-w-0'>
+                    <div className='w-3 h-3 rounded-full flex-shrink-0' style={{ backgroundColor: `var(--chart-${index + 1})` }} />
+                    <p className='text-sm font-medium truncate'>{item.category}</p>
+                  </div>
+                  <div className='flex items-center gap-3 flex-shrink-0'>
+                    <p className='text-base sm:text-lg font-bold'>${(item.value / 1000).toFixed(1)}k</p>
+                    <p className='text-xs text-muted-foreground w-12 text-right'>{revenuePercent}%</p>
                   </div>
                 </div>
               );
