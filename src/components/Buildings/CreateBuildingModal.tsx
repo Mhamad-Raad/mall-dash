@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '@/store/store';
+
 import { useNavigate } from 'react-router-dom';
 
 import { createBuilding } from '@/data/Buildings';
@@ -26,7 +25,6 @@ const CreateBuildingModal = ({
   open,
   onOpenChange,
 }: CreateBuildingModalProps) => {
-  const dispatch = useDispatch<AppDispatch>();
   const [buildingName, setBuildingName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');

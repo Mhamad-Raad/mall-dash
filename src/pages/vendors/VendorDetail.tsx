@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -211,7 +211,7 @@ const VendorDetail = () => {
 
     console.log('vendorData being sent:', {
       ...vendorData,
-      ProfileImageUrl: vendorData.ProfileImageUrl ? 'File object' : 'undefined'
+      ProfileImageUrl: vendorData.ProfileImageUrl ? 'File object' : 'undefined',
     });
 
     const result = await dispatch(updateVendor({ id, vendorData }));
@@ -304,9 +304,6 @@ const VendorDetail = () => {
             <div className='flex items-center gap-4'>
               <Avatar className='h-20 w-20'>
                 <AvatarImage src={vendor.logo} alt={vendor.businessName} />
-                <AvatarFallback className='bg-primary/10 text-primary text-2xl font-bold'>
-                  {vendor.fallback}
-                </AvatarFallback>
               </Avatar>
               <div>
                 <Input

@@ -9,7 +9,7 @@ import {
   SelectItem,
   SelectValue,
 } from '@/components/ui/select';
-import { User, Mail, Lock, Phone, Building2, Image as ImageIcon, X } from 'lucide-react';
+import { Mail, Lock, Building2, Image as ImageIcon, X } from 'lucide-react';
 
 const buildings = ['Sky Tower', 'Rose Heights', 'Emerald Plaza'];
 const floors = ['1', '2', '3', '4', '5'];
@@ -31,7 +31,10 @@ type CustomerFormProps = {
   onInputChange: (field: string, value: unknown) => void;
 };
 
-export default function CustomerForm({ formData, onInputChange }: CustomerFormProps) {
+export default function CustomerForm({
+  formData,
+  onInputChange,
+}: CustomerFormProps) {
   const [preview, setPreview] = useState<string>('');
 
   useEffect(() => {
@@ -54,18 +57,26 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
             type='file'
             accept='image/*'
             className='hidden'
-            onChange={(e) => onInputChange('photo', e.target.files?.[0] || null)}
+            onChange={(e) =>
+              onInputChange('photo', e.target.files?.[0] || null)
+            }
           />
           <label
             htmlFor='customer-photo'
             className='w-full h-full rounded-full bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
           >
             {preview ? (
-              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+              <img
+                src={preview}
+                alt='Preview'
+                className='w-full h-full object-cover'
+              />
             ) : (
               <div className='flex flex-col items-center gap-2'>
                 <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
-                <span className='text-xs text-muted-foreground'>Upload Photo</span>
+                <span className='text-xs text-muted-foreground'>
+                  Upload Photo
+                </span>
               </div>
             )}
           </label>
@@ -176,10 +187,7 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
             />
           </div>
           <div className='space-y-2'>
-            <Label
-              htmlFor='customer-confirm'
-              className='text-sm font-medium'
-            >
+            <Label htmlFor='customer-confirm' className='text-sm font-medium'>
               Confirm Password <span className='text-destructive'>*</span>
             </Label>
             <Input
@@ -204,7 +212,9 @@ export default function CustomerForm({ formData, onInputChange }: CustomerFormPr
         <div className='flex items-center gap-2 pb-2'>
           <Building2 className='size-5 text-primary' />
           <h3 className='text-base font-semibold'>Address Information</h3>
-          <span className='text-xs text-muted-foreground font-normal ml-auto'>(Optional)</span>
+          <span className='text-xs text-muted-foreground font-normal ml-auto'>
+            (Optional)
+          </span>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <div className='space-y-2'>

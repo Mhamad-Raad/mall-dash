@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { User, Mail, Lock, Image as ImageIcon, Phone, Shield, X } from 'lucide-react';
+import { Mail, Lock, Image as ImageIcon, X } from 'lucide-react';
 import roles from '@/constants/roles';
 
 type StaffFormProps = {
@@ -58,11 +58,17 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
             className='w-full h-full rounded-full bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
           >
             {preview ? (
-              <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+              <img
+                src={preview}
+                alt='Preview'
+                className='w-full h-full object-cover'
+              />
             ) : (
               <div className='flex flex-col items-center gap-2'>
                 <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
-                <span className='text-xs text-muted-foreground'>Upload Photo</span>
+                <span className='text-xs text-muted-foreground'>
+                  Upload Photo
+                </span>
               </div>
             )}
           </label>

@@ -8,13 +8,10 @@ export const initialVendor: VendorType = {
   phoneNumber: '',
   address: '',
   logo: '',
-  fallback: '',
   workingHours: {
     open: '',
     close: '',
   },
   type: '',
   description: '',
-  buildingName: '',
-  apartmentNumber: '',
 };
