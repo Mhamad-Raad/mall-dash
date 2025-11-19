@@ -1,45 +1,128 @@
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Label, Pie, PieChart } from 'recharts';
+import { Calendar } from 'lucide-react';
+
 interface OrderStatusChartProps {
   data: { status: string; count: number; color: string }[];
 }
 
 const OrderStatusChart = ({ data }: OrderStatusChartProps) => {
+  const currentDate = new Date();
+  const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+  const currentYear = currentDate.getFullYear();
+
+  const [selectedPeriod, setSelectedPeriod] = useState('current');
+
   const total = data.reduce((sum, item) => sum + item.count, 0);
 
-  return (
-    <div className='bg-card border rounded-lg p-4 hover:shadow-md transition-all'>
-      <h3 className='text-sm font-semibold mb-4'>Order Status Distribution</h3>
-      
-      {/* Progress Bars */}
-      <div className='space-y-3'>
-        {data.map((item, index) => {
-          const percentage = total > 0 ? (item.count / total) * 100 : 0;
-          
-          return (
-            <div key={index} className='space-y-1'>
-              <div className='flex items-center justify-between text-xs'>
-                <span className='font-medium text-muted-foreground'>{item.status}</span>
-                <span className='font-semibold tabular-nums'>{item.count}</span>
-              </div>
-              <div className='h-2 bg-muted rounded-full overflow-hidden'>
-                <div
-                  className='h-full rounded-full transition-all duration-500'
-                  style={{
-                    width: `${percentage}%`,
-                    backgroundColor: item.color,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+  const chartData = data.map((item, index) => ({
+    status: item.status,
+    count: item.count,
+    fill: `var(--chart-${index + 1})`,
+  }));
 
-      {/* Total */}
-      <div className='mt-4 pt-3 border-t flex items-center justify-between'>
-        <span className='text-sm font-medium text-muted-foreground'>Total Orders</span>
-        <span className='text-lg font-bold tabular-nums'>{total}</span>
-      </div>
-    </div>
+  const chartConfig = data.reduce((config, item, index) => {
+    config[item.status.toLowerCase().replace(/\s+/g, '')] = {
+      label: item.status,
+      color: `var(--chart-${index + 1})`,
+    };
+    return config;
+  }, {} as ChartConfig);
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <Calendar className='size-5 text-primary' />
+            <CardTitle className='text-lg'>Order Status Distribution</CardTitle>
+          </div>
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className='w-[180px]'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='current'>This Month</SelectItem>
+              <SelectItem value='last'>Last Month</SelectItem>
+              <SelectItem value='year'>This Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <CardDescription>
+          {selectedPeriod === 'current' && `${currentMonth} ${currentYear}`}
+          {selectedPeriod === 'last' && 
+            `${new Date(currentYear, currentDate.getMonth() - 1).toLocaleString('default', { month: 'long' })} ${currentYear}`}
+          {selectedPeriod === 'year' && `${currentYear}`}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className='space-y-8'>
+          {/* Pie Chart */}
+          <div className='flex items-center justify-center'>
+            <ChartContainer config={chartConfig} className='mx-auto aspect-square w-full max-w-[300px]'>
+              <PieChart width={300} height={300}>
+                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <Pie
+                  data={chartData}
+                  dataKey='count'
+                  nameKey='status'
+                  innerRadius={70}
+                  outerRadius={110}
+                  strokeWidth={5}
+                >
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                        return (
+                          <text x={viewBox.cx} y={viewBox.cy} textAnchor='middle' dominantBaseline='middle'>
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className='fill-foreground text-3xl font-bold'
+                            >
+                              {total}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className='fill-muted-foreground'
+                            >
+                              Total Orders
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </div>
+
+          {/* Stats */}
+          <div className='grid grid-cols-2 gap-4'>
+            {data.map((item, index) => {
+              const percentage = total > 0 ? ((item.count / total) * 100).toFixed(1) : '0.0';
+              return (
+                <div key={index} className='flex items-center gap-3'>
+                  <div className='w-3 h-3 rounded-full' style={{ backgroundColor: `var(--chart-${index + 1})` }} />
+                  <div className='flex-1'>
+                    <p className='text-sm text-muted-foreground'>{item.status}</p>
+                    <div className='flex items-center justify-between'>
+                      <p className='text-xl font-bold'>{item.count}</p>
+                      <p className='text-sm text-muted-foreground'>{percentage}%</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
