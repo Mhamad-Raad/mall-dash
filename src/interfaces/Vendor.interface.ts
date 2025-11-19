@@ -11,7 +11,7 @@ export interface VendorAPIResponse {
   firstName: string;
   lastName: string;
   phone: string;
-  userName: string;
+  userEmail: string;
 }
 
 // UI Display Type (for backwards compatibility with existing components)
@@ -32,6 +32,7 @@ export interface VendorType {
   description?: string;
   buildingName?: string;
   apartmentNumber?: string;
+  userId?: string;
 }
 
 export interface VendorsType {
@@ -44,7 +45,7 @@ export function mapVendorAPIToUI(apiVendor: VendorAPIResponse): VendorType {
     _id: apiVendor.id.toString(),
     businessName: apiVendor.name,
     ownerName: `${apiVendor.firstName} ${apiVendor.lastName}`,
-    email: apiVendor.userName,
+    email: apiVendor.userEmail,
     phoneNumber: apiVendor.phone,
     address: '', // Not provided in API
     logo: apiVendor.profileImageUrl || '',
@@ -57,5 +58,6 @@ export function mapVendorAPIToUI(apiVendor: VendorAPIResponse): VendorType {
     description: apiVendor.description,
     buildingName: undefined,
     apartmentNumber: undefined,
+    userId: apiVendor.userId,
   };
 }

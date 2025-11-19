@@ -372,7 +372,7 @@ const CreateVendor = () => {
                   </Label>
                   <ObjectAutoComplete
                     fetchOptions={async (query) => {
-                      const res = await fetchUsers({ searchTerm: query, limit: 10 });
+                      const res = await fetchUsers({ searchTerm: query, limit: 10, role: 2 });
                       if (res.error || !res.data) return [];
                       return res.data;
                     }}

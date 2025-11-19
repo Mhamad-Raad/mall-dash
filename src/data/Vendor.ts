@@ -78,3 +78,79 @@ export const fetchVendors = async (params?: {
   }
 };
 
+export const fetchVendorById = async (id: string) => {
+  try {
+    const response = await axiosInstance.get(`/Vendor/${id}`, {
+      headers: { key: API_KEY, value: API_VALUE },
+    });
+    console.log('response.data', response.data);
+
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};
+
+export const updateVendor = async (
+  id: string,
+  params: {
+    name: string;
+    description: string;
+    openingTime: string;
+    closeTime: string;
+    type: number;
+    userId: string;
+    ProfileImageUrl?: File;
+  }
+) => {
+  try {
+    const hasFile = params.ProfileImageUrl instanceof File;
+
+    console.log(hasFile);
+
+    if (hasFile && params.ProfileImageUrl) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      formData.append('name', params.name);
+      formData.append('description', params.description);
+      formData.append('openingTime', params.openingTime);
+      formData.append('closeTime', params.closeTime);
+      formData.append('type', params.type.toString());
+      formData.append('userId', params.userId);
+      formData.append('ProfileImageUrl', params.ProfileImageUrl);
+
+      const response = await axiosInstance.put(`/Vendor/${id}`, formData, {
+        headers: {
+          key: API_KEY,
+          value: API_VALUE,
+        },
+        transformRequest: [(data) => data],
+      });
+
+      return response.data;
+    } else {
+      const response = await axiosInstance.put(
+        `/Vendor/${id}`,
+        {
+          name: params.name,
+          description: params.description,
+          openingTime: params.openingTime,
+          closeTime: params.closeTime,
+          type: params.type,
+          userId: params.userId,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            key: API_KEY,
+            value: API_VALUE,
+          },
+        }
+      );
+      return response.data;
+    }
+  } catch (error: any) {
+    return { error: error?.response?.data?.message || error.message };
+  }
+};
+
