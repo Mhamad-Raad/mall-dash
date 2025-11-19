@@ -7,22 +7,39 @@ type Props = {
   suggestions: number[];
 };
 
+const DEFAULT_LIMIT = '40';
+const DEFAULT_PAGE = '1';
+
 const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // Initial limit/page from URL (minimum page is 1)
+  // Ensure both page and limit are set together on initial mount to avoid double fetch
+  useEffect(() => {
+    const limitParam = searchParams.get('limit');
+    const pageParam = searchParams.get('page');
+    if (!limitParam || !pageParam) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('limit', DEFAULT_LIMIT);
+      params.set('page', DEFAULT_PAGE);
+      navigate(`${window.location.pathname}?${params.toString()}`, {
+        replace: true,
+      });
+    }
+    // only runs once at mount
+    // eslint-disable-next-line
+  }, []);
+
   function getInitialLimit() {
     const limitParam = Number(searchParams.get('limit'));
-    return limitParam > 0 ? limitParam.toString() : '40';
+    return limitParam > 0 ? limitParam.toString() : DEFAULT_LIMIT;
   }
   function getInitialPage() {
     const pageParam = Number(searchParams.get('page'));
-    return pageParam > 0 ? pageParam : 1;
+    return pageParam > 0 ? pageParam : Number(DEFAULT_PAGE);
   }
 
   const [value, setValue] = useState(getInitialLimit());
-  const [lastValid, setLastValid] = useState(getInitialLimit());
   const [filtered, setFiltered] = useState(suggestions);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [page, setPage] = useState(getInitialPage());
@@ -38,37 +55,51 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
     );
   }, [value, suggestions]);
 
-  // Debounced search param update: limit only
+  // Track previous limit for change detection
+  const prevLimitRef = useRef(getInitialLimit());
+  const didMountRef = useRef(false);
+
+  // Handle page and limit changes in one effect, skipping first mount
   useEffect(() => {
-    if (value !== '') setLastValid(value);
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
     if (debounce.current) clearTimeout(debounce.current);
+
     debounce.current = setTimeout(() => {
-      updateSearchParams(page, Number(value || lastValid));
+      const currentLimit = value;
+      const prevLimit = prevLimitRef.current;
+      let nextPage = page;
+      // If limit changed, reset page to 1
+      if (currentLimit !== prevLimit) {
+        nextPage = 1;
+        setPage(1); // local state update
+      }
+      prevLimitRef.current = currentLimit;
+      updateSearchParams(nextPage, Number(currentLimit));
     }, 300);
 
     return () => debounce.current && clearTimeout(debounce.current);
-  }, [value, lastValid, page]);
+    // eslint-disable-next-line
+  }, [value, page]);
 
-  // Sync to URL changes (e.g. browser navigation)
+  // Sync state to URL changes (e.g. browser navigation)
   useEffect(() => {
-    // Set local state from URL for page/limit
     setValue(getInitialLimit());
-    setLastValid(getInitialLimit());
     setPage(getInitialPage());
   }, [searchParams]);
 
   // Pagination logic
-  const perPage = Number(value || lastValid) || 1;
+  const perPage = Number(value) || 1;
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   const from = (page - 1) * perPage + 1;
   const to = Math.min(total, page * perPage);
 
-  // Update URL search params using navigation (SPA way)
-  function updateSearchParams(newPage: number, newLimit: number) {
-    const safePage = Math.max(1, newPage);
+  function updateSearchParams(nextPage: number, nextLimit: number) {
     const params = new URLSearchParams(window.location.search);
-    params.set('limit', String(newLimit));
-    params.set('page', String(safePage));
+    params.set('limit', String(nextLimit));
+    params.set('page', String(nextPage));
     navigate(`${window.location.pathname}?${params.toString()}`, {
       replace: true,
     });
@@ -77,29 +108,25 @@ const CustomTablePagination: React.FC<Props> = ({ total, suggestions }) => {
   // Suggestion click
   const handleSelect = (opt: number) => {
     setValue(opt.toString());
-    setLastValid(opt.toString());
+    setPage(1);
+    updateSearchParams(1, opt);
     setShowSuggestions(false);
     inputRef.current?.blur();
-    updateSearchParams(page, opt);
   };
 
-  // Input Focus/Blur logic
   const handleFocus = () => setShowSuggestions(true);
   const handleBlur = () => {
     setTimeout(() => setShowSuggestions(false), 120);
-    if (value === '') setValue(lastValid);
+    if (value === '') setValue(DEFAULT_LIMIT);
   };
 
-  // Next/Prev buttons
   const onNext = () => {
     const newPage = Math.min(totalPages, page + 1);
     setPage(newPage);
-    updateSearchParams(newPage, perPage);
   };
   const onPrev = () => {
     const newPage = Math.max(1, page - 1);
     setPage(newPage);
-    updateSearchParams(newPage, perPage);
   };
 
   return (

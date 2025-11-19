@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Select,
@@ -9,14 +10,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Search,
-  Plus,
-  Filter,
-  Download,
-  Users as UsersIcon,
-} from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { Search, Plus, Filter, Users as UsersIcon, Building2, Shield } from 'lucide-react';
+
+import AutoComplete from '@/components/AutoComplete';
+import { fetchBuildingsByName } from '@/data/Buildings';
 
 const roles = ['SuperAdmin', 'Admin', 'Vendor', 'Tenant'];
 
@@ -28,6 +25,8 @@ const UsersFilters = () => {
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
   // typedSearch is what user is typing, search is debounced value synced to URL
   const [typedSearch, setTypedSearch] = useState(search);
+
+  const [byBuildingName, setByBuildingName] = useState<string>('');
 
   const [role, setRole] = useState(() =>
     searchParams.get('role') !== null ? Number(searchParams.get('role')) : -1
@@ -54,6 +53,11 @@ const UsersFilters = () => {
     } else {
       params.delete('search');
     }
+    if (byBuildingName) {
+      params.set('buildingNameSearch', byBuildingName);
+    } else {
+      params.delete('buildingNameSearch');
+    }
     if (role !== -1) {
       params.set('role', String(role));
     } else {
@@ -64,7 +68,7 @@ const UsersFilters = () => {
       replace: true,
     });
     // eslint-disable-next-line
-  }, [search, role]);
+  }, [search, byBuildingName, role]);
 
   // Sync state if URL changes externally (browser nav)
   useEffect(() => {
@@ -74,6 +78,7 @@ const UsersFilters = () => {
     setRole(
       searchParams.get('role') !== null ? Number(searchParams.get('role')) : -1
     );
+    setByBuildingName(searchParams.get('buildingNameSearch') || '');
     // eslint-disable-next-line
   }, [searchParams]);
 
@@ -81,85 +86,122 @@ const UsersFilters = () => {
     navigate('/users/create');
   };
 
+  // Async fetching function for AutoComplete
+  const fetchBuildingNames = async (input: string) => {
+    if (!input) return [];
+    const res = await fetchBuildingsByName(input);
+    return Array.isArray(res?.data) ? res.data.map((b: any) => b.name) : [];
+  };
+
+  const handleBuildingNameSelect = (value: string) => {
+    setByBuildingName(value);
+  };
+
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-6'>
       {/* Header with Title and Create Button */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-primary/10 text-primary'>
-            <UsersIcon className='size-5' />
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+        <div className='flex items-center gap-4 flex-1'>
+          <div className='p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary shadow-sm'>
+            <UsersIcon className='size-6' />
           </div>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>
+            <h2 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text'>
               Users Management
             </h2>
-            <p className='text-sm text-muted-foreground'>
-              Manage and monitor all users
+            <p className='text-sm text-muted-foreground mt-0.5'>
+              Manage and monitor all users across your platform
             </p>
           </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <Button type='button' variant='outline' className='gap-2'>
-            <Download className='size-4' />
-            <span className='hidden sm:inline'>Export</span>
-          </Button>
-          <Button type='button' className='gap-2' onClick={handleOnCreate}>
-            <Plus className='size-4' />
-            <span className='hidden sm:inline font-semibold'>Add User</span>
-          </Button>
-        </div>
+        <Button
+          type='button'
+          className='gap-2 w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow'
+          size='lg'
+          onClick={handleOnCreate}
+        >
+          <Plus className='size-4' />
+          <span className='font-semibold'>Add User</span>
+        </Button>
       </div>
+      
       {/* Filters Section */}
-      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-muted/30 rounded-lg border'>
-        <div className='flex items-center gap-2 flex-1 w-full'>
-          <Filter className='size-4 text-muted-foreground' />
-          <span className='text-sm font-medium text-muted-foreground'>
-            Filters:
-          </span>
-        </div>
-        <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto flex-wrap'>
-          {/* Search Input */}
-          <div className='relative flex-1 sm:min-w-[250px]'>
-            <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3'>
-              <Search className='size-4' />
+      <div className='bg-gradient-to-br from-muted/50 to-muted/30 rounded-xl border shadow-sm p-5'>
+        <div className='flex flex-col gap-4'>
+          <div className='flex items-center gap-2.5 pb-3 border-b'>
+            <div className='p-1.5 rounded-md bg-primary/10'>
+              <Filter className='size-4 text-primary' />
             </div>
-            <Input
-              type='text'
-              placeholder='Search users by name or email...'
-              className='pl-9 bg-background'
-              value={typedSearch}
-              onChange={(e) => setTypedSearch(e.target.value)}
-            />
+            <span className='text-sm font-semibold text-foreground'>
+              Filter Users
+            </span>
           </div>
-          {/* Role Filter */}
-          <Select
-            value={String(role)}
-            onValueChange={(val) => setRole(Number(val))}
-          >
-            <SelectTrigger className='w-full sm:w-[160px] bg-background'>
-              <SelectValue
-                placeholder='Select role'
-                children={role === -1 ? 'All Roles' : roles[role] || 'Unknown'}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='-1'>
-                <div className='flex items-center gap-2'>
-                  <span>All Roles</span>
-                  <Badge variant='secondary' className='ml-auto text-xs'>
-                    All
-                  </Badge>
+          <div className='w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {/* Search Input */}
+            <div className='relative w-full'>
+                <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3.5'>
+                  <Search className='size-4' />
                 </div>
-              </SelectItem>
-              {roles.map((roleName, idx) => (
-                <SelectItem key={roleName} value={String(idx)}>
-                  <div className='flex items-center gap-2'>
-                    <span>{roleName}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                <Input
+                  type='text'
+                  placeholder='Name or email...'
+                  className='pl-10 bg-background w-full shadow-sm border-muted-foreground/20 focus-visible:border-primary/50 transition-colors h-11'
+                  value={typedSearch}
+                  onChange={(e) => setTypedSearch(e.target.value)}
+                />
+            </div>
+            
+            {/* BuildingsSearch Filter Input */}
+            <div className='relative w-full'>
+              <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3.5 z-10'>
+                <Building2 className='size-4' />
+              </div>
+              <AutoComplete
+                fetchOptions={fetchBuildingNames}
+                onSelectOption={handleBuildingNameSelect}
+                placeholder='Select building...'
+                debounceMs={200}
+                className='w-full [&_input]:pl-10'
+              />
+            </div>
+            
+            {/* Role Filter */}
+            <div className='relative w-full'>
+              <div className='text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex items-center justify-center pl-3.5 z-10'>
+                <Shield className='size-4' />
+              </div>
+              <Select
+                value={String(role)}
+                onValueChange={(val) => setRole(Number(val))}
+              >
+                <SelectTrigger className='w-full bg-background shadow-sm border-muted-foreground/20 focus:border-primary/50 transition-colors pl-10 [&>span]:pl-0 !h-11'>
+                  <SelectValue
+                    placeholder='Select role'
+                    children={
+                      role === -1 ? 'All Roles' : roles[role] || 'Unknown'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='-1'>
+                    <div className='flex items-center gap-2'>
+                      <span>All Roles</span>
+                      <Badge variant='secondary' className='ml-auto text-xs'>
+                        All
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                  {roles.map((roleName, idx) => (
+                    <SelectItem key={roleName} value={String(idx)}>
+                      <div className='flex items-center gap-2'>
+                        <span>{roleName}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
     </div>

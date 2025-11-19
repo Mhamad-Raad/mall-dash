@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Card,
   CardHeader,
@@ -10,17 +11,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { UserPlus, ArrowLeft, Save } from 'lucide-react';
 import UserTypeSelector from '@/components/Users/UserTypeSelector';
-import AdminForm from '@/components/Users/forms/AdminForm';
+import StaffForm from '@/components/Users/forms/StaffForm';
 import CustomerForm from '@/components/Users/forms/CustomerForm';
-import VendorForm from '@/components/Users/forms/VendorForm';
 
 import { createUser } from '@/data/Users';
 
 export default function CreateUser() {
   const navigate = useNavigate();
 
-  const [type, setType] = useState('Customer');
-  const [adminFormData, setAdminFormData] = useState({
+  const [type, setType] = useState('Staff');
+  const [staffFormData, setStaffFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
@@ -31,12 +31,29 @@ export default function CreateUser() {
     photo: null,
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [customerFormData, setCustomerFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phoneNumber: '',
+    buildingId: '',
+    floorId: '',
+    apartmentId: '',
+    photo: null,
+  });
 
-  // Handler to update form data from child
-  const handleAdminInputChange = (field: string, value: unknown) => {
-    setAdminFormData((prev) => ({ ...prev, [field]: value }));
+  const [loading, setLoading] = useState(false);
+
+  // Handler to update staff form data
+  const handleStaffInputChange = (field: string, value: unknown) => {
+    setStaffFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handler to update customer form data
+  const handleCustomerInputChange = (field: string, value: unknown) => {
+    setCustomerFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleBack = () => {
@@ -45,21 +62,46 @@ export default function CreateUser() {
 
   const handleCreateUser = async () => {
     setLoading(true);
-    setError(null);
 
     let data = {};
-    if (type === 'Admin') {
-      const { confirmPassword, photo, ...userData } = adminFormData;
-      if (adminFormData.password !== adminFormData.confirmPassword) {
-        setError('Passwords do not match');
+    let userName = '';
+
+    if (type === 'Staff') {
+      const { confirmPassword, photo, ...userData } = staffFormData;
+
+      if (staffFormData.password !== staffFormData.confirmPassword) {
+        toast.error('Passwords do not match', {
+          description: 'Please make sure both password fields are identical.',
+        });
         setLoading(false);
         return;
       }
-      data = userData;
-    } else {
-      setError('Only Admin user creation is implemented');
-      setLoading(false);
-      return;
+
+      userName = `${staffFormData.firstName} ${staffFormData.lastName}`;
+      data = {
+        ...userData,
+        ...(photo ? { ProfileImageUrl: photo } : {}),
+      };
+    } else if (type === 'Customer') {
+      const { confirmPassword, photo, buildingId, floorId, apartmentId, ...userData } = customerFormData;
+
+      if (customerFormData.password !== customerFormData.confirmPassword) {
+        toast.error('Passwords do not match', {
+          description: 'Please make sure both password fields are identical.',
+        });
+        setLoading(false);
+        return;
+      }
+
+      userName = `${customerFormData.firstName} ${customerFormData.lastName}`;
+      data = {
+        ...userData,
+        role: 3, // Tenant role index
+        ...(photo ? { ProfileImageUrl: photo } : {}),
+        ...(buildingId ? { buildingId: parseInt(buildingId) } : {}),
+        ...(floorId ? { floorId: parseInt(floorId) } : {}),
+        ...(apartmentId ? { apartmentId: parseInt(apartmentId) } : {}),
+      };
     }
 
     const res = await createUser(data as any);
@@ -67,16 +109,22 @@ export default function CreateUser() {
     setLoading(false);
 
     if (res.error) {
-      setError(res.error);
+      toast.error('Failed to Create User', {
+        description: res.error || 'An error occurred while creating the user.',
+      });
     } else {
+      toast.success('User Created Successfully!', {
+        description: `${userName} has been added to the system.`,
+      });
       navigate('/users');
     }
   };
 
   return (
-    <div className='w-full p-4 md:p-6 space-y-6'>
-      {/* Header */}
-      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        {/* Header */}
         <div className='flex items-center gap-3 sm:gap-4'>
           <Button
             variant='outline'
@@ -100,10 +148,43 @@ export default function CreateUser() {
             </div>
           </div>
         </div>
-        <div className='flex gap-2 self-end sm:self-auto'>
+
+        {/* Main Content */}
+        <div className='space-y-6'>
+          {/* User Type Selection */}
+          <UserTypeSelector selectedType={type} onTypeChange={setType} />
+
+          {/* Form Fields */}
+          <Card>
+            <CardHeader>
+              <CardTitle className='text-lg'>User Information</CardTitle>
+              <CardDescription>
+                Fill in the details for the new {type.toLowerCase()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className='space-y-6'>
+              {type === 'Staff' && (
+                <StaffForm
+                  formData={staffFormData}
+                  onInputChange={handleStaffInputChange}
+                />
+              )}
+              {type === 'Customer' && (
+                <CustomerForm
+                  formData={customerFormData}
+                  onInputChange={handleCustomerInputChange}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
           <Button variant='outline' onClick={handleBack} className='gap-2'>
-            <span className='hidden sm:inline'>Cancel</span>
-            <span className='sm:hidden'>Cancel</span>
+            Cancel
           </Button>
           <Button
             className='gap-2'
@@ -111,44 +192,9 @@ export default function CreateUser() {
             disabled={loading}
           >
             <Save className='size-4' />
-            {loading ? (
-              <span>Creating...</span>
-            ) : (
-              <span className='hidden sm:inline'>Create User</span>
-            )}
+            {loading ? 'Creating...' : 'Create User'}
           </Button>
         </div>
-      </div>
-      {/* Error Message */}
-      {error && (
-        <div className='bg-red-100 text-red-600 px-4 py-2 rounded border my-2'>
-          {error}
-        </div>
-      )}
-      {/* Main Content */}
-      <div className='space-y-6'>
-        {/* User Type Selection */}
-        <UserTypeSelector selectedType={type} onTypeChange={setType} />
-
-        {/* Form Fields */}
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg'>User Information</CardTitle>
-            <CardDescription>
-              Fill in the details for the new {type.toLowerCase()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-6'>
-            {type === 'Admin' && (
-              <AdminForm
-                formData={adminFormData}
-                onInputChange={handleAdminInputChange}
-              />
-            )}
-            {type === 'Customer' && <CustomerForm />}
-            {type === 'Vendor' && <VendorForm />}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

@@ -6,8 +6,9 @@ const API_VALUE = import.meta.env.VITE_API_VALUE;
 export const fetchUsers = async (params?: {
   page?: number;
   limit?: number;
-  search?: string;
+  searchTerm?: string;
   role?: number;
+  buildingNameSearch?: string;
 }) => {
   try {
     const response = await axiosInstance.get('/Account/users', {
@@ -40,18 +41,35 @@ export const updateUser = async (
     email: string;
     phoneNumber: string;
     role: number;
+    ProfileImageUrl?: File;
   }
 ) => {
   try {
-    const response = await axiosInstance.put(`/Account/${id}`, userData, {
+    const formData = new FormData();
+    Object.entries(userData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value as any);
+        console.log(`FormData appended: ${key} =`, value instanceof File ? `File: ${value.name}` : value);
+      }
+    });
+
+    console.log('Sending update request to:', `/Account/${id}`);
+
+    // Create a custom config to override the default Content-Type
+    const response = await axiosInstance.put(`/Account/${id}`, formData, {
       headers: {
         key: API_KEY,
         value: API_VALUE,
-        'Content-Type': 'application/json',
+        // Don't set Content-Type - let the browser set it with boundary for multipart/form-data
       },
+      // This transformer prevents axios from setting the default Content-Type
+      transformRequest: [(data) => data],
     });
+
+    console.log('Update successful:', response.data);
     return response.data;
   } catch (error: any) {
+    console.error('Update failed:', error.response?.data || error.message);
     return { error: error.response?.data?.message || error.message };
   }
 };
@@ -75,17 +93,53 @@ export const createUser = async (userData: {
   password: string;
   phoneNumber: string;
   role: number;
+  ProfileImageUrl?: File;
 }) => {
   try {
-    const response = await axiosInstance.post('/Account/register', userData, {
-      headers: {
-        key: API_KEY,
-        value: API_VALUE,
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
+    // Check if we have a file to upload
+    const hasFile = userData.ProfileImageUrl instanceof File;
+
+    if (hasFile) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      Object.entries(userData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          formData.append(key, value as any);
+          console.log(`FormData appended: ${key} =`, value instanceof File ? `File: ${value.name}` : value);
+        }
+      });
+
+      console.log('Creating user with image...');
+
+      const response = await axiosInstance.post('/Account/register', formData, {
+        headers: {
+          key: API_KEY,
+          value: API_VALUE,
+          // Don't set Content-Type - let browser handle it for multipart/form-data
+        },
+        // This transformer prevents axios from setting the default Content-Type
+        transformRequest: [(data) => data],
+      });
+
+      console.log('User created successfully with image:', response.data);
+      return response.data;
+    } else {
+      // Use JSON for text-only data
+      console.log('Creating user without image...');
+
+      const response = await axiosInstance.post('/Account/register', userData, {
+        headers: {
+          key: API_KEY,
+          value: API_VALUE,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('User created successfully:', response.data);
+      return response.data;
+    }
   } catch (error: any) {
+    console.error('Create user failed:', error.response?.data || error.message);
     return { error: error.response?.data?.message || error.message };
   }
 };

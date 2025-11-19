@@ -28,8 +28,6 @@ const initialState: UserState = {
   deletingError: null,
 };
 
-// --- Async Thunks ---
-
 export const fetchUserById = createAsyncThunk(
   'user/fetchUserById',
   async (userId: string, { rejectWithValue }) => {
@@ -39,7 +37,6 @@ export const fetchUserById = createAsyncThunk(
   }
 );
 
-// In your thunk
 export const updateUser = createAsyncThunk(
   'user/updateUser',
   async (
@@ -54,11 +51,27 @@ export const updateUser = createAsyncThunk(
         email: string;
         phoneNumber: string;
         role: number;
+        imageFile?: File;
+        buildingName?: string;
       };
     },
     { rejectWithValue }
   ) => {
-    const data = await updateUserAPI(id, update);
+    // Transform imageFile to ProfileImageUrl for API compatibility
+    const apiPayload: any = {
+      firstName: update.firstName,
+      lastName: update.lastName,
+      email: update.email,
+      phoneNumber: update.phoneNumber,
+      role: update.role,
+    };
+
+    // Only include ProfileImageUrl if a new file was provided
+    if (update.imageFile instanceof File) {
+      apiPayload.ProfileImageUrl = update.imageFile;
+    }
+
+    const data = await updateUserAPI(id, apiPayload);
     if (data.error) return rejectWithValue(data.error);
     return data;
   }
@@ -72,8 +85,6 @@ export const deleteUser = createAsyncThunk(
     return data;
   }
 );
-
-// --- Slice ---
 
 const userSlice = createSlice({
   name: 'user',

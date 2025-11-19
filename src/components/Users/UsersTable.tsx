@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { Mail, Phone, Building2, User as UserIcon } from 'lucide-react';
+import { Mail, Phone, Building2, User as UserIcon, ChevronRight } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -24,13 +24,15 @@ import type { RootState } from '@/store/store';
 
 const getUserTypeColor = (type: string) => {
   const typeLower = type.toLowerCase();
-  if (typeLower === 'admin' || typeLower === 'superadmin')
-    return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800';
-  if (typeLower === 'manager')
-    return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
-  if (typeLower === 'user')
-    return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800';
-  return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 border-gray-200 dark:border-gray-800';
+  if (typeLower === 'superadmin')
+    return 'bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-400 border-red-500/30 dark:border-red-500/40';
+  if (typeLower === 'admin')
+    return 'bg-purple-500/10 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400 border-purple-500/30 dark:border-purple-500/40';
+  if (typeLower === 'vendor')
+    return 'bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/30 dark:border-blue-500/40';
+  if (typeLower === 'tenant')
+    return 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/30 dark:border-emerald-500/40';
+  return 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400 border-gray-500/30 dark:border-gray-500/40';
 };
 
 const UsersTable = () => {
@@ -56,24 +58,25 @@ const UsersTable = () => {
   }
 
   return (
-    <div className='rounded-lg border bg-card shadow-sm flex flex-col'>
+    <div className='rounded-xl border bg-card shadow-sm flex flex-col overflow-hidden'>
       {/* Scrollable table area - responsive height based on viewport */}
       <ScrollArea className='h-[calc(100vh-280px)] md:h-[calc(100vh-280px)]'>
         <Table className='w-full min-w-[700px]'>
           <TableHeader>
-            <TableRow className='hover:bg-transparent border-b'>
-              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+            <TableRow className='hover:bg-transparent border-b bg-muted/50'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
                 User
               </TableHead>
-              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
                 Contact
               </TableHead>
-              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
                 Role
               </TableHead>
-              <TableHead className='bg-card/95 backdrop-blur sticky top-0 z-10 font-semibold border-b'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
                 Location
               </TableHead>
+              <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,67 +87,87 @@ const UsersTable = () => {
               : users.map((user, index) => {
                   const fullName = `${user.firstName} ${user.lastName}`;
                   const userRole = roles[user.role];
+                  // Generate initials for fallback
+                  const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+                  // Use profileImageUrl or src (backward compatibility)
+                  const avatarSrc = user.profileImageUrl || user.src;
+
                   return (
                     <TableRow
                       key={`${user?._id}-${index}`}
-                      className='hover:bg-muted/50 transition-colors cursor-pointer'
+                      className='group hover:bg-muted/50 transition-all cursor-pointer border-b last:border-0'
                       onClick={() => handleRowClick(user?._id)}
                     >
                       {/* User Info with Avatar */}
-                      <TableCell className='font-medium'>
+                      <TableCell className='font-medium py-4'>
                         <div className='flex items-center gap-3'>
-                          <Avatar className='h-10 w-10 border-2 border-background shadow-sm'>
-                            <AvatarImage src={user.src} alt={fullName} />
-                            <AvatarFallback className='text-xs font-semibold bg-primary/10 text-primary flex items-center justify-center'>
-                              {user.fallback || (
-                                <UserIcon className='h-5 w-5 text-muted-foreground' />
+                          <Avatar className='h-11 w-11 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
+                            <AvatarImage
+                              src={avatarSrc}
+                              alt={fullName}
+                              onError={(e) => {
+                                // Hide broken images gracefully
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                            <AvatarFallback className='text-sm font-semibold bg-gradient-to-br from-primary/20 to-primary/10 text-primary'>
+                              {initials || user.fallback || (
+                                <UserIcon className='h-5 w-5' />
                               )}
                             </AvatarFallback>
                           </Avatar>
-                          <div className='flex flex-col'>
-                            <span className='font-semibold text-sm'>
+                          <div className='flex flex-col gap-0.5'>
+                            <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors'>
                               {fullName}
                             </span>
-                            <span className='text-xs text-muted-foreground'>
-                              ID: {user?._id}
+                            <span className='text-[11px] text-muted-foreground font-mono leading-tight'>
+                              {user?._id.slice(-8)}
                             </span>
                           </div>
                         </div>
                       </TableCell>
                       {/* Contact Information */}
-                      <TableCell>
-                        <div className='flex flex-col gap-1.5 min-w-[200px]'>
-                          <div className='flex items-center gap-2 text-sm'>
-                            <Mail className='size-3.5 text-muted-foreground' />
-                            <span className='text-xs'>{user.email}</span>
+                      <TableCell className='py-4'>
+                        <div className='flex flex-col gap-2 min-w-[200px]'>
+                          <div className='flex items-center gap-2.5'>
+                            <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
+                              <Mail className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
+                            </div>
+                            <span className='text-xs text-foreground/80'>{user.email}</span>
                           </div>
-                          <div className='flex items-center gap-2 text-sm'>
-                            <Phone className='size-3.5 text-muted-foreground' />
-                            <span className='text-xs font-medium'>
+                          <div className='flex items-center gap-2.5'>
+                            <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
+                              <Phone className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
+                            </div>
+                            <span className='text-xs font-medium text-foreground/80'>
                               {user.phoneNumber}
                             </span>
                           </div>
                         </div>
                       </TableCell>
                       {/* User Type/Role */}
-                      <TableCell>
+                      <TableCell className='py-4'>
                         <Badge
                           variant='outline'
-                          className={`${getUserTypeColor(
-                            userRole
-                          )} font-semibold text-xs`}
+                          className={`${getUserTypeColor(userRole)} font-semibold text-xs px-3 py-1`}
                         >
                           {userRole}
                         </Badge>
                       </TableCell>
                       {/* Building/Location */}
-                      <TableCell>
-                        <div className='flex items-center gap-2 min-w-[150px]'>
-                          <Building2 className='size-4 text-muted-foreground' />
-                          <span className='text-sm font-medium'>
-                            {user.buildingName}
+                      <TableCell className='py-4'>
+                        <div className='flex items-center gap-2.5 min-w-[150px]'>
+                          <div className='flex items-center justify-center w-7 h-7 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors'>
+                            <Building2 className='h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors' />
+                          </div>
+                          <span className='text-sm font-medium text-foreground/90'>
+                            {user.buildingName || 'N/A'}
                           </span>
                         </div>
+                      </TableCell>
+                      {/* Chevron indicator */}
+                      <TableCell className='py-4 w-12'>
+                        <ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all' />
                       </TableCell>
                     </TableRow>
                   );
@@ -155,7 +178,7 @@ const UsersTable = () => {
       </ScrollArea>
 
       {/* Pagination */}
-      <div className='border-t px-4 py-3 bg-muted/30'>
+      <div className='border-t px-4 py-3 bg-muted/20'>
         <CustomTablePagination
           total={total}
           suggestions={[10, 20, 40, 50, 100]}

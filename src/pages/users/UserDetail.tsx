@@ -1,14 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
 import UserDetailHeader from '@/components/Users/UserDetail/UserDetailHeader';
 import UserProfileCard from '@/components/Users/UserDetail/UserProfileCard';
 import ContactInfoCard from '@/components/Users/UserDetail/ContactInfoCard';
 import LocationRoleCard from '@/components/Users/UserDetail/LocationRoleCard';
+import SecurityCard from '@/components/Users/UserDetail/SecurityCard';
 import UserDetailSkeleton from '@/components/Users/UserDetail/UserDetailSkeloton';
 import UserErrorCard from '@/components/Users/UserDetail/UserErrorCard';
-import ConfirmModal, { type ChangeDetail } from '@/components/ui/Modals/ConfirmModal';
-
+import ConfirmModal, {
+  type ChangeDetail,
+} from '@/components/ui/Modals/ConfirmModal';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store/store';
 import {
@@ -17,12 +18,11 @@ import {
   updateUser,
   deleteUser,
 } from '@/store/slices/userSlice';
-
-import type { UserType } from '@/interfaces/Users.interface';
+import { toast } from 'sonner';
 import { initialUser } from '@/constants/Users';
 import roles from '@/constants/roles';
 
-import { toast } from 'sonner';
+import type { UserFormData } from '@/interfaces/Users.interface';
 
 const UserDetail = () => {
   const { id } = useParams();
@@ -31,8 +31,9 @@ const UserDetail = () => {
 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Get user, loading, error, updating/deleting states from Redux store
   const {
     user,
     luser: loading,
@@ -43,22 +44,37 @@ const UserDetail = () => {
     deletingError,
   } = useSelector((state: RootState) => state.user);
 
-  // Local state for editable form data
-  const [formData, setFormData] = useState<UserType>(initialUser);
+  const [formData, setFormData] = useState<UserFormData>({
+    ...initialUser,
+    imageFile: undefined,
+  });
 
-  // Compare local form data with redux user
+  // Track if any changes have been made
   const hasChanges = useMemo(() => {
-    const keys = Object.keys(user) as Array<keyof UserType>;
-    return keys.some((key) => user[key] !== formData[key]);
-  }, [user, formData]);
+    if (!user || !user._id) return false;
 
-  // Calculate the specific changes for display in modal
+    // Check if password is being changed
+    if (password && confirmPassword && password === confirmPassword) return true;
+
+    // Check if image file was added
+    if (formData.imageFile instanceof File) return true;
+
+    // Check if image was removed (user had an image, but now it's cleared)
+    if (user.profileImageUrl && !formData.profileImageUrl && !formData.imageFile) return true;
+
+    // Check other fields for changes
+    return (
+      user.firstName !== formData.firstName ||
+      user.lastName !== formData.lastName ||
+      user.email !== formData.email ||
+      user.phoneNumber !== formData.phoneNumber ||
+      user.role !== formData.role
+    );
+  }, [user, formData, password, confirmPassword]);
+
   const changes = useMemo((): ChangeDetail[] => {
-    // Safety check - only calculate if user is loaded
     if (!user || !user._id) return [];
-    
     const changesList: ChangeDetail[] = [];
-    
     const fieldLabels: Record<string, string> = {
       firstName: 'First Name',
       lastName: 'Last Name',
@@ -67,18 +83,46 @@ const UserDetail = () => {
       role: 'Role',
     };
 
-    // Check each editable field
-    (['firstName', 'lastName', 'email', 'phoneNumber', 'role'] as const).forEach((key) => {
+    // Check for image change
+    if (formData.imageFile instanceof File) {
+      changesList.push({
+        field: 'Profile Image',
+        oldValue: user.profileImageUrl ? 'Current image' : 'No image',
+        newValue: formData.imageFile.name,
+      });
+    } else if (user.profileImageUrl && !formData.profileImageUrl) {
+      // Image was removed
+      changesList.push({
+        field: 'Profile Image',
+        oldValue: 'Current image',
+        newValue: 'Removed',
+      });
+    }
+
+    // Check password change
+    if (password && confirmPassword && password === confirmPassword) {
+      changesList.push({
+        field: 'Password',
+        oldValue: '••••••••',
+        newValue: 'New password set',
+      });
+    }
+
+    // Check other fields
+    (
+      ['firstName', 'lastName', 'email', 'phoneNumber', 'role'] as const
+    ).forEach((key) => {
       if (user[key] !== formData[key]) {
         let oldVal = user[key];
         let newVal = formData[key];
-
-        // Format role as label
-        if (key === 'role' && typeof oldVal === 'number' && typeof newVal === 'number') {
+        if (
+          key === 'role' &&
+          typeof oldVal === 'number' &&
+          typeof newVal === 'number'
+        ) {
           oldVal = roles[oldVal] || `Role ${oldVal}`;
           newVal = roles[newVal] || `Role ${newVal}`;
         }
-
         changesList.push({
           field: fieldLabels[key],
           oldValue: String(oldVal ?? ''),
@@ -86,11 +130,13 @@ const UserDetail = () => {
         });
       }
     });
-
     return changesList;
-  }, [user, formData]);
+  }, [user, formData, password, confirmPassword]);
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (
+    field: keyof UserFormData,
+    value: string | number | File
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -101,27 +147,37 @@ const UserDetail = () => {
     if (id) {
       dispatch(fetchUserById(id));
     }
-    // Cleanup when component unmounts
     return () => {
       dispatch(clearUser());
     };
   }, [id, dispatch]);
 
-  // Sync local form data with loaded user
   useEffect(() => {
-    if (user) setFormData(user);
+    if (user) {
+      setFormData({
+        ...user,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        email: user.email ?? '',
+        phoneNumber: user.phoneNumber ?? '',
+        buildingName: user.buildingName ?? '',
+        profileImageUrl: user.profileImageUrl ?? '',
+        imageFile: undefined, // Always clear file on user load
+      });
+    }
   }, [user]);
 
-  // Listen for update/delete outcomes & show notifications
   useEffect(() => {
     if (updatingError) {
       toast.error(updatingError);
-      setShowUpdateModal(false); // Close modal even on error
+      setShowUpdateModal(false);
     }
     if (!updating && showUpdateModal && !updatingError) {
-      // If updating goes from true to false and there was no error
       setShowUpdateModal(false);
       toast.success('User updated successfully!');
+      // Clear password fields after successful update
+      setPassword('');
+      setConfirmPassword('');
     }
   }, [updating, updatingError]);
 
@@ -136,56 +192,74 @@ const UserDetail = () => {
     }
   }, [deleting, deletingError, navigate]);
 
-  // Modal togglers
-  const handletoggleUpdateModal = () => setShowUpdateModal((v) => !v);
+  const handletoggleUpdateModal = () => {
+    if (!hasChanges) return;
+    setShowUpdateModal((v) => !v);
+  };
   const handletoggleDeleteModal = () => setShowDeleteModal((v) => !v);
 
-  // Handlers for modal confirm
   const handleUpdateUser = async () => {
-    // Cleaned payload to avoid undefined
-    const { _id, ...payload } = formData;
-    await dispatch(
-      updateUser({
-        id: id || user._id,
-        update: {
-          firstName: payload.firstName ?? '',
-          lastName: payload.lastName ?? '',
-          email: payload.email ?? '',
-          phoneNumber: payload.phoneNumber ?? '',
-          role: payload.role ?? null,
-        },
-      })
-    );
-    // Notification handled by useEffect above
+    // Include password in update if it's set and matches confirmation
+    const updateData = {
+      ...formData,
+      ...(password && confirmPassword && password === confirmPassword ? { password } : {}),
+    };
+    await dispatch(updateUser({ id: id || user._id, update: updateData }));
   };
 
   const handleDeleteUser = async () => {
     await dispatch(deleteUser(id || user._id));
-    // Notification handled by useEffect above
   };
 
   if (error) return <UserErrorCard error={error} />;
   if (loading) return <UserDetailSkeleton />;
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6'>
-      <UserDetailHeader
-        onBack={() => navigate(-1)}
-        onSave={handletoggleUpdateModal}
-        onDelete={handletoggleDeleteModal}
-        hasChanges={hasChanges}
-      />
-      <UserProfileCard formData={formData} onInputChange={handleInputChange} />
-      <div className='grid gap-6 lg:grid-cols-2'>
-        <ContactInfoCard
-          formData={formData}
-          onInputChange={handleInputChange}
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        <UserDetailHeader
+          onBack={() => navigate(-1)}
+          hasChanges={hasChanges}
         />
-        <LocationRoleCard
-          formData={formData as any}
-          onInputChange={handleInputChange}
+        <UserProfileCard formData={formData} onInputChange={handleInputChange} />
+        <div className='grid gap-6 lg:grid-cols-2'>
+          <ContactInfoCard
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+          <LocationRoleCard
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+        </div>
+        <SecurityCard
+          password={password}
+          confirmPassword={confirmPassword}
+          onPasswordChange={setPassword}
+          onConfirmPasswordChange={setConfirmPassword}
         />
       </div>
+
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
+          <button
+            onClick={handletoggleDeleteModal}
+            className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
+          >
+            Delete User
+          </button>
+          <button
+            onClick={handletoggleUpdateModal}
+            disabled={!hasChanges}
+            className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
       <ConfirmModal
         open={showUpdateModal}
         title='Update User'

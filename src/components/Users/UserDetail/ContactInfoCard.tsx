@@ -1,52 +1,52 @@
 import { Mail, Phone } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import type { UserFormData } from '@/interfaces/Users.interface';
 
 interface ContactInfoCardProps {
-  formData: {
-    email: string;
-    phoneNumber: string;
-  };
-  onInputChange: (field: string, value: string) => void;
+  formData: UserFormData;
+  onInputChange: (field: keyof UserFormData, value: string) => void;
 }
 
 const ContactInfoCard = ({ formData, onInputChange }: ContactInfoCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-xl flex items-center gap-2'>
-          <Mail className='h-5 w-5' />
-          Contact Information
-        </CardTitle>
+        <CardTitle className='text-lg'>Contact Information</CardTitle>
+        <CardDescription>
+          Email and phone details
+        </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
+      <CardContent className='space-y-6'>
         <div className='space-y-2'>
-          <Label htmlFor='email' className='flex items-center gap-2 text-sm'>
-            <Mail className='h-4 w-4' />
-            Email Address
+          <Label htmlFor='email' className='text-sm font-medium flex items-center gap-2'>
+            <Mail className='size-4 text-primary' />
+            Email Address <span className='text-destructive'>*</span>
           </Label>
           <Input
             id='email'
             type='email'
+            placeholder='john.doe@example.com'
             value={formData.email}
             onChange={(e) => onInputChange('email', e.target.value)}
-            className='pl-6'
+            className='h-11'
           />
         </div>
         <Separator />
         <div className='space-y-2'>
-          <Label htmlFor='phone' className='flex items-center gap-2 text-sm'>
-            <Phone className='h-4 w-4' />
-            Phone Number
+          <Label htmlFor='phone' className='text-sm font-medium flex items-center gap-2'>
+            <Phone className='size-4 text-primary' />
+            Phone Number <span className='text-destructive'>*</span>
           </Label>
           <Input
             id='phone'
             type='tel'
+            placeholder='+1 (555) 000-0000'
             value={formData.phoneNumber}
             onChange={(e) => onInputChange('phoneNumber', e.target.value)}
-            className='pl-6'
+            className='h-11'
           />
         </div>
       </CardContent>

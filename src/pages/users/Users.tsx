@@ -20,19 +20,28 @@ const Users = () => {
     eusers: error,
   } = useSelector((state: RootState) => state.users);
 
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const limit = parseInt(searchParams.get('limit') || '40', 10);
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   const roleParam = searchParams.get('role');
   const role = roleParam !== null ? Number(roleParam) : null;
   const search = searchParams.get('search') || '';
+  const buildingNameSearch = searchParams.get('buildingNameSearch') || '';
 
   useEffect(() => {
-    const params: Record<string, any> = { limit, page };
+    const params: Record<string, any> = {
+      limit,
+      page,
+      searchTerm: search,
+      buildingNameSearch,
+    };
     if (role !== -1) params.role = role;
     if (search) params.search = search;
-    dispatch(fetchUsers(params));
-  }, [dispatch, limit, page, role, search]);
+    if (buildingNameSearch) params.buildingNameSearch = buildingNameSearch;
+    if (limit && page) {
+      dispatch(fetchUsers(params));
+    }
+  }, [dispatch, limit, page, role, search, buildingNameSearch]);
 
   const hasNoUsers = !loading && users.length === 0 && !error;
   return (

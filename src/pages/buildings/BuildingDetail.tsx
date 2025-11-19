@@ -1,137 +1,175 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/store/store';
+
 import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
 import BuildingFloors from '@/components/Buildings/BuildingFloors';
 import EditApartmentDialog from '@/components/Buildings/EditApartmentDialog';
-import { buildingsData } from './Buildings';
-import type { Apartment, Occupant } from '@/interfaces/Building.interface';
+import BuildingDetailSkeleton from '@/components/Buildings/BuildingDetailSkeleton';
+import BuildingDetailError from '@/components/Buildings/BuildingDetailError';
+import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+
+import type { Apartment } from '@/interfaces/Building.interface';
+
+import {
+  getBuildingById,
+  clearBuilding,
+  updateApartmentThunk,
+  deleteApartmentThunk,
+  deleteBuildingThunk,
+} from '@/store/slices/buildingSlice';
 
 const BuildingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
-  const [editedOccupants, setEditedOccupants] = useState<Occupant[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { building, loading, error } = useSelector(
+    (state: RootState) => state.building
+  );
+
+  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(
+    null
+  );
   const [editedApartmentName, setEditedApartmentName] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteApartmentId, setDeleteApartmentId] = useState<number | null>(
+    null
+  );
+  const [showDeleteApartmentModal, setShowDeleteApartmentModal] =
+    useState(false);
 
-  // Find the building by ID
-  const building = buildingsData.find((b) => b.id === Number(id));
+  const [showDeleteBuildingModal, setShowDeleteBuildingModal] = useState(false);
 
-  // If building not found, show error state
-  if (!building) {
+  const confirmDeleteBuilding = async () => {
+    setShowDeleteBuildingModal(false);
+    navigate('/buildings');
+    if (id) {
+      await dispatch(deleteBuildingThunk(Number(id)));
+    }
+  };
+
+  useEffect(() => {
+    if (id) dispatch(getBuildingById(Number(id)));
+    return () => {
+      dispatch(clearBuilding());
+    };
+  }, [dispatch, id]);
+
+  if (loading) {
+    return <BuildingDetailSkeleton />;
+  }
+  if (error && !building) {
     return (
-      <div className='container mx-auto p-6 max-w-6xl'>
-        <Button variant='ghost' className='mb-6' onClick={() => navigate('/buildings')}>
-          <ArrowLeft className='mr-2 h-4 w-4' />
-          Back to Buildings
-        </Button>
-        <Card className='p-12 text-center'>
-          <CardTitle className='text-2xl mb-2'>Building Not Found</CardTitle>
-          <CardDescription>The building you're looking for doesn't exist.</CardDescription>
-        </Card>
-      </div>
+      <BuildingDetailError
+        error={error || "The building you're looking for doesn't exist."}
+        onBack={() => navigate('/buildings')}
+      />
     );
   }
 
-  const getTotalApartments = () => {
-    return building.floors.reduce((total, floor) => total + floor.apartments.length, 0);
-  };
-
-  const getTotalOccupants = () => {
-    return building.floors.reduce(
-      (total, floor) =>
-        total + floor.apartments.reduce((floorTotal, apt) => floorTotal + apt.occupants.length, 0),
-      0
-    );
-  };
-
   const handleApartmentClick = (apartment: Apartment) => {
     setSelectedApartment(apartment);
-    setEditedOccupants([...apartment.occupants]);
-    setEditedApartmentName(apartment.name || '');
+    setEditedApartmentName(apartment?.apartmentName ?? '');
     setIsDialogOpen(true);
   };
 
-  const handleAddOccupant = () => {
-    const newOccupant: Occupant = {
-      id: Date.now(),
-      name: '',
-      email: '',
-    };
-    setEditedOccupants([...editedOccupants, newOccupant]);
-  };
-
-  const handleRemoveOccupant = (occupantId: number) => {
-    setEditedOccupants(editedOccupants.filter((occ) => occ.id !== occupantId));
-  };
-
-  const handleOccupantChange = (occupantId: number, field: 'name' | 'email', value: string) => {
-    setEditedOccupants(
-      editedOccupants.map((occ) =>
-        occ.id === occupantId ? { ...occ, [field]: value } : occ
-      )
-    );
-  };
-
-  const handleSave = () => {
-    if (selectedApartment) {
-      const floorIndex = building.floors.findIndex((floor) =>
-        floor.apartments.some((apt) => apt.id === selectedApartment.id)
-      );
-      if (floorIndex !== -1) {
-        const apartmentIndex = building.floors[floorIndex].apartments.findIndex(
-          (apt) => apt.id === selectedApartment.id
-        );
-        if (apartmentIndex !== -1) {
-          building.floors[floorIndex].apartments[apartmentIndex].occupants = editedOccupants;
-          building.floors[floorIndex].apartments[apartmentIndex].name = editedApartmentName;
-        }
-      }
-    }
+  // Runs when clicking save in dialog
+  const handleSave = async (occupant: any, name: string) => {
     setIsDialogOpen(false);
+    if (selectedApartment) {
+      await dispatch(
+        updateApartmentThunk({
+          id: selectedApartment.id,
+          apartmentName: name,
+          userId: occupant,
+        })
+      );
+    }
+    if (building?.id) {
+      await dispatch(getBuildingById(building.id));
+    }
+    setSelectedApartment(null);
   };
 
-  const handleBuildingNameChange = (newName: string) => {
-    building.name = newName;
+  const handleDeleteApartment = (id: number) => {
+    setDeleteApartmentId(id);
+    setShowDeleteApartmentModal(true);
+  };
+
+  const confirmDeleteApartment = async () => {
+    setShowDeleteApartmentModal(false);
+    setIsDialogOpen(false);
+    try {
+      if (deleteApartmentId) {
+        await dispatch(deleteApartmentThunk(deleteApartmentId));
+        if (building?.id) await dispatch(getBuildingById(building.id));
+      }
+    } finally {
+      setDeleteApartmentId(null);
+      setSelectedApartment(null);
+    }
   };
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6'>
-      {/* Header Section */}
+    <section className='w-full h-full flex flex-col gap-4 overflow-hidden'>
       <BuildingHeader
-        buildingName={building.name}
-        onNameChange={handleBuildingNameChange}
-        onBack={() => navigate('/buildings')}
+        onDeleteBuilding={() => setShowDeleteBuildingModal(true)}
       />
-
-      {/* Summary Cards */}
-      <BuildingSummaryCards
-        totalOccupants={getTotalOccupants()}
-        totalFloors={building.floors.length}
-        totalApartments={getTotalApartments()}
-      />
-
-      {/* Floors and Apartments */}
-      <BuildingFloors floors={building.floors} onApartmentEdit={handleApartmentClick} />
-
-      {/* Edit Apartment Dialog */}
+      <BuildingSummaryCards />
+      <BuildingFloors onApartmentEdit={handleApartmentClick} />
       <EditApartmentDialog
-        apartment={selectedApartment}
+        apartment={selectedApartment as any}
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        occupants={editedOccupants}
-        apartmentName={editedApartmentName}
-        onApartmentNameChange={setEditedApartmentName}
-        onAddOccupant={handleAddOccupant}
-        onRemoveOccupant={handleRemoveOccupant}
-        onOccupantChange={handleOccupantChange}
         onSave={handleSave}
+        onDelete={handleDeleteApartment}
+        apartmentName={editedApartmentName}
+        setApartmentName={setEditedApartmentName}
       />
-    </div>
+
+      <ConfirmModal
+        open={showDeleteApartmentModal}
+        onCancel={() => {
+          setShowDeleteApartmentModal(false);
+          setDeleteApartmentId(null);
+        }}
+        onConfirm={confirmDeleteApartment}
+        title='Delete Apartment'
+        description='Are you sure you want to permanently delete this apartment?'
+        confirmLabel='Delete'
+        confirmType='danger'
+        cancelLabel='Cancel'
+        warning='This action cannot be undone.'
+        changes={[
+          {
+            field: 'Apartment',
+            oldValue: selectedApartment?.apartmentName || '',
+            newValue: 'Will be deleted',
+          },
+        ]}
+      />
+
+      <ConfirmModal
+        open={showDeleteBuildingModal}
+        onCancel={() => setShowDeleteBuildingModal(false)}
+        onConfirm={confirmDeleteBuilding}
+        title='Delete Building'
+        description='Are you sure you want to permanently delete this building?'
+        confirmLabel='Delete'
+        confirmType='danger'
+        cancelLabel='Cancel'
+        warning='This action cannot be undone.'
+        changes={[
+          {
+            field: 'Building Name',
+            oldValue: building?.name || '',
+            newValue: 'Will be deleted',
+          },
+        ]}
+      />
+    </section>
   );
 };
 

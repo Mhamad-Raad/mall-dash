@@ -1,14 +1,13 @@
 export interface Occupant {
-  id: number;
+  id: string;
   name: string;
-  email?: string;
+  email: string;
 }
 
 export interface Apartment {
   id: number;
-  apartmentNumber: number;
-  name?: string;
-  occupants: Occupant[];
+  apartmentName?: string;
+  occupant: Occupant | null; // New API format uses single occupant
 }
 
 export interface Floor {
@@ -23,6 +22,38 @@ export interface Building {
   floors: Floor[];
 }
 
+// API response interface for building detail
+
+export interface BuildingDetailFloor {
+  id: number;
+  floorNumber: number;
+  apartments: Apartment[];
+}
+
+export interface BuildingDetail {
+  id: number;
+  name: string;
+  floors: BuildingDetailFloor[];
+}
+
+// API response interface for buildings list
+export interface BuildingListItem {
+  id: number;
+  name: string;
+  numberOfFloors: number;
+  totalApartments: number;
+  occupants: number;
+}
+
 export interface BuildingsTableProps {
-  buildings: Building[];
+  buildings: BuildingListItem[];
+}
+
+export interface BuildingType {
+  id: number;
+  name: string;
+  numberOfFloors: number;
+  totalApartments: number;
+  occupants: 0;
+  floors?: Floor[];
 }

@@ -6,9 +6,9 @@ import {
   BarChart3,
   Settings,
   FileText,
-  CreditCard,
   ShoppingCart,
   Building2,
+  Store,
 } from 'lucide-react';
 
 import {
@@ -49,6 +49,11 @@ const mainNavItems = [
     icon: Building2,
   },
   {
+    title: 'Vendors',
+    url: '/vendors',
+    icon: Store,
+  },
+  {
     title: 'Products',
     url: '#',
     icon: Package,
@@ -68,13 +73,8 @@ const managementItems = [
     icon: BarChart3,
   },
   {
-    title: 'Billing',
-    url: '#',
-    icon: CreditCard,
-  },
-  {
     title: 'Reports',
-    url: '#',
+    url: '/reports',
     icon: FileText,
   },
 ];
@@ -83,7 +83,7 @@ const managementItems = [
 const settingsItems = [
   {
     title: 'Settings',
-    url: '#',
+    url: '/settings',
     icon: Settings,
   },
 ];

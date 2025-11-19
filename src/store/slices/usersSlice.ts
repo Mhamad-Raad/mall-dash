@@ -27,8 +27,9 @@ export const fetchUsers = createAsyncThunk(
     params: {
       page?: number;
       limit?: number;
-      search?: string;
+      searchTerm?: string;
       role?: number;
+      buildingNameSearch?: string;
     } = {},
     { rejectWithValue }
   ) => {
