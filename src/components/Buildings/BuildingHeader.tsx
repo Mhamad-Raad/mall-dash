@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Building2, ArrowLeft, Pencil, Check, X, Trash2 } from 'lucide-react';
+import { Building2, ArrowLeft, Pencil, Check, X, Trash2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,6 +10,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import ConfirmModal, {
   type ChangeDetail,
 } from '@/components/ui/Modals/ConfirmModal';
@@ -89,36 +97,16 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
       </Button>
 
       <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-        <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-4 flex-1'>
           <div className='p-4 rounded-xl bg-primary/10 border-2 border-primary/20'>
             <Building2 className='h-10 w-10 text-primary' />
           </div>
-          <div className='w-full flex items-center gap-3'>
+          <div className='flex-1 flex items-center gap-3'>
             {!isEditing ? (
-              <div className='w-full flex items-center justify-between'>
-                <div className=''>
-                  <span className='text-3xl md:text-4xl font-bold'>
-                    {building?.name}
-                  </span>
-                  <Button
-                    variant='ghost'
-                    onClick={handleEditClick}
-                    size='icon'
-                    className='ml-2'
-                  >
-                    <Pencil className='w-5 h-5 text-muted-foreground' />
-                  </Button>
-                </div>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  onClick={onDeleteBuilding}
-                  className='ml-2 bg-destructive/10 text-destructive hover:bg-destructive/20'
-                  type='button'
-                  aria-label='Delete Building'
-                >
-                  <Trash2 className='w-5 h-5' />
-                </Button>
+              <div className='flex items-center gap-2'>
+                <span className='text-3xl md:text-4xl font-bold'>
+                  {building?.name}
+                </span>
               </div>
             ) : (
               <TooltipProvider>
@@ -189,6 +177,37 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
             )}
           </div>
         </div>
+
+        {/* Actions section - only show when not editing */}
+        {!isEditing && (
+          <div className='flex items-center gap-2'>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant='outline' size='icon'>
+                  <MoreHorizontal className='h-4 w-4' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleEditClick}
+                  className='cursor-pointer'
+                >
+                  <Pencil className='mr-2 h-4 w-4' />
+                  Edit building name
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onDeleteBuilding}
+                  className='text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer'
+                >
+                  <Trash2 className='mr-2 h-4 w-4' />
+                  Delete building
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
     </div>
   );
