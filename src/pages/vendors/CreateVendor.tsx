@@ -8,19 +8,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Store, Clock, User, FileText, Image as ImageIcon, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Store, Clock, User, FileText, UserCheck, Mail, Phone, CheckCircle2, Building2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
+import TimelineSlider from '@/components/Vendors/TimelineSlider';
+import type { UserType } from '@/interfaces/Users.interface';
+import VendorPhotoUpload from '@/components/Vendors/VendorPhotoUpload';
+import VendorBasicInfo from '@/components/Vendors/VendorBasicInfo';
 
 import { vendorTypes } from '@/constants/vendorTypes';
 import { createVendor } from '@/data/Vendor';
@@ -31,12 +29,13 @@ const CreateVendor = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preview, setPreview] = useState<string>('');
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    openingTime: '',
-    closeTime: '',
+    openingTime: '09:00',
+    closeTime: '17:00',
     type: '1',
     userId: '',
     userName: '',
@@ -53,10 +52,34 @@ const CreateVendor = () => {
     }
   }, [formData.photo]);
 
+  const getRoleBadge = (role: number) => {
+    switch (role) {
+      case 0:
+        return <Badge variant="destructive" className="text-xs"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
+      case 1:
+        return <Badge variant="secondary" className="text-xs"><UserCheck className="w-3 h-3 mr-1" />Manager</Badge>;
+      case 2:
+        return <Badge variant="outline" className="text-xs"><User className="w-3 h-3 mr-1" />Vendor</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs">User</Badge>;
+    }
+  };
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleTimeChange = (type: 'open' | 'close', time: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [type === 'open' ? 'openingTime' : 'closeTime']: time,
     }));
   };
 
@@ -200,175 +223,114 @@ const CreateVendor = () => {
                   Enter the vendor's basic details
                 </CardDescription>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>
-                    Vendor Name <span className='text-destructive'>*</span>
-                  </Label>
-                  <Input
-                    id='name'
-                    placeholder='e.g., Aland StakeHouse'
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
+              <CardContent className='p-6'>
+                <div className='flex flex-col md:flex-row gap-6'>
+                  <VendorPhotoUpload
+                    preview={preview}
+                    onPhotoChange={handlePhotoChange}
+                    onPhotoRemove={handlePhotoRemove}
+                    disabled={isSubmitting}
                   />
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='description'>
-                    Description <span className='text-destructive'>*</span>
-                  </Label>
-                  <Textarea
-                    id='description'
-                    placeholder='Brief description of the vendor and their offerings...'
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange('description', e.target.value)
-                    }
-                    className='resize-none h-24'
-                    required
+                  <VendorBasicInfo
+                    name={formData.name}
+                    description={formData.description}
+                    type={formData.type}
+                    vendorId=""
+                    onInputChange={handleInputChange}
+                    disabled={isSubmitting}
                   />
-                  <p className='text-xs text-muted-foreground'>
-                    {formData.description.length}/500 characters
-                  </p>
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='vendor-photo' className='flex items-center gap-2'>
-                    <ImageIcon className='size-4 text-muted-foreground' />
-                    Vendor Logo/Image (Optional)
-                  </Label>
-                  <div className='flex items-center gap-4'>
-                    <div className='w-20 h-20 rounded-lg bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
-                      {preview ? (
-                        <img
-                          src={preview}
-                          alt='Preview'
-                          className='w-full h-full object-cover'
-                        />
-                      ) : (
-                        <ImageIcon className='size-8 text-muted-foreground' />
-                      )}
-                    </div>
-                    <div className='flex-1 space-y-2'>
-                      <Input
-                        id='vendor-photo'
-                        type='file'
-                        accept='image/*'
-                        onChange={handlePhotoChange}
-                        disabled={isSubmitting}
-                      />
-                      {formData.photo && (
-                        <div className='flex items-center justify-between'>
-                          <p className='text-xs text-muted-foreground'>
-                            Selected: {formData.photo.name}
-                          </p>
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='sm'
-                            onClick={handlePhotoRemove}
-                            disabled={isSubmitting}
-                          >
-                            <X className='size-4' />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='type'>
-                    Vendor Type <span className='text-destructive'>*</span>
-                  </Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleInputChange('type', value)}
-                  >
-                    <SelectTrigger id='type'>
-                      <SelectValue placeholder='Select vendor type' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendorTypes.map((type) => (
-                        <SelectItem key={type.value} value={String(type.value)}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               </CardContent>
             </Card>
 
             {/* Working Hours */}
-            <Card>
-              <CardHeader>
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b">
                 <CardTitle className='flex items-center gap-2'>
-                  <Clock className='h-5 w-5' />
-                  Working Hours
+                  <Clock className='h-5 w-5 text-primary' />
+                  <div>
+                    <div className="text-lg font-semibold">Working Hours</div>
+                    <div className="text-xs font-normal text-muted-foreground">Set the vendor's operating hours</div>
+                  </div>
                 </CardTitle>
-                <CardDescription>
-                  Set the vendor's operating hours
-                </CardDescription>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <CardContent className='space-y-6 pt-6'>
+                {/* Time Inputs with Icons */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='space-y-2'>
-                    <Label htmlFor='openingTime'>
+                    <Label htmlFor='openingTime' className='text-sm font-medium'>
                       Opening Time <span className='text-destructive'>*</span>
                     </Label>
-                    <Input
-                      id='openingTime'
-                      type='time'
-                      value={formData.openingTime}
-                      onChange={(e) =>
-                        handleInputChange('openingTime', e.target.value)
-                      }
-                      required
-                    />
+                    <div className='relative'>
+                      <Input
+                        id='openingTime'
+                        type='time'
+                        value={formData.openingTime}
+                        onChange={(e) => handleInputChange('openingTime', e.target.value)}
+                        disabled={isSubmitting}
+                        className='pl-10 h-11 text-base'
+                        required
+                      />
+                      <Clock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none' />
+                    </div>
                   </div>
                   <div className='space-y-2'>
-                    <Label htmlFor='closeTime'>
+                    <Label htmlFor='closeTime' className='text-sm font-medium'>
                       Closing Time <span className='text-destructive'>*</span>
                     </Label>
-                    <Input
-                      id='closeTime'
-                      type='time'
-                      value={formData.closeTime}
-                      onChange={(e) =>
-                        handleInputChange('closeTime', e.target.value)
-                      }
-                      required
-                    />
+                    <div className='relative'>
+                      <Input
+                        id='closeTime'
+                        type='time'
+                        value={formData.closeTime}
+                        onChange={(e) => handleInputChange('closeTime', e.target.value)}
+                        disabled={isSubmitting}
+                        className='pl-10 h-11 text-base'
+                        required
+                      />
+                      <Clock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none' />
+                    </div>
                   </div>
                 </div>
-                <p className='text-sm text-muted-foreground'>
-                  {formData.openingTime && formData.closeTime && (
-                    <>
-                      Vendor will be open from {formData.openingTime} to{' '}
-                      {formData.closeTime}
-                    </>
-                  )}
-                </p>
+
+                {/* Visual Schedule Display */}
+                {formData.openingTime && formData.closeTime && (
+                  <TimelineSlider
+                    openingTime={formData.openingTime}
+                    closeTime={formData.closeTime}
+                    onTimeChange={handleTimeChange}
+                    disabled={isSubmitting}
+                  />
+                )}
+
+                {/* Validation message */}
+                {formData.openingTime && formData.closeTime && formData.openingTime >= formData.closeTime && (
+                  <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
+                    <p className='text-sm text-destructive font-medium'>
+                      ⚠️ Closing time must be after opening time
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* User Assignment */}
-            <Card>
-              <CardHeader>
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b">
                 <CardTitle className='flex items-center gap-2'>
-                  <User className='h-5 w-5' />
-                  User Assignment
+                  <UserCheck className='h-5 w-5 text-primary' />
+                  <div>
+                    <div className="text-lg font-semibold">User Assignment</div>
+                    <div className="text-xs font-normal text-muted-foreground">Assign a manager to this vendor</div>
+                  </div>
                 </CardTitle>
-                <CardDescription>
-                  Assign a user to manage this vendor
-                </CardDescription>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='userId'>
-                    Select User <span className='text-destructive'>*</span>
+              <CardContent className='space-y-4 pt-6'>
+                <div className='space-y-3'>
+                  <Label htmlFor='userId' className="text-sm font-semibold flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Select Vendor Manager
+                    <span className='text-destructive'>*</span>
                   </Label>
                   <ObjectAutoComplete
                     fetchOptions={async (query) => {
@@ -376,14 +338,16 @@ const CreateVendor = () => {
                       if (res.error || !res.data) return [];
                       return res.data;
                     }}
-                    onSelectOption={(user: any) => {
+                    onSelectOption={(user: UserType | null) => {
                       if (user) {
+                        setSelectedUser(user);
                         setFormData((prev) => ({
                           ...prev,
-                          userId: user._id || user.id,
+                          userId: user._id,
                           userName: `${user.firstName} ${user.lastName}`,
                         }));
                       } else {
+                        setSelectedUser(null);
                         setFormData((prev) => ({
                           ...prev,
                           userId: '',
@@ -391,24 +355,102 @@ const CreateVendor = () => {
                         }));
                       }
                     }}
-                    getOptionLabel={(user: any) =>
+                    getOptionLabel={(user: UserType) =>
                       `${user.firstName} ${user.lastName} (${user.email})`
                     }
-                    placeholder='Search for a user by name or email...'
+                    placeholder='🔍 Search by name or email...'
                   />
+                  
+                  {/* Enhanced User Display Card */}
                   {formData.userName && (
-                    <div className='mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md'>
-                      <p className='text-sm font-medium text-primary'>
-                        Selected User: {formData.userName}
-                      </p>
-                      <p className='text-xs text-muted-foreground mt-1'>
-                        User ID: {formData.userId}
-                      </p>
+                    <div className='mt-4 p-4 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-lg shadow-sm space-y-4'>
+                      {/* User Header with Avatar */}
+                      <div className='flex items-start gap-4'>
+                        <Avatar className='h-16 w-16 border-2 border-white dark:border-gray-800 shadow-md'>
+                          <AvatarImage src={selectedUser?.profileImageUrl} alt={formData.userName} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-white font-bold text-lg">
+                            {selectedUser ? getInitials(selectedUser.firstName, selectedUser.lastName) : formData.userName.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className='flex-1 space-y-2'>
+                          <div className='flex items-start justify-between'>
+                            <div>
+                              <h4 className='font-bold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2'>
+                                {formData.userName}
+                                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                              </h4>
+                              <p className='text-xs text-gray-600 dark:text-gray-400 font-medium'>
+                                ID: {formData.userId}
+                              </p>
+                            </div>
+                            {selectedUser && getRoleBadge(selectedUser.role)}
+                          </div>
+                          
+                          {/* Contact Info Grid */}
+                          <div className='grid grid-cols-1 md:grid-cols-2 gap-2 mt-3'>
+                            {selectedUser?.email && (
+                              <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
+                                <Mail className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <p className='text-xs text-gray-500 dark:text-gray-400'>Email</p>
+                                  <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
+                                    {selectedUser.email}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {selectedUser?.phoneNumber && (
+                              <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
+                                <Phone className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <p className='text-xs text-gray-500 dark:text-gray-400'>Phone</p>
+                                  <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
+                                    {selectedUser.phoneNumber}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {selectedUser?.buildingName && (
+                              <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700 md:col-span-2'>
+                                <Building2 className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                                <div className="min-w-0 flex-1">
+                                  <p className='text-xs text-gray-500 dark:text-gray-400'>Building</p>
+                                  <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
+                                    {selectedUser.buildingName}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Quick Actions */}
+                      <div className='flex gap-2 pt-2 border-t border-emerald-200 dark:border-emerald-800'>
+                        {selectedUser?.email && (
+                          <a
+                            href={`mailto:${selectedUser.email}`}
+                            className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors'
+                          >
+                            <Mail className="w-3 h-3" />
+                            Send Email
+                          </a>
+                        )}
+                        {selectedUser?.phoneNumber && (
+                          <a
+                            href={`tel:${selectedUser.phoneNumber}`}
+                            className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors'
+                          >
+                            <Phone className="w-3 h-3" />
+                            Call
+                          </a>
+                        )}
+                      </div>
                     </div>
                   )}
-                  <p className='text-xs text-muted-foreground'>
-                    Search and select the user who will manage this vendor
-                  </p>
                 </div>
               </CardContent>
             </Card>
