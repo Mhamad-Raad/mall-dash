@@ -1,5 +1,5 @@
 import { memo, useState, useEffect } from 'react';
-import { User, Mail, Phone, CheckCircle2, UserCheck, Building2, Shield } from 'lucide-react';
+import { User, Mail, Phone, CheckCircle2, UserCheck, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,7 +13,6 @@ interface VendorUserAssignmentProps {
   userName: string;
   userEmail?: string;
   userPhone?: string;
-  userBuilding?: string;
   userRole?: number;
   userProfileImage?: string;
   onUserSelect: (userId: string, userName: string) => void;
@@ -24,7 +23,6 @@ const VendorUserAssignment = memo(({
   userName,
   userEmail,
   userPhone,
-  userBuilding,
   userRole,
   userProfileImage,
   onUserSelect,
@@ -108,7 +106,7 @@ const VendorUserAssignment = memo(({
               {/* User Header with Avatar */}
               <div className='flex items-start gap-4'>
                 <Avatar className='h-16 w-16 border-2 border-white dark:border-gray-800 shadow-md'>
-                  <AvatarImage src={selectedUser?.profileImageUrl || userProfileImage} alt={userName} />
+                  <AvatarImage src={selectedUser ? selectedUser.profileImageUrl : userProfileImage} alt={userName} />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-white font-bold text-lg">
                     {selectedUser ? getInitials(selectedUser.firstName, selectedUser.lastName) : userName.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
@@ -149,18 +147,6 @@ const VendorUserAssignment = memo(({
                           <p className='text-xs text-gray-500 dark:text-gray-400'>Phone</p>
                           <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
                             {selectedUser?.phoneNumber || userPhone}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {(selectedUser?.buildingName || userBuilding) && (
-                      <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700 md:col-span-2'>
-                        <Building2 className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className='text-xs text-gray-500 dark:text-gray-400'>Building</p>
-                          <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
-                            {selectedUser?.buildingName || userBuilding}
                           </p>
                         </div>
                       </div>

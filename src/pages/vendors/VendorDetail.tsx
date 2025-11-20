@@ -320,6 +320,7 @@ const VendorDetail = () => {
         userName={formData.userName}
         userEmail={vendor?.email}
         userPhone={vendor?.phoneNumber}
+        userProfileImage={vendor?.userProfileImageUrl}
         onUserSelect={handleUserSelect}
       />
       </div>
