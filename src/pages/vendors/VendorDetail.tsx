@@ -36,6 +36,8 @@ import { convertToUTCFormat } from '@/lib/timeUtils';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+import VendorDetailSkeleton from '@/components/Vendors/VendorDetailSkeleton';
+import VendorDetailError from '@/components/Vendors/VendorDetailError';
 
 const VendorDetail = () => {
   const { id } = useParams();
@@ -242,35 +244,11 @@ const VendorDetail = () => {
   console.log(vendor);
 
   if (loading) {
-    return (
-      <div className='flex flex-col gap-6 p-4 md:p-6'>
-        <div className='flex items-center gap-4'>
-          <Button variant='ghost' onClick={() => navigate(-1)}>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Vendors
-          </Button>
-        </div>
-        <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Loading vendor...</p>
-        </div>
-      </div>
-    );
+    return <VendorDetailSkeleton />;
   }
 
   if (error || !vendor) {
-    return (
-      <div className='flex flex-col gap-6 p-4 md:p-6'>
-        <div className='flex items-center gap-4'>
-          <Button variant='ghost' onClick={() => navigate(-1)}>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Vendors
-          </Button>
-        </div>
-        <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>{error || 'Vendor not found'}</p>
-        </div>
-      </div>
-    );
+    return <VendorDetailError error={error || undefined} onBack={() => navigate(-1)} />;
   }
 
   return (
