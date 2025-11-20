@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   ArrowLeft,
-  Save,
-  Trash2,
   Clock,
   User,
   Image as ImageIcon,
@@ -12,7 +10,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,6 +57,29 @@ const VendorDetail = () => {
   });
   const [preview, setPreview] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDraggingOpen, setIsDraggingOpen] = useState(false);
+  const [isDraggingClose, setIsDraggingClose] = useState(false);
+
+  // Track if any changes have been made
+  const hasChanges = useMemo(() => {
+    if (!vendor) return false;
+
+    // Check if photo was added
+    if (formData.photo instanceof File) return true;
+
+    // Check if photo was removed
+    if (vendor.logo && !preview) return true;
+
+    // Check other fields for changes
+    return (
+      vendor.businessName !== formData.name ||
+      vendor.description !== (formData.description || '') ||
+      vendor.workingHours.open !== formData.openingTime ||
+      vendor.workingHours.close !== formData.closeTime ||
+      String(vendorTypes.find((t) => t.label === vendor.type)?.value || '1') !== formData.type ||
+      (vendor.userId || '') !== formData.userId
+    );
+  }, [vendor, formData, preview]);
 
   // Fetch vendor on mount
   useEffect(() => {
@@ -133,11 +153,50 @@ const VendorDetail = () => {
 
   const handlePhotoRemove = () => {
     setFormData((prev) => ({ ...prev, photo: null }));
-    if (vendor?.logo) {
-      setPreview(vendor.logo);
-    } else {
-      setPreview('');
-    }
+    setPreview('');
+    // Reset the file input
+    const fileInput = document.getElementById('vendor-photo') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const handleTimeSliderDrag = (
+    e: React.MouseEvent<HTMLDivElement>,
+    type: 'open' | 'close'
+  ) => {
+    const timeline = e.currentTarget.parentElement;
+    if (!timeline) return;
+
+    const updateTime = (clientX: number) => {
+      const rect = timeline.getBoundingClientRect();
+      const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const totalMinutes = Math.round(percent * 24 * 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      
+      if (type === 'open') {
+        setIsDraggingOpen(true);
+        setFormData((prev) => ({ ...prev, openingTime: timeString }));
+      } else {
+        setIsDraggingClose(true);
+        setFormData((prev) => ({ ...prev, closeTime: timeString }));
+      }
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      updateTime(moveEvent.clientX);
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingOpen(false);
+      setIsDraggingClose(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    updateTime(e.clientX);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   const validateForm = () => {
@@ -252,119 +311,124 @@ const VendorDetail = () => {
   }
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
-        <Button variant='ghost' onClick={() => navigate(-1)}>
-          <ArrowLeft className='mr-2 h-4 w-4' />
-          Back to Vendors
-        </Button>
-        <div className='flex gap-2'>
-          <Button onClick={handleSave} disabled={updating}>
-            <Save className='mr-2 h-4 w-4' />
-            {updating ? 'Saving...' : 'Save Changes'}
-          </Button>
-          <Button
-            variant='destructive'
-            onClick={handleDelete}
-            disabled={updating}
-          >
-            <Trash2 className='mr-2 h-4 w-4' />
-            Delete
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        {/* Header */}
+        <div>
+          <Button variant='ghost' onClick={() => navigate(-1)}>
+            <ArrowLeft className='mr-2 h-4 w-4' />
+            Back to Vendors
           </Button>
         </div>
-      </div>
 
-      {/* Business Profile Card */}
+      {/* Vendor Information Card */}
       <Card>
-        <CardHeader>
-          <div className='flex items-start justify-between'>
-            <div className='flex items-center gap-4'>
-              <Avatar className='h-20 w-20'>
-                <AvatarImage src={vendor.logo} alt={vendor.businessName} />
-              </Avatar>
-              <div>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className='text-2xl font-bold h-auto py-2 mb-2'
-                />
-                <div className='flex items-center gap-2 mt-2'>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleInputChange('type', value)}
-                  >
-                    <SelectTrigger className='w-[180px]'>
-                      <SelectValue placeholder='Select type' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendorTypes.map((type) => (
-                        <SelectItem key={type.value} value={String(type.value)}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span className='text-sm text-muted-foreground'>
-                    ID: {vendor._id}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div>
-            <Label htmlFor='description'>Description</Label>
-            <Textarea
-              id='description'
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-photo' className='flex items-center gap-2'>
-              <ImageIcon className='size-4 text-muted-foreground' />
-              Vendor Logo/Image
-            </Label>
-            <div className='flex items-center gap-4'>
-              <div className='w-20 h-20 rounded-lg bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt='Preview'
-                    className='w-full h-full object-cover'
-                  />
-                ) : (
-                  <ImageIcon className='size-8 text-muted-foreground' />
-                )}
-              </div>
-              <div className='flex-1 space-y-2'>
-                <Input
+        <CardContent className='p-6'>
+          <div className='flex flex-col md:flex-row gap-6'>
+            {/* Square Image Section */}
+            <div className='flex-shrink-0'>
+              <div className='relative w-full md:w-56 aspect-square'>
+                <input
                   id='vendor-photo'
                   type='file'
                   accept='image/*'
                   onChange={handlePhotoChange}
                   disabled={updating}
+                  className='hidden'
                 />
-                {formData.photo && (
-                  <div className='flex items-center justify-between'>
-                    <p className='text-xs text-muted-foreground'>
-                      Selected: {formData.photo.name}
-                    </p>
-                    <Button
-                      type='button'
-                      variant='ghost'
-                      size='sm'
-                      onClick={handlePhotoRemove}
-                      disabled={updating}
-                    >
-                      <X className='size-4' />
-                    </Button>
-                  </div>
+                <label
+                  htmlFor='vendor-photo'
+                  className='w-full h-full rounded-lg bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
+                >
+                  {preview ? (
+                    <img
+                      src={preview}
+                      alt='Vendor logo'
+                      className='w-full h-full object-cover'
+                    />
+                  ) : (
+                    <div className='flex flex-col items-center gap-3 text-muted-foreground'>
+                      <ImageIcon className='h-20 w-20 group-hover:text-primary/70 transition-colors' />
+                      <div className='text-center'>
+                        <p className='text-sm font-medium'>Upload Image</p>
+                        <p className='text-xs mt-1'>Click to browse</p>
+                      </div>
+                    </div>
+                  )}
+                </label>
+                {preview && (
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePhotoRemove();
+                    }}
+                    disabled={updating}
+                    className='absolute top-2 right-2 p-1.5 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg z-10 disabled:opacity-50'
+                  >
+                    <X className='h-4 w-4' />
+                  </button>
                 )}
+              </div>
+            </div>
+
+            {/* Vendor Details Section */}
+            <div className='flex-1 space-y-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='name'>
+                  Business Name <span className='text-destructive'>*</span>
+                </Label>
+                <Input
+                  id='name'
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder='Enter business name'
+                  disabled={updating}
+                  className='text-lg font-semibold'
+                />
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='type'>
+                  Business Type <span className='text-destructive'>*</span>
+                </Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => handleInputChange('type', value)}
+                  disabled={updating}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select type' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {vendorTypes.map((type) => (
+                      <SelectItem key={type.value} value={String(type.value)}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className='space-y-2'>
+                <Label htmlFor='description'>
+                  Description <span className='text-destructive'>*</span>
+                </Label>
+                <Textarea
+                  id='description'
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  rows={6}
+                  placeholder='Describe your business...'
+                  disabled={updating}
+                />
+              </div>
+
+              <div className='pt-2'>
+                <span className='text-xs text-muted-foreground'>
+                  ID: {vendor._id}
+                </span>
               </div>
             </div>
           </div>
@@ -379,37 +443,211 @@ const VendorDetail = () => {
             Working Hours
           </CardTitle>
         </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='grid grid-cols-2 gap-4'>
+        <CardContent className='space-y-6'>
+          {/* Time Inputs with Icons */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             <div className='space-y-2'>
-              <Label htmlFor='openingTime'>Opening Time</Label>
-              <Input
-                id='openingTime'
-                type='time'
-                value={formData.openingTime}
-                onChange={(e) =>
-                  handleInputChange('openingTime', e.target.value)
-                }
-              />
+              <Label htmlFor='openingTime' className='text-sm font-medium'>
+                Opening Time <span className='text-destructive'>*</span>
+              </Label>
+              <div className='relative'>
+                <Input
+                  id='openingTime'
+                  type='time'
+                  value={formData.openingTime}
+                  onChange={(e) =>
+                    handleInputChange('openingTime', e.target.value)
+                  }
+                  disabled={updating}
+                  className='pl-10 h-11 text-base'
+                />
+                <Clock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none' />
+              </div>
             </div>
             <div className='space-y-2'>
-              <Label htmlFor='closeTime'>Closing Time</Label>
-              <Input
-                id='closeTime'
-                type='time'
-                value={formData.closeTime}
-                onChange={(e) => handleInputChange('closeTime', e.target.value)}
-              />
+              <Label htmlFor='closeTime' className='text-sm font-medium'>
+                Closing Time <span className='text-destructive'>*</span>
+              </Label>
+              <div className='relative'>
+                <Input
+                  id='closeTime'
+                  type='time'
+                  value={formData.closeTime}
+                  onChange={(e) => handleInputChange('closeTime', e.target.value)}
+                  disabled={updating}
+                  className='pl-10 h-11 text-base'
+                />
+                <Clock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none' />
+              </div>
             </div>
           </div>
-          <p className='text-sm text-muted-foreground'>
-            {formData.openingTime && formData.closeTime && (
-              <>
-                Vendor will be open from {formData.openingTime} to{' '}
-                {formData.closeTime}
-              </>
-            )}
-          </p>
+
+          {/* Visual Schedule Display */}
+          {formData.openingTime && formData.closeTime && (
+            <div className='p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20'>
+              <div className='flex items-center justify-between mb-3'>
+                <p className='text-sm font-semibold text-primary'>Business Schedule</p>
+                {(() => {
+                  const [openHour, openMin] = formData.openingTime.split(':').map(Number);
+                  const [closeHour, closeMin] = formData.closeTime.split(':').map(Number);
+                  const totalMinutes = (closeHour * 60 + closeMin) - (openHour * 60 + openMin);
+                  const hours = Math.floor(totalMinutes / 60);
+                  const minutes = totalMinutes % 60;
+                  return totalMinutes > 0 ? (
+                    <span className='text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded'>
+                      {hours}h {minutes > 0 ? `${minutes}m` : ''} open
+                    </span>
+                  ) : null;
+                })()}
+              </div>
+
+              {/* 24-hour timeline */}
+              <div className='space-y-2'>
+                <div className='flex items-center justify-between text-xs text-muted-foreground mb-1 px-1'>
+                  <span className='font-medium'>12 AM</span>
+                  <span>6 AM</span>
+                  <span className='font-medium'>12 PM</span>
+                  <span>6 PM</span>
+                  <span className='font-medium'>11 PM</span>
+                </div>
+                <div className='relative h-10 bg-muted/50 rounded-full shadow-inner' style={{ overflow: 'visible' }}>
+                  {/* Hour markers background */}
+                  <div className='absolute inset-0 flex overflow-hidden rounded-full'>
+                    {Array.from({ length: 24 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className='flex-1 border-r border-muted-foreground/5 last:border-r-0'
+                      />
+                    ))}
+                  </div>
+                  
+                  {(() => {
+                    const [openHour, openMin] = formData.openingTime.split(':').map(Number);
+                    const [closeHour, closeMin] = formData.closeTime.split(':').map(Number);
+                    const openPercent = ((openHour * 60 + openMin) / (24 * 60)) * 100;
+                    const closePercent = ((closeHour * 60 + closeMin) / (24 * 60)) * 100;
+                    const width = closePercent - openPercent;
+                    
+                    return width > 0 ? (
+                      <>
+                        {/* Active hours bar with gradient and animation */}
+                        <div 
+                          className='absolute h-full transition-all duration-500 ease-in-out shadow-lg rounded-full overflow-hidden'
+                          style={{ 
+                            left: `${openPercent}%`, 
+                            width: `${width}%`,
+                            opacity: 0.85,
+                            background: (() => {
+                              const [openHour] = formData.openingTime.split(':').map(Number);
+                              const [closeHour] = formData.closeTime.split(':').map(Number);
+                              
+                              // Get color based on hour of day
+                              const getColorForHour = (hour: number) => {
+                                if (hour >= 5 && hour < 12) return '#fbbf24'; // Morning: golden yellow
+                                if (hour >= 12 && hour < 17) return '#60a5fa'; // Afternoon: bright blue
+                                if (hour >= 17 && hour < 20) return '#f97316'; // Evening: orange
+                                return '#6366f1'; // Night: indigo
+                              };
+                              
+                              const startColor = getColorForHour(openHour);
+                              const endColor = getColorForHour(closeHour);
+                              
+                              return `linear-gradient(to right, ${startColor}, ${endColor})`;
+                            })()
+                          }}
+                        >
+                          {/* Shimmer effect */}
+                          <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer' 
+                               style={{
+                                 backgroundSize: '200% 100%',
+                                 animation: 'shimmer 3s infinite'
+                               }}
+                          />
+                        </div>
+                        
+                        {/* Opening marker with pulse */}
+                        <div 
+                          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group select-none ${isDraggingOpen ? 'cursor-grabbing' : 'cursor-grab'}`}
+                          style={{ left: `${openPercent}%`, zIndex: 100 }}
+                          onMouseDown={(e) => handleTimeSliderDrag(e, 'open')}
+                        >
+                          <div className='relative'>
+                            <div className={`w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-lg transition-transform ${isDraggingOpen ? 'scale-125' : 'group-hover:scale-125'}`} />
+                            {!isDraggingOpen && (
+                              <div className='absolute inset-0 w-4 h-4 bg-emerald-500 rounded-full animate-ping opacity-75' />
+                            )}
+                          </div>
+                          <div className='absolute bottom-full mb-2 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200'>
+                            <div className='bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-2xl whitespace-nowrap'>
+                              {isDraggingOpen ? formData.openingTime : 'Drag to adjust'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Closing marker with pulse */}
+                        <div 
+                          className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group select-none ${isDraggingClose ? 'cursor-grabbing' : 'cursor-grab'}`}
+                          style={{ left: `${closePercent}%`, zIndex: 100 }}
+                          onMouseDown={(e) => handleTimeSliderDrag(e, 'close')}
+                        >
+                          <div className='relative'>
+                            <div className={`w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-lg transition-transform ${isDraggingClose ? 'scale-125' : 'group-hover:scale-125'}`} />
+                            {!isDraggingClose && (
+                              <div className='absolute inset-0 w-4 h-4 bg-orange-500 rounded-full animate-ping opacity-75' />
+                            )}
+                          </div>
+                          <div className='absolute bottom-full mb-2 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-transform duration-200'>
+                            <div className='bg-gray-900 text-white text-xs font-semibold px-3 py-1.5 rounded-md shadow-2xl whitespace-nowrap'>
+                              {isDraggingClose ? formData.closeTime : 'Drag to adjust'}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : null;
+                  })()}
+                </div>
+                
+                {/* Time labels with enhanced styling */}
+                <div className='flex items-center justify-between text-xs pt-1'>
+                  <div className='flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800'>
+                    <div className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse'></div>
+                    <span className='font-semibold text-emerald-700 dark:text-emerald-400'>{formData.openingTime}</span>
+                    <span className='text-emerald-600 dark:text-emerald-500 text-[10px]'>OPEN</span>
+                  </div>
+                  <div className='flex items-center gap-2 bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800'>
+                    <span className='text-orange-600 dark:text-orange-500 text-[10px]'>CLOSE</span>
+                    <span className='font-semibold text-orange-700 dark:text-orange-400'>{formData.closeTime}</span>
+                    <div className='w-2 h-2 rounded-full bg-orange-500 animate-pulse'></div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Additional info */}
+              <div className='mt-3 pt-3 border-t border-primary/20'>
+                <p className='text-xs text-muted-foreground'>
+                  {(() => {
+                    const [openHour] = formData.openingTime.split(':').map(Number);
+                    const [closeHour] = formData.closeTime.split(':').map(Number);
+                    
+                    if (openHour < 12 && closeHour <= 14) return '🌅 Morning hours';
+                    if (openHour < 12 && closeHour >= 17) return '☀️ All day service';
+                    if (openHour >= 17) return '🌙 Evening/night hours';
+                    if (openHour >= 12 && closeHour < 17) return '🌤️ Afternoon hours';
+                    return '📅 Custom schedule';
+                  })()}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Validation message */}
+          {formData.openingTime && formData.closeTime && formData.openingTime >= formData.closeTime && (
+            <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
+              <p className='text-sm text-destructive font-medium'>
+                ⚠️ Closing time must be after opening time
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -483,6 +721,26 @@ const VendorDetail = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
+
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
+          <button
+            onClick={handleDelete}
+            className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
+          >
+            Delete Vendor
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges || updating}
+            className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {updating ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
 
       <ConfirmModal
         open={showDeleteModal}
