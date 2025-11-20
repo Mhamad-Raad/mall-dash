@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,7 @@ interface VendorUserAssignmentProps {
   onUserSelect: (userId: string, userName: string) => void;
 }
 
-const VendorUserAssignment = ({
+const VendorUserAssignment = memo(({
   userId,
   userName,
   vendorEmail,
@@ -85,6 +86,8 @@ const VendorUserAssignment = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+VendorUserAssignment.displayName = 'VendorUserAssignment';
 
 export default VendorUserAssignment;

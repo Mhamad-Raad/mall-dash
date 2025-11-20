@@ -39,6 +39,7 @@ const VendorDetail = () => {
   const [preview, setPreview] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Track if any changes have been made
   const hasChanges = useMemo(() => {
@@ -61,20 +62,24 @@ const VendorDetail = () => {
     );
   }, [vendor, formData, preview]);
 
-  // Fetch vendor on mount
+  // Fetch vendor on mount only
   useEffect(() => {
     if (id && !hasFetched) {
       dispatch(fetchVendorById(id));
       setHasFetched(true);
     }
+  }, [dispatch, id, hasFetched]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       dispatch(clearVendor());
     };
-  }, [dispatch, id, hasFetched]);
+  }, [dispatch]);
 
   // Update form data when vendor is loaded
   useEffect(() => {
-    if (vendor && !formData.name) {
+    if (vendor && !isInitialized) {
       setFormData({
         name: vendor.businessName,
         description: vendor.description || '',
@@ -90,8 +95,9 @@ const VendorDetail = () => {
       if (vendor.logo) {
         setPreview(vendor.logo);
       }
+      setIsInitialized(true);
     }
-  }, [vendor]);
+  }, [vendor, isInitialized]);
 
   // Show error toast
   useEffect(() => {
@@ -141,11 +147,15 @@ const VendorDetail = () => {
   };
 
   const handleTimeChange = useCallback((type: 'open' | 'close', time: string) => {
-    if (type === 'open') {
-      setFormData((prev) => ({ ...prev, openingTime: time }));
-    } else {
-      setFormData((prev) => ({ ...prev, closeTime: time }));
-    }
+    setFormData((prev) => {
+      // Only update if the value actually changed
+      const currentTime = type === 'open' ? prev.openingTime : prev.closeTime;
+      if (currentTime === time) return prev;
+      
+      return type === 'open' 
+        ? { ...prev, openingTime: time }
+        : { ...prev, closeTime: time };
+    });
   }, []);
 
   const handleUserSelect = useCallback((userId: string, userName: string) => {
@@ -252,8 +262,6 @@ const VendorDetail = () => {
       });
     }
   };
-
-  console.log(vendor);
 
   if (loading) {
     return <VendorDetailSkeleton />;
