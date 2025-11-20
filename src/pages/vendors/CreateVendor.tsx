@@ -10,26 +10,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Store, Clock, User, FileText, UserCheck, Mail, Phone, CheckCircle2, Building2, Shield } from 'lucide-react';
+import { ArrowLeft, Store, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import TimelineSlider from '@/components/Vendors/TimelineSlider';
-import type { UserType } from '@/interfaces/Users.interface';
 import VendorPhotoUpload from '@/components/Vendors/VendorPhotoUpload';
 import VendorBasicInfo from '@/components/Vendors/VendorBasicInfo';
+import VendorUserAssignment from '@/components/Vendors/VendorUserAssignment';
 
 import { vendorTypes } from '@/constants/vendorTypes';
 import { createVendor } from '@/data/Vendor';
-import { fetchUsers } from '@/data/Users';
 import { convertToUTCFormat } from '@/lib/timeUtils';
 
 const CreateVendor = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preview, setPreview] = useState<string>('');
-  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -51,23 +46,6 @@ const CreateVendor = () => {
       setPreview('');
     }
   }, [formData.photo]);
-
-  const getRoleBadge = (role: number) => {
-    switch (role) {
-      case 0:
-        return <Badge variant="destructive" className="text-xs"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
-      case 1:
-        return <Badge variant="secondary" className="text-xs"><UserCheck className="w-3 h-3 mr-1" />Manager</Badge>;
-      case 2:
-        return <Badge variant="outline" className="text-xs"><User className="w-3 h-3 mr-1" />Vendor</Badge>;
-      default:
-        return <Badge variant="outline" className="text-xs">User</Badge>;
-    }
-  };
-
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -315,145 +293,17 @@ const CreateVendor = () => {
             </Card>
 
             {/* User Assignment */}
-            <Card className="overflow-hidden">
-              <CardHeader className="border-b">
-                <CardTitle className='flex items-center gap-2'>
-                  <UserCheck className='h-5 w-5 text-primary' />
-                  <div>
-                    <div className="text-lg font-semibold">User Assignment</div>
-                    <div className="text-xs font-normal text-muted-foreground">Assign a manager to this vendor</div>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-4 pt-6'>
-                <div className='space-y-3'>
-                  <Label htmlFor='userId' className="text-sm font-semibold flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Select Vendor Manager
-                    <span className='text-destructive'>*</span>
-                  </Label>
-                  <ObjectAutoComplete
-                    fetchOptions={async (query) => {
-                      const res = await fetchUsers({ searchTerm: query, limit: 10, role: 2 });
-                      if (res.error || !res.data) return [];
-                      return res.data;
-                    }}
-                    onSelectOption={(user: UserType | null) => {
-                      if (user) {
-                        setSelectedUser(user);
-                        setFormData((prev) => ({
-                          ...prev,
-                          userId: user._id,
-                          userName: `${user.firstName} ${user.lastName}`,
-                        }));
-                      } else {
-                        setSelectedUser(null);
-                        setFormData((prev) => ({
-                          ...prev,
-                          userId: '',
-                          userName: '',
-                        }));
-                      }
-                    }}
-                    getOptionLabel={(user: UserType) =>
-                      `${user.firstName} ${user.lastName} (${user.email})`
-                    }
-                    placeholder='🔍 Search by name or email...'
-                  />
-                  
-                  {/* Enhanced User Display Card */}
-                  {formData.userName && (
-                    <div className='mt-4 p-4 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-lg shadow-sm space-y-4'>
-                      {/* User Header with Avatar */}
-                      <div className='flex items-start gap-4'>
-                        <Avatar className='h-16 w-16 border-2 border-white dark:border-gray-800 shadow-md'>
-                          <AvatarImage src={selectedUser?.profileImageUrl} alt={formData.userName} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-white font-bold text-lg">
-                            {selectedUser ? getInitials(selectedUser.firstName, selectedUser.lastName) : formData.userName.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className='flex-1 space-y-2'>
-                          <div className='flex items-start justify-between'>
-                            <div>
-                              <h4 className='font-bold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2'>
-                                {formData.userName}
-                                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                              </h4>
-                              <p className='text-xs text-gray-600 dark:text-gray-400 font-medium'>
-                                ID: {formData.userId}
-                              </p>
-                            </div>
-                            {selectedUser && getRoleBadge(selectedUser.role)}
-                          </div>
-                          
-                          {/* Contact Info Grid */}
-                          <div className='grid grid-cols-1 md:grid-cols-2 gap-2 mt-3'>
-                            {selectedUser?.email && (
-                              <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
-                                <Mail className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <p className='text-xs text-gray-500 dark:text-gray-400'>Email</p>
-                                  <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
-                                    {selectedUser.email}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {selectedUser?.phoneNumber && (
-                              <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
-                                <Phone className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <p className='text-xs text-gray-500 dark:text-gray-400'>Phone</p>
-                                  <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
-                                    {selectedUser.phoneNumber}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {selectedUser?.buildingName && (
-                              <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700 md:col-span-2'>
-                                <Building2 className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                                <div className="min-w-0 flex-1">
-                                  <p className='text-xs text-gray-500 dark:text-gray-400'>Building</p>
-                                  <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
-                                    {selectedUser.buildingName}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Quick Actions */}
-                      <div className='flex gap-2 pt-2 border-t border-emerald-200 dark:border-emerald-800'>
-                        {selectedUser?.email && (
-                          <a
-                            href={`mailto:${selectedUser.email}`}
-                            className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors'
-                          >
-                            <Mail className="w-3 h-3" />
-                            Send Email
-                          </a>
-                        )}
-                        {selectedUser?.phoneNumber && (
-                          <a
-                            href={`tel:${selectedUser.phoneNumber}`}
-                            className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors'
-                          >
-                            <Phone className="w-3 h-3" />
-                            Call
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <VendorUserAssignment
+              userId={formData.userId}
+              userName={formData.userName}
+              onUserSelect={(userId, userName) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  userId,
+                  userName,
+                }));
+              }}
+            />
           </div>
 
           {/* Sidebar - Preview & Actions */}

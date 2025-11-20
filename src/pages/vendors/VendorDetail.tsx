@@ -318,8 +318,8 @@ const VendorDetail = () => {
       <VendorUserAssignment
         userId={formData.userId}
         userName={formData.userName}
-        vendorEmail={vendor?.email}
-        vendorPhone={vendor?.phoneNumber}
+        userEmail={vendor?.email}
+        userPhone={vendor?.phoneNumber}
         onUserSelect={handleUserSelect}
       />
       </div>
