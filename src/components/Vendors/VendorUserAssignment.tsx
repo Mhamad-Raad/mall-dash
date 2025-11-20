@@ -1,9 +1,12 @@
-import { memo } from 'react';
-import { User } from 'lucide-react';
+import { memo, useState } from 'react';
+import { User, Mail, Phone, CheckCircle2, UserCheck, Building2, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
+import type { UserType } from '@/interfaces/Users.interface';
 
 interface VendorUserAssignmentProps {
   userId: string;
@@ -20,18 +23,42 @@ const VendorUserAssignment = memo(({
   vendorPhone,
   onUserSelect,
 }: VendorUserAssignmentProps) => {
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+
+  const getRoleBadge = (role: number) => {
+    switch (role) {
+      case 0:
+        return <Badge variant="destructive" className="text-xs"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
+      case 1:
+        return <Badge variant="secondary" className="text-xs"><UserCheck className="w-3 h-3 mr-1" />Manager</Badge>;
+      case 2:
+        return <Badge variant="outline" className="text-xs"><User className="w-3 h-3 mr-1" />Vendor</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs">User</Badge>;
+    }
+  };
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b">
         <CardTitle className='flex items-center gap-2'>
-          <User className='h-5 w-5' />
-          User Assignment
+          <UserCheck className='h-5 w-5 text-primary' />
+          <div>
+            <div className="text-lg font-semibold">User Assignment</div>
+            <div className="text-xs font-normal text-muted-foreground">Assign a manager to this vendor</div>
+          </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className='space-y-4'>
-        <div className='space-y-2'>
-          <Label htmlFor='userId'>
-            Select User <span className='text-destructive'>*</span>
+      <CardContent className='space-y-4 pt-6'>
+        <div className='space-y-3'>
+          <Label htmlFor='userId' className="text-sm font-semibold flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Select Vendor Manager
+            <span className='text-destructive'>*</span>
           </Label>
           <ObjectAutoComplete
             fetchOptions={async (query) => {
@@ -43,45 +70,115 @@ const VendorUserAssignment = memo(({
               if (res.error || !res.data) return [];
               return res.data;
             }}
-            onSelectOption={(user: any) => {
+            onSelectOption={(user: UserType | null) => {
               if (user) {
+                setSelectedUser(user);
                 onUserSelect(
-                  user._id || user.id,
+                  user._id,
                   `${user.firstName} ${user.lastName}`
                 );
               } else {
+                setSelectedUser(null);
                 onUserSelect('', '');
               }
             }}
-            getOptionLabel={(user: any) =>
+            getOptionLabel={(user: UserType) =>
               `${user.firstName} ${user.lastName} (${user.email})`
             }
-            placeholder='Search for a user by name or email...'
+            placeholder='🔍 Search by name or email...'
             initialValue={userName}
           />
+          
+          {/* Enhanced User Display Card */}
           {userName && (
-            <div className='mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md'>
-              <p className='text-sm font-medium text-primary'>
-                Selected User: {userName}
-              </p>
-              <p className='text-xs text-muted-foreground mt-1'>
-                User ID: {userId}
-              </p>
-              {vendorEmail && (
-                <p className='text-xs text-muted-foreground mt-1'>
-                  Email: {vendorEmail}
-                </p>
-              )}
-              {vendorPhone && (
-                <p className='text-xs text-muted-foreground mt-1'>
-                  Phone: {vendorPhone}
-                </p>
-              )}
+            <div className='mt-4 p-4 bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/20 dark:to-blue-950/20 border-2 border-emerald-200 dark:border-emerald-800 rounded-lg shadow-sm space-y-4'>
+              {/* User Header with Avatar */}
+              <div className='flex items-start gap-4'>
+                <Avatar className='h-16 w-16 border-2 border-white dark:border-gray-800 shadow-md'>
+                  <AvatarImage src={selectedUser?.profileImageUrl} alt={userName} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-white font-bold text-lg">
+                    {selectedUser ? getInitials(selectedUser.firstName, selectedUser.lastName) : userName.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className='flex-1 space-y-2'>
+                  <div className='flex items-start justify-between'>
+                    <div>
+                      <h4 className='font-bold text-lg text-gray-900 dark:text-gray-100 flex items-center gap-2'>
+                        {userName}
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                      </h4>
+                      <p className='text-xs text-gray-600 dark:text-gray-400 font-medium'>
+                        ID: {userId}
+                      </p>
+                    </div>
+                    {selectedUser && getRoleBadge(selectedUser.role)}
+                  </div>
+                  
+                  {/* Contact Info Grid */}
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-2 mt-3'>
+                    {(vendorEmail || selectedUser?.email) && (
+                      <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
+                        <Mail className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>Email</p>
+                          <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
+                            {vendorEmail || selectedUser?.email}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {(vendorPhone || selectedUser?.phoneNumber) && (
+                      <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
+                        <Phone className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>Phone</p>
+                          <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
+                            {vendorPhone || selectedUser?.phoneNumber}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {selectedUser?.buildingName && (
+                      <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700 md:col-span-2'>
+                        <Building2 className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>Building</p>
+                          <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
+                            {selectedUser.buildingName}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className='flex gap-2 pt-2 border-t border-emerald-200 dark:border-emerald-800'>
+                {(vendorEmail || selectedUser?.email) && (
+                  <a
+                    href={`mailto:${vendorEmail || selectedUser?.email}`}
+                    className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors'
+                  >
+                    <Mail className="w-3 h-3" />
+                    Send Email
+                  </a>
+                )}
+                {(vendorPhone || selectedUser?.phoneNumber) && (
+                  <a
+                    href={`tel:${vendorPhone || selectedUser?.phoneNumber}`}
+                    className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors'
+                  >
+                    <Phone className="w-3 h-3" />
+                    Call
+                  </a>
+                )}
+              </div>
             </div>
           )}
-          <p className='text-xs text-muted-foreground'>
-            Search and select the user who will manage this vendor
-          </p>
         </div>
       </CardContent>
     </Card>
