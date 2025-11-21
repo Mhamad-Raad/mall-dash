@@ -9,7 +9,7 @@ import NotificationPopover from './NotificationPopover';
 
 export default function Navbar() {
   const location = useLocation();
-  const { t } = useTranslation('sidebar');
+  const { t } = useTranslation('navbar');
 
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -17,14 +17,14 @@ export default function Navbar() {
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/') return t('navbar.dashboard');
+    if (path === '/') return t('dashboard');
     if (path === '/users') return t('users:title');
     if (path === '/users/create') return t('users:createUser.title');
-    if (path === '/vendors') return t('navbar.vendorsManagement');
-    if (path === '/products') return t('navbar.productsManagement');
-    if (path === '/buildings') return t('navbar.buildingsManagement');
-    if (path === '/reports') return t('navbar.reports');
-    if (path === '/settings') return t('navbar.settings');
+    if (path === '/vendors') return t('vendorsManagement');
+    if (path === '/products') return t('productsManagement');
+    if (path === '/buildings') return t('buildingsManagement');
+    if (path === '/reports') return t('reports');
+    if (path === '/settings') return t('settings');
     return capitalize(path.replace(/^\//, '').replace(/-/g, ' '));
   };
 
@@ -38,13 +38,13 @@ export default function Navbar() {
       
       // Translate known segments
       let displayText = segment;
-      if (segment === 'users') displayText = t('navbar.users');
-      else if (segment === 'create') displayText = t('navbar.create');
-      else if (segment === 'vendors') displayText = t('navbar.vendors');
-      else if (segment === 'products') displayText = t('navbar.products');
-      else if (segment === 'buildings') displayText = t('navbar.buildings');
-      else if (segment === 'reports') displayText = t('navbar.reports');
-      else if (segment === 'settings') displayText = t('navbar.settings');
+      if (segment === 'users') displayText = t('users');
+      else if (segment === 'create') displayText = t('create');
+      else if (segment === 'vendors') displayText = t('vendors');
+      else if (segment === 'products') displayText = t('products');
+      else if (segment === 'buildings') displayText = t('buildings');
+      else if (segment === 'reports') displayText = t('reports');
+      else if (segment === 'settings') displayText = t('settings');
       else displayText = capitalize(segment.replace(/-/g, ' '));
       
       return (
@@ -69,7 +69,7 @@ export default function Navbar() {
             {getPageTitle()}
           </h1>
           <div className='hidden md:flex items-center gap-1 text-xs'>
-            <span className='text-muted-foreground'>{t('navbar.home')}</span>
+            <span className='text-muted-foreground'>{t('home')}</span>
             {getBreadcrumb()}
           </div>
         </div>
