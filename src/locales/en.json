@@ -1,0 +1,13 @@
+{
+  "navbar": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "create": "Create",
+    "vendors": "Vendors",
+    "products": "Products",
+    "buildings": "Buildings",
+    "reports": "Reports",
+    "settings": "Settings"
+  }
+}

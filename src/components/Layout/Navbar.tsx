@@ -17,9 +17,14 @@ export default function Navbar() {
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/') return 'Dashboard';
-    if (path === '/users') return 'Users Management';
-    if (path === '/users/create') return 'Create New User';
+    if (path === '/') return t('navbar.dashboard');
+    if (path === '/users') return t('users:title');
+    if (path === '/users/create') return t('users:createUser.title');
+    if (path === '/vendors') return 'Vendors Management';
+    if (path === '/products') return 'Products Management';
+    if (path === '/buildings') return 'Buildings Management';
+    if (path === '/reports') return 'Reports';
+    if (path === '/settings') return 'Settings';
     return capitalize(path.replace(/^\//, '').replace(/-/g, ' '));
   };
 
@@ -30,11 +35,23 @@ export default function Navbar() {
     const segments = path.split('/').filter(Boolean);
     return segments.map((segment, index) => {
       const isLast = index === segments.length - 1;
+      
+      // Translate known segments
+      let displayText = segment;
+      if (segment === 'users') displayText = t('navbar.users');
+      else if (segment === 'create') displayText = t('navbar.create');
+      else if (segment === 'vendors') displayText = t('navbar.vendors');
+      else if (segment === 'products') displayText = t('navbar.products');
+      else if (segment === 'buildings') displayText = t('navbar.buildings');
+      else if (segment === 'reports') displayText = t('navbar.reports');
+      else if (segment === 'settings') displayText = t('navbar.settings');
+      else displayText = capitalize(segment.replace(/-/g, ' '));
+      
       return (
         <span key={segment} className="flex items-center gap-2">
           <span className="text-muted-foreground">/</span>
           <span className={isLast ? 'text-foreground font-medium' : 'text-muted-foreground'}>
-            {capitalize(segment.replace(/-/g, ' '))}
+            {displayText}
           </span>
         </span>
       );
@@ -49,10 +66,10 @@ export default function Navbar() {
         <div className='hidden sm:block h-6 w-px bg-border' />
         <div className='flex flex-col min-w-0'>
           <h1 className='text-lg font-bold tracking-tight truncate'>
-            {t(getPageTitle())}
+            {getPageTitle()}
           </h1>
           <div className='hidden md:flex items-center gap-1 text-xs'>
-            <span className='text-muted-foreground'>Home</span>
+            <span className='text-muted-foreground'>{t('navbar.home')}</span>
             {getBreadcrumb()}
           </div>
         </div>
