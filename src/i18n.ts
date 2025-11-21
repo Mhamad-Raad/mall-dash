@@ -7,14 +7,14 @@ import ku from './locales/ku.json';
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: { translation: en },
-    ar: { translation: ar },
-    ku: {
-      translation: ku,
-    },
+    en: en,
+    ar: ar,
+    ku: ku,
   },
   lng: 'en', // default language
   fallbackLng: 'en',
+  ns: ['sidebar'], // namespaces
+  defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });
 

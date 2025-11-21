@@ -1,0 +1,27 @@
+{
+  "title": "إدارة المستخدمين",
+  "subtitle": "إدارة ومراقبة جميع المستخدمين عبر منصتك",
+  "addUser": "إضافة مستخدم",
+  "filterUsers": "تصفية المستخدمين",
+  "searchPlaceholder": "الاسم أو البريد الإلكتروني...",
+  "buildingPlaceholder": "اختر المبنى...",
+  "rolePlaceholder": "اختر الدور",
+  "allRoles": "جميع الأدوار",
+  "tableHeaders": {
+    "user": "المستخدم",
+    "contact": "الاتصال",
+    "role": "الدور",
+    "location": "الموقع"
+  },
+  "roles": {
+    "superAdmin": "مدير عام",
+    "admin": "مدير",
+    "vendor": "بائع",
+    "tenant": "مستأجر"
+  },
+  "emptyState": {
+    "title": "لم يتم العثور على مستخدمين",
+    "description": "حاول تعديل الفلاتر أو إنشاء مستخدم جديد."
+  },
+  "error": "خطأ"
+}
