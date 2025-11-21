@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Layers, Plus, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import type { RootState, AppDispatch } from '@/store/store';
 
 const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation('buildings');
   const { building, loading, error } = useSelector(
     (state: RootState) => state.building
   );
@@ -67,8 +69,8 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
           payload?.error ??
           payload?.message ??
           (typeof payload === 'string' ? payload : null) ??
-          'Failed to delete floor.';
-        setDeleteError(errMsg || 'Failed to delete floor.');
+          t('detail.floors.failedToDeleteFloor');
+        setDeleteError(errMsg || t('detail.floors.failedToDeleteFloor'));
       } else {
         setShowDeleteModal(false);
         setDeleteFloor(null);
@@ -102,8 +104,8 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
             <Layers className='h-5 w-5 text-primary' />
           </div>
           <div>
-            <h2 className='text-xl font-bold'>Floors & Apartments</h2>
-            <p className='text-sm text-muted-foreground'>{floors.length} floor{floors.length !== 1 ? 's' : ''} total</p>
+            <h2 className='text-xl font-bold'>{t('detail.floors.title')}</h2>
+            <p className='text-sm text-muted-foreground'>{floors.length} {floors.length !== 1 ? t('detail.floors.totalFloorsPlural') : t('detail.floors.totalFloors')} {t('detail.floors.total')}</p>
           </div>
         </div>
         <Button
@@ -114,7 +116,7 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
           disabled={loading}
         >
           <Plus className='w-4 h-4' />
-          Add Floor
+          {t('detail.floors.addFloor')}
         </Button>
       </div>
       {error && (
@@ -136,10 +138,10 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                       </div>
                       <div className='text-left'>
                         <p className='text-lg font-semibold'>
-                          Floor {floor?.floorNumber}
+                          {t('detail.floors.floor')} {floor?.floorNumber}
                         </p>
                         <p className='text-sm text-muted-foreground font-normal'>
-                          {floor?.apartments?.length || 0} unit{floor?.apartments?.length !== 1 ? 's' : ''}
+                          {floor?.apartments?.length || 0} {floor?.apartments?.length !== 1 ? t('detail.floors.unitsPlural') : t('detail.floors.unit')}
                         </p>
                       </div>
                     </div>
@@ -176,7 +178,7 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
                         <div className='p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors mb-2'>
                           <Plus className='w-6 h-6 text-primary' />
                         </div>
-                        <span className='font-semibold text-sm text-primary'>Add Apartment</span>
+                        <span className='font-semibold text-sm text-primary'>{t('detail.floors.addApartment')}</span>
                       </div>
                     </Card>
                   </div>
@@ -191,11 +193,11 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
         open={showAddModal}
         onCancel={() => setShowAddModal(false)}
         onConfirm={handleAddFloorConfirm}
-        title='Add Floor'
-        description='Are you sure you want to add a new floor to this building?'
+        title={t('detail.floors.addFloorTitle')}
+        description={t('detail.floors.addFloorDescription')}
         confirmType='success'
-        confirmLabel='Add Floor'
-        cancelLabel='Cancel'
+        confirmLabel={t('detail.floors.addFloorConfirm')}
+        cancelLabel={t('modal.cancel')}
         changes={[]}
       />
 
@@ -208,24 +210,22 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
           setDeleteError(null);
         }}
         onConfirm={handleDeleteFloorConfirm}
-        title='Delete Floor'
-        description={`Are you sure you want to delete Floor ${
-          deleteFloor?.floorNumber || ''
-        }?`}
+        title={t('detail.floors.deleteFloorTitle')}
+        description={t('detail.floors.deleteFloorDescription', { floorNumber: deleteFloor?.floorNumber || '' })}
         warning={
           deleteError ||
-          'WARNING! This will permanently remove the floor and all its apartments.'
+          t('detail.floors.deleteFloorWarning')
         }
         confirmType='danger'
-        confirmLabel='Delete'
-        cancelLabel='Cancel'
+        confirmLabel={t('detail.floors.deleteFloorConfirm')}
+        cancelLabel={t('modal.cancel')}
         changes={
           deleteFloor
             ? [
                 {
-                  field: 'Floor Number',
+                  field: t('detail.floors.floorNumberField'),
                   oldValue: deleteFloor.floorNumber,
-                  newValue: 'Will be deleted',
+                  newValue: t('detail.floors.willBeDeleted'),
                 },
               ]
             : []

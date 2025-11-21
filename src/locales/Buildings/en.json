@@ -30,5 +30,72 @@
     "createButton": "Create Building",
     "creating": "Creating...",
     "errorCreating": "Failed to create building."
+  },
+  "detail": {
+    "backToBuildings": "Back to Buildings",
+    "nameRequired": "Name required",
+    "nameMustBeChanged": "Name must be changed",
+    "confirmNameChange": "Confirm name change",
+    "nameUpdated": "Building name updated.",
+    "confirmNameChangeTitle": "Confirm Name Change",
+    "confirmNameChangeDescription": "Are you sure you want to change the building name?",
+    "confirmNameChangeWarning": "Please double check all details before confirming.",
+    "fieldBuildingName": "Building Name",
+    "confirm": "Confirm",
+    "actionsLabel": "Actions",
+    "editBuildingName": "Edit building name",
+    "deleteBuilding": "Delete building",
+    "notFound": "Building Not Found",
+    "notFoundDescription": "The building you're looking for doesn't exist.",
+    "summary": {
+      "occupied": "Occupied",
+      "vacant": "Vacant",
+      "totalApartments": "Total Apartments",
+      "floors": "Floors"
+    },
+    "floors": {
+      "title": "Floors & Apartments",
+      "totalFloors": "floor",
+      "totalFloorsPlural": "floors",
+      "total": "total",
+      "addFloor": "Add Floor",
+      "floor": "Floor",
+      "unit": "unit",
+      "unitsPlural": "units",
+      "addApartment": "Add Apartment",
+      "addFloorTitle": "Add Floor",
+      "addFloorDescription": "Are you sure you want to add a new floor to this building?",
+      "addFloorConfirm": "Add Floor",
+      "deleteFloorTitle": "Delete Floor",
+      "deleteFloorDescription": "Are you sure you want to delete Floor {{floorNumber}}?",
+      "deleteFloorWarning": "WARNING! This will permanently remove the floor and all its apartments.",
+      "deleteFloorConfirm": "Delete",
+      "floorNumberField": "Floor Number",
+      "willBeDeleted": "Will be deleted",
+      "failedToDeleteFloor": "Failed to delete floor."
+    },
+    "apartment": {
+      "occupied": "Occupied",
+      "vacant": "Vacant",
+      "noResidentAssigned": "No resident assigned",
+      "editApartment": "Edit Apartment",
+      "manageOccupants": "Manage apartment occupants. Add or edit occupant information.",
+      "apartmentNameLabel": "Apartment Name",
+      "apartmentNamePlaceholder": "Enter apartment name",
+      "searchUserPlaceholder": "Search user by name, email, or number",
+      "occupantLabel": "Occupant",
+      "noOccupantsAssigned": "No occupants assigned",
+      "cancel": "Cancel",
+      "deleteApartment": "Delete Apartment",
+      "saveChanges": "Save Changes"
+    },
+    "addApartmentModal": {
+      "title": "Create a new apartment for Floor {{floorNumber}}",
+      "apartmentNameLabel": "Apartment Name",
+      "apartmentNamePlaceholder": "Apartment Name",
+      "apartmentNameRequired": "Apartment name is required.",
+      "cancel": "Cancel",
+      "addApartment": "Add Apartment"
+    }
   }
 }

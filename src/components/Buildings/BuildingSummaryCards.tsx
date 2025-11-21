@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Layers, Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
@@ -31,6 +32,7 @@ function getBuildingSummary(building: any) {
 
 const BuildingSummaryCards = () => {
   const { building } = useSelector((state: RootState) => state.building);
+  const { t } = useTranslation('buildings');
   const { totalFloors, totalApartments, occupiedApartments } =
     getBuildingSummary(building);
 
@@ -55,7 +57,7 @@ const BuildingSummaryCards = () => {
 
   const chartConfig = {
     occupied: {
-      label: 'Occupied',
+      label: t('detail.summary.occupied'),
       color: 'var(--chart-2)',
     },
   } satisfies ChartConfig;
@@ -100,7 +102,7 @@ const BuildingSummaryCards = () => {
                               y={(viewBox.cy || 0) + 24}
                               className='fill-muted-foreground'
                             >
-                              Occupied
+                              {t('detail.summary.occupied')}
                             </tspan>
                           </text>
                         );
@@ -119,7 +121,7 @@ const BuildingSummaryCards = () => {
               <div className='flex items-center gap-3'>
                 <div className='w-4 h-4 rounded-full bg-chart-2' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Occupied</p>
+                  <p className='text-sm text-muted-foreground'>{t('detail.summary.occupied')}</p>
                   <p className='text-2xl font-bold'>{occupiedApartments || 0}</p>
                 </div>
               </div>
@@ -135,7 +137,7 @@ const BuildingSummaryCards = () => {
               <div className='flex items-center gap-3'>
                 <div className='w-4 h-4 rounded-full bg-muted border-2 border-muted-foreground/20' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Vacant</p>
+                  <p className='text-sm text-muted-foreground'>{t('detail.summary.vacant')}</p>
                   <p className='text-2xl font-bold'>{vacantApartments || 0}</p>
                 </div>
               </div>
@@ -155,7 +157,7 @@ const BuildingSummaryCards = () => {
               <div className='flex items-center gap-2'>
                 <Home className='size-5 text-primary' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Total Apartments</p>
+                  <p className='text-sm text-muted-foreground'>{t('detail.summary.totalApartments')}</p>
                   <p className='text-xl font-semibold text-primary'>{totalApartments || 0}</p>
                 </div>
               </div>
@@ -164,7 +166,7 @@ const BuildingSummaryCards = () => {
               <div className='flex items-center gap-2'>
                 <Layers className='size-5 text-muted-foreground' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Floors</p>
+                  <p className='text-sm text-muted-foreground'>{t('detail.summary.floors')}</p>
                   <p className='text-xl font-semibold'>{totalFloors || 0}</p>
                 </div>
               </div>

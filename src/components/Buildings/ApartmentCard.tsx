@@ -1,6 +1,7 @@
 import { Home, User, Edit3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { Apartment } from '@/interfaces/Building.interface';
+import { useTranslation } from 'react-i18next';
 
 interface ApartmentCardProps {
   apartment?: Apartment | null;
@@ -8,6 +9,8 @@ interface ApartmentCardProps {
 }
 
 const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
+  const { t } = useTranslation('buildings');
+  
   if (!apartment) {
     return null;
   }
@@ -37,7 +40,7 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
                 <div className='flex items-center gap-1.5 mt-0.5'>
                   <div className={`w-1.5 h-1.5 rounded-full ${hasOccupant ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
                   <p className='text-xs font-medium text-muted-foreground'>
-                    {hasOccupant ? 'Occupied' : 'Vacant'}
+                    {hasOccupant ? t('detail.apartment.occupied') : t('detail.apartment.vacant')}
                   </p>
                 </div>
               </div>
@@ -62,7 +65,7 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
           ) : (
             <div className='rounded-lg bg-muted/40 border-2 border-dashed border-muted-foreground/30 p-2.5 text-center group-hover:border-primary/40 transition-colors'>
               <p className='text-xs text-muted-foreground font-medium'>
-                No resident assigned
+                {t('detail.apartment.noResidentAssigned')}
               </p>
             </div>
           )}
