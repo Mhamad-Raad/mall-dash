@@ -23,5 +23,59 @@
     "title": "No users found",
     "description": "Try adjusting your filters or create a new user."
   },
-  "error": "Error"
+  "error": "Error",
+  "createUser": {
+    "title": "Create New User",
+    "subtitle": "Add a new user to the system",
+    "cancel": "Cancel",
+    "createButton": "Create User",
+    "creating": "Creating...",
+    "userType": {
+      "title": "User Type",
+      "description": "Select the type of user account to create",
+      "staff": {
+        "title": "Staff Account",
+        "description": "Admin or Vendor with system access"
+      },
+      "customer": {
+        "title": "Customer Account",
+        "description": "Tenant with standard access"
+      }
+    },
+    "userInformation": "User Information",
+    "fillDetails": "Fill in the details for the new {{type}}",
+    "passwordMismatch": "Passwords do not match",
+    "passwordMismatchDesc": "Please make sure both password fields are identical.",
+    "createSuccess": "User Created Successfully!",
+    "createSuccessDesc": "{{name}} has been added to the system.",
+    "createError": "Failed to Create User",
+    "createErrorDesc": "An error occurred while creating the user."
+  },
+  "forms": {
+    "uploadPhoto": "Upload Photo",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "John",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Doe",
+    "userRole": "User Role",
+    "selectRole": "Select a role",
+    "contactInformation": "Contact Information",
+    "emailAddress": "Email Address",
+    "emailPlaceholder": "john.doe@example.com",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "+1 (555) 000-0000",
+    "security": "Security",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "Confirm Password",
+    "passwordRequirement": "Password must be at least 8 characters long",
+    "addressInformation": "Address Information",
+    "optional": "(Optional)",
+    "building": "Building",
+    "selectBuilding": "Select building",
+    "floor": "Floor",
+    "selectFloor": "Select floor",
+    "apartment": "Apartment",
+    "selectApartment": "Select apt"
+  }
 }

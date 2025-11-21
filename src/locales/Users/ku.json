@@ -23,5 +23,59 @@
     "title": "هیچ بەکارهێنەرێک نەدۆزرایەوە",
     "description": "هەوڵبدە فلتەرەکان بگۆڕیت یان بەکارهێنەرێکی نوێ دروست بکە."
   },
-  "error": "هەڵە"
+  "error": "هەڵە",
+  "createUser": {
+    "title": "دروستکردنی بەکارهێنەری نوێ",
+    "subtitle": "زیادکردنی بەکارهێنەرێکی نوێ بۆ سیستەم",
+    "cancel": "هەڵوەشاندنەوە",
+    "createButton": "دروستکردنی بەکارهێنەر",
+    "creating": "دروستکردن...",
+    "userType": {
+      "title": "جۆری بەکارهێنەر",
+      "description": "جۆری ئەکاونتی بەکارهێنەر هەڵبژێرە بۆ دروستکردن",
+      "staff": {
+        "title": "ئەکاونتی کارمەند",
+        "description": "بەڕێوەبەر یان فرۆشیار لەگەڵ دەستڕاگەیشتنی سیستەم"
+      },
+      "customer": {
+        "title": "ئەکاونتی کڕیار",
+        "description": "کرێچی لەگەڵ دەستڕاگەیشتنی ئاسایی"
+      }
+    },
+    "userInformation": "زانیاری بەکارهێنەر",
+    "fillDetails": "وردەکارییەکان پڕبکەوە بۆ {{type}}ی نوێ",
+    "passwordMismatch": "وشەی نهێنیەکان یەکناگرنەوە",
+    "passwordMismatchDesc": "تکایە دڵنیابە کە هەردوو خانەی وشەی نهێنی وەکو یەکن.",
+    "createSuccess": "بەکارهێنەر بە سەرکەوتوویی دروستکرا!",
+    "createSuccessDesc": "{{name}} زیادکرا بۆ سیستەم.",
+    "createError": "شکستی هێنا لە دروستکردنی بەکارهێنەر",
+    "createErrorDesc": "هەڵەیەک ڕوویدا لە کاتی دروستکردنی بەکارهێنەر."
+  },
+  "forms": {
+    "uploadPhoto": "بارکردنی وێنە",
+    "firstName": "ناوی یەکەم",
+    "firstNamePlaceholder": "ئەحمەد",
+    "lastName": "ناوی کۆتایی",
+    "lastNamePlaceholder": "محەمەد",
+    "userRole": "ڕۆڵی بەکارهێنەر",
+    "selectRole": "ڕۆڵێک هەڵبژێرە",
+    "contactInformation": "زانیاری پەیوەندی",
+    "emailAddress": "ناونیشانی ئیمەیڵ",
+    "emailPlaceholder": "ahmad.mohammed@example.com",
+    "phoneNumber": "ژمارەی مۆبایل",
+    "phonePlaceholder": "+964 770 123 4567",
+    "security": "پارێزی",
+    "password": "وشەی نهێنی",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "دڵنیاکردنەوەی وشەی نهێنی",
+    "passwordRequirement": "وشەی نهێنی دەبێت لای کەم 8 پیت بێت",
+    "addressInformation": "زانیاری ناونیشان",
+    "optional": "(ئیختیاری)",
+    "building": "باڵەخانە",
+    "selectBuilding": "باڵەخانە هەڵبژێرە",
+    "floor": "نهۆم",
+    "selectFloor": "نهۆم هەڵبژێرە",
+    "apartment": "شوقە",
+    "selectApartment": "شوقە هەڵبژێرە"
+  }
 }

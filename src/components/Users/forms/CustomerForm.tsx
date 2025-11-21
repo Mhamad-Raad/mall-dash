@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -35,6 +36,7 @@ export default function CustomerForm({
   formData,
   onInputChange,
 }: CustomerFormProps) {
+  const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export default function CustomerForm({
               <div className='flex flex-col items-center gap-2'>
                 <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
                 <span className='text-xs text-muted-foreground'>
-                  Upload Photo
+                  {t('forms.uploadPhoto')}
                 </span>
               </div>
             )}
@@ -96,11 +98,11 @@ export default function CustomerForm({
         <div className='flex-1 space-y-4 w-full'>
           <div className='space-y-2'>
             <Label htmlFor='customer-firstname' className='text-sm font-medium'>
-              First Name <span className='text-destructive'>*</span>
+              {t('forms.firstName')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-firstname'
-              placeholder='John'
+              placeholder={t('forms.firstNamePlaceholder')}
               value={formData.firstName}
               onChange={(e) => onInputChange('firstName', e.target.value)}
               className='h-11'
@@ -108,11 +110,11 @@ export default function CustomerForm({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-lastname' className='text-sm font-medium'>
-              Last Name <span className='text-destructive'>*</span>
+              {t('forms.lastName')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-lastname'
-              placeholder='Doe'
+              placeholder={t('forms.lastNamePlaceholder')}
               value={formData.lastName}
               onChange={(e) => onInputChange('lastName', e.target.value)}
               className='h-11'
@@ -132,32 +134,32 @@ export default function CustomerForm({
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Mail className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>Contact Information</h3>
+          <h3 className='text-base font-semibold'>{t('forms.contactInformation')}</h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
-            <Label htmlFor='customer-phone' className='text-sm font-medium'>
-              Phone Number <span className='text-destructive'>*</span>
-            </Label>
-            <Input
-              id='customer-phone'
-              type='tel'
-              placeholder='+1 (555) 000-0000'
-              value={formData.phoneNumber}
-              onChange={(e) => onInputChange('phoneNumber', e.target.value)}
-              className='h-11'
-            />
-          </div>
-          <div className='space-y-2'>
             <Label htmlFor='customer-email' className='text-sm font-medium'>
-              Email Address <span className='text-destructive'>*</span>
+              {t('forms.emailAddress')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-email'
               type='email'
-              placeholder='customer@example.com'
+              placeholder={t('forms.emailPlaceholder')}
               value={formData.email}
               onChange={(e) => onInputChange('email', e.target.value)}
+              className='h-11'
+            />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='customer-phone' className='text-sm font-medium'>
+              {t('forms.phoneNumber')} <span className='text-destructive'>*</span>
+            </Label>
+            <Input
+              id='customer-phone'
+              type='tel'
+              placeholder={t('forms.phonePlaceholder')}
+              value={formData.phoneNumber}
+              onChange={(e) => onInputChange('phoneNumber', e.target.value)}
               className='h-11'
             />
           </div>
@@ -170,17 +172,17 @@ export default function CustomerForm({
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Lock className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>Security</h3>
+          <h3 className='text-base font-semibold'>{t('forms.security')}</h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='customer-password' className='text-sm font-medium'>
-              Password <span className='text-destructive'>*</span>
+              {t('forms.password')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-password'
               type='password'
-              placeholder='••••••••'
+              placeholder={t('forms.passwordPlaceholder')}
               value={formData.password}
               onChange={(e) => onInputChange('password', e.target.value)}
               className='h-11'
@@ -188,12 +190,12 @@ export default function CustomerForm({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-confirm' className='text-sm font-medium'>
-              Confirm Password <span className='text-destructive'>*</span>
+              {t('forms.confirmPassword')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-confirm'
               type='password'
-              placeholder='••••••••'
+              placeholder={t('forms.passwordPlaceholder')}
               value={formData.confirmPassword}
               onChange={(e) => onInputChange('confirmPassword', e.target.value)}
               className='h-11'
@@ -201,7 +203,7 @@ export default function CustomerForm({
           </div>
         </div>
         <p className='text-xs text-muted-foreground'>
-          Password must be at least 8 characters long
+          {t('forms.passwordRequirement')}
         </p>
       </div>
 
@@ -211,22 +213,22 @@ export default function CustomerForm({
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Building2 className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>Address Information</h3>
+          <h3 className='text-base font-semibold'>{t('forms.addressInformation')}</h3>
           <span className='text-xs text-muted-foreground font-normal ml-auto'>
-            (Optional)
+            {t('forms.optional')}
           </span>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='customer-building' className='text-sm font-medium'>
-              Building
+              {t('forms.building')}
             </Label>
             <Select
               value={formData.buildingId}
               onValueChange={(value) => onInputChange('buildingId', value)}
             >
               <SelectTrigger id='customer-building' className='h-11'>
-                <SelectValue placeholder='Select building' />
+                <SelectValue placeholder={t('forms.selectBuilding')} />
               </SelectTrigger>
               <SelectContent>
                 {buildings.map((b, index) => (
@@ -239,14 +241,14 @@ export default function CustomerForm({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-floor' className='text-sm font-medium'>
-              Floor
+              {t('forms.floor')}
             </Label>
             <Select
               value={formData.floorId}
               onValueChange={(value) => onInputChange('floorId', value)}
             >
               <SelectTrigger id='customer-floor' className='h-11'>
-                <SelectValue placeholder='Select floor' />
+                <SelectValue placeholder={t('forms.selectFloor')} />
               </SelectTrigger>
               <SelectContent>
                 {floors.map((f, index) => (
@@ -259,14 +261,14 @@ export default function CustomerForm({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-apartment' className='text-sm font-medium'>
-              Apartment
+              {t('forms.apartment')}
             </Label>
             <Select
               value={formData.apartmentId}
               onValueChange={(value) => onInputChange('apartmentId', value)}
             >
               <SelectTrigger id='customer-apartment' className='h-11'>
-                <SelectValue placeholder='Select apt' />
+                <SelectValue placeholder={t('forms.selectApartment')} />
               </SelectTrigger>
               <SelectContent>
                 {apartments.map((a, index) => (

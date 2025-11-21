@@ -23,5 +23,59 @@
     "title": "لم يتم العثور على مستخدمين",
     "description": "حاول تعديل الفلاتر أو إنشاء مستخدم جديد."
   },
-  "error": "خطأ"
+  "error": "خطأ",
+  "createUser": {
+    "title": "إنشاء مستخدم جديد",
+    "subtitle": "إضافة مستخدم جديد إلى النظام",
+    "cancel": "إلغاء",
+    "createButton": "إنشاء مستخدم",
+    "creating": "جاري الإنشاء...",
+    "userType": {
+      "title": "نوع المستخدم",
+      "description": "اختر نوع حساب المستخدم المراد إنشاؤه",
+      "staff": {
+        "title": "حساب موظف",
+        "description": "مدير أو بائع مع صلاحيات النظام"
+      },
+      "customer": {
+        "title": "حساب عميل",
+        "description": "مستأجر مع صلاحيات قياسية"
+      }
+    },
+    "userInformation": "معلومات المستخدم",
+    "fillDetails": "املأ التفاصيل الخاصة بـ {{type}} الجديد",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "passwordMismatchDesc": "يرجى التأكد من تطابق حقول كلمة المرور.",
+    "createSuccess": "تم إنشاء المستخدم بنجاح!",
+    "createSuccessDesc": "تمت إضافة {{name}} إلى النظام.",
+    "createError": "فشل في إنشاء المستخدم",
+    "createErrorDesc": "حدث خطأ أثناء إنشاء المستخدم."
+  },
+  "forms": {
+    "uploadPhoto": "تحميل الصورة",
+    "firstName": "الاسم الأول",
+    "firstNamePlaceholder": "أحمد",
+    "lastName": "الاسم الأخير",
+    "lastNamePlaceholder": "محمد",
+    "userRole": "دور المستخدم",
+    "selectRole": "اختر دورًا",
+    "contactInformation": "معلومات الاتصال",
+    "emailAddress": "عنوان البريد الإلكتروني",
+    "emailPlaceholder": "ahmad.mohammed@example.com",
+    "phoneNumber": "رقم الهاتف",
+    "phonePlaceholder": "+964 770 123 4567",
+    "security": "الأمان",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "••••••••",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "passwordRequirement": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+    "addressInformation": "معلومات العنوان",
+    "optional": "(اختياري)",
+    "building": "المبنى",
+    "selectBuilding": "اختر المبنى",
+    "floor": "الطابق",
+    "selectFloor": "اختر الطابق",
+    "apartment": "الشقة",
+    "selectApartment": "اختر الشقة"
+  }
 }
