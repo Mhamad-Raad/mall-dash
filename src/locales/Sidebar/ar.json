@@ -12,5 +12,20 @@
   "orders": "الطلبات",
   "analytics": "التحليلات",
   "reports": "التقارير",
-  "settings": "الإعدادات"
+  "settings": "الإعدادات",
+  "navbar": {
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "users": "المستخدمين",
+    "create": "إنشاء",
+    "vendors": "البائعين",
+    "products": "المنتجات",
+    "buildings": "المباني",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "toggleSidebar": "تبديل الشريط الجانبي",
+    "buildingsManagement": "إدارة المباني",
+    "vendorsManagement": "إدارة البائعين",
+    "productsManagement": "إدارة المنتجات"
+  }
 }

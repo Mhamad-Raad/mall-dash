@@ -9,7 +9,7 @@ import NotificationPopover from './NotificationPopover';
 
 export default function Navbar() {
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t } = useTranslation('sidebar');
 
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -20,11 +20,11 @@ export default function Navbar() {
     if (path === '/') return t('navbar.dashboard');
     if (path === '/users') return t('users:title');
     if (path === '/users/create') return t('users:createUser.title');
-    if (path === '/vendors') return 'Vendors Management';
-    if (path === '/products') return 'Products Management';
-    if (path === '/buildings') return 'Buildings Management';
-    if (path === '/reports') return 'Reports';
-    if (path === '/settings') return 'Settings';
+    if (path === '/vendors') return t('navbar.vendorsManagement');
+    if (path === '/products') return t('navbar.productsManagement');
+    if (path === '/buildings') return t('navbar.buildingsManagement');
+    if (path === '/reports') return t('navbar.reports');
+    if (path === '/settings') return t('navbar.settings');
     return capitalize(path.replace(/^\//, '').replace(/-/g, ' '));
   };
 

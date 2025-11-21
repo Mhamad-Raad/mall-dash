@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +17,7 @@ interface BuildingsFiltersProps {
 const BuildingsFilters = ({ onCreateClick }: BuildingsFiltersProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('buildings');
 
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
   // typedSearch is what user is typing, search is debounced value synced to URL
@@ -75,16 +77,16 @@ const BuildingsFilters = ({ onCreateClick }: BuildingsFiltersProps) => {
           </div>
           <div>
             <h2 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text'>
-              Buildings Management
+              {t('title')}
             </h2>
             <p className='text-sm text-muted-foreground mt-0.5'>
-              Manage buildings, floors, and apartments
+              {t('subtitle')}
             </p>
           </div>
         </div>
         <Button type='button' className='gap-2 shadow-md hover:shadow-lg transition-shadow' size='lg' onClick={handleOnCreate}>
           <Plus className='size-4' />
-          <span className='font-semibold'>Add Building</span>
+          <span className='font-semibold'>{t('addBuilding')}</span>
         </Button>
       </div>
       
@@ -96,7 +98,7 @@ const BuildingsFilters = ({ onCreateClick }: BuildingsFiltersProps) => {
               <Filter className='size-4 text-primary' />
             </div>
             <span className='text-sm font-semibold text-foreground'>
-              Filter Buildings
+              {t('filterBuildings')}
             </span>
           </div>
           <div className='w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
@@ -107,7 +109,7 @@ const BuildingsFilters = ({ onCreateClick }: BuildingsFiltersProps) => {
               </div>
               <Input
                 type='text'
-                placeholder='Search buildings...'
+                placeholder={t('searchPlaceholder')}
                 className='pl-10 bg-background w-full shadow-sm border-muted-foreground/20 focus-visible:border-primary/50 transition-colors h-11'
                 value={typedSearch}
                 onChange={(e) => setTypedSearch(e.target.value)}

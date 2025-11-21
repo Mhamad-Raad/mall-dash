@@ -1,0 +1,24 @@
+{
+  "title": "بەڕێوەبردنی باڵەخانەکان",
+  "subtitle": "بەڕێوەبردنی باڵەخانەکان، نهۆمەکان و شوقەکان",
+  "addBuilding": "زیادکردنی باڵەخانە",
+  "filterBuildings": "فلتەرکردنی باڵەخانەکان",
+  "searchPlaceholder": "گەڕان بەدوای باڵەخانەکان...",
+  "tableHeaders": {
+    "buildingName": "ناوی باڵەخانە",
+    "totalFloors": "کۆی نهۆمەکان",
+    "totalApartments": "کۆی شوقەکان",
+    "occupancyRate": "ڕێژەی ئیشغال",
+    "actions": "کردارەکان"
+  },
+  "emptyState": {
+    "title": "هیچ باڵەخانەیەک نەدۆزرایەوە",
+    "description": "دەست پێبکە بە دروستکردنی یەکەم باڵەخانەکەت",
+    "createButton": "دروستکردنی باڵەخانە"
+  },
+  "actions": {
+    "view": "بینین",
+    "edit": "دەستکاریکردن",
+    "delete": "سڕینەوە"
+  }
+}

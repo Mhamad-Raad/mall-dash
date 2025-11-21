@@ -1,0 +1,24 @@
+{
+  "title": "Buildings Management",
+  "subtitle": "Manage buildings, floors, and apartments",
+  "addBuilding": "Add Building",
+  "filterBuildings": "Filter Buildings",
+  "searchPlaceholder": "Search buildings...",
+  "tableHeaders": {
+    "buildingName": "Building Name",
+    "totalFloors": "Total Floors",
+    "totalApartments": "Total Apartments",
+    "occupancyRate": "Occupancy Rate",
+    "actions": "Actions"
+  },
+  "emptyState": {
+    "title": "No Buildings Found",
+    "description": "Get started by creating your first building",
+    "createButton": "Create Building"
+  },
+  "actions": {
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete"
+  }
+}

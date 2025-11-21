@@ -1,0 +1,24 @@
+{
+  "title": "إدارة المباني",
+  "subtitle": "إدارة المباني والطوابق والشقق",
+  "addBuilding": "إضافة مبنى",
+  "filterBuildings": "تصفية المباني",
+  "searchPlaceholder": "البحث عن المباني...",
+  "tableHeaders": {
+    "buildingName": "اسم المبنى",
+    "totalFloors": "إجمالي الطوابق",
+    "totalApartments": "إجمالي الشقق",
+    "occupancyRate": "نسبة الإشغال",
+    "actions": "الإجراءات"
+  },
+  "emptyState": {
+    "title": "لم يتم العثور على مباني",
+    "description": "ابدأ بإنشاء مبناك الأول",
+    "createButton": "إنشاء مبنى"
+  },
+  "actions": {
+    "view": "عرض",
+    "edit": "تعديل",
+    "delete": "حذف"
+  }
+}
