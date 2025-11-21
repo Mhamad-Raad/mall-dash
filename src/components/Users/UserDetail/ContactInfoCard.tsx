@@ -1,4 +1,5 @@
 import { Mail, Phone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,24 +12,26 @@ interface ContactInfoCardProps {
 }
 
 const ContactInfoCard = ({ formData, onInputChange }: ContactInfoCardProps) => {
+  const { t } = useTranslation('users');
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>Contact Information</CardTitle>
+        <CardTitle className='text-lg'>{t('userDetails.contactInformation')}</CardTitle>
         <CardDescription>
-          Email and phone details
+          {t('userDetails.contactInformationDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-6'>
         <div className='space-y-2'>
           <Label htmlFor='email' className='text-sm font-medium flex items-center gap-2'>
             <Mail className='size-4 text-primary' />
-            Email Address <span className='text-destructive'>*</span>
+            {t('userDetails.emailAddress')} <span className='text-destructive'>*</span>
           </Label>
           <Input
             id='email'
             type='email'
-            placeholder='john.doe@example.com'
+            placeholder={t('forms.emailPlaceholder')}
             value={formData.email}
             onChange={(e) => onInputChange('email', e.target.value)}
             className='h-11'
@@ -38,12 +41,12 @@ const ContactInfoCard = ({ formData, onInputChange }: ContactInfoCardProps) => {
         <div className='space-y-2'>
           <Label htmlFor='phone' className='text-sm font-medium flex items-center gap-2'>
             <Phone className='size-4 text-primary' />
-            Phone Number <span className='text-destructive'>*</span>
+            {t('userDetails.phoneNumber')} <span className='text-destructive'>*</span>
           </Label>
           <Input
             id='phone'
             type='tel'
-            placeholder='+1 (555) 000-0000'
+            placeholder={t('forms.phonePlaceholder')}
             value={formData.phoneNumber}
             onChange={(e) => onInputChange('phoneNumber', e.target.value)}
             className='h-11'

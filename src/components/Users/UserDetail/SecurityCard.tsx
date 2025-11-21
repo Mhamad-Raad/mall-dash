@@ -1,4 +1,5 @@
 import { Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,26 +18,27 @@ const SecurityCard = ({
   onPasswordChange,
   onConfirmPasswordChange,
 }: SecurityCardProps) => {
+  const { t } = useTranslation('users');
   const passwordsMatch = !password || !confirmPassword || password === confirmPassword;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>Security</CardTitle>
+        <CardTitle className='text-lg'>{t('userDetails.security')}</CardTitle>
         <CardDescription>
-          Update user password (Optional)
+          {t('userDetails.securityDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-6'>
         <div className='space-y-2'>
           <Label htmlFor='password' className='text-sm font-medium flex items-center gap-2'>
             <Lock className='size-4 text-primary' />
-            New Password
+            {t('userDetails.newPassword')}
           </Label>
           <Input
             id='password'
             type='password'
-            placeholder='••••••••'
+            placeholder={t('forms.passwordPlaceholder')}
             value={password}
             onChange={(e) => onPasswordChange(e.target.value)}
             className='h-11'
@@ -46,24 +48,24 @@ const SecurityCard = ({
         <div className='space-y-2'>
           <Label htmlFor='confirmPassword' className='text-sm font-medium flex items-center gap-2'>
             <Lock className='size-4 text-primary' />
-            Confirm New Password
+            {t('userDetails.confirmNewPassword')}
           </Label>
           <Input
             id='confirmPassword'
             type='password'
-            placeholder='••••••••'
+            placeholder={t('forms.passwordPlaceholder')}
             value={confirmPassword}
             onChange={(e) => onConfirmPasswordChange(e.target.value)}
             className='h-11'
           />
           {!passwordsMatch && (
             <p className='text-xs text-destructive'>
-              Passwords do not match
+              {t('userDetails.passwordsDoNotMatch')}
             </p>
           )}
         </div>
         <p className='text-xs text-muted-foreground'>
-          Leave blank to keep the current password. Password must be at least 8 characters long.
+          {t('userDetails.passwordNote')}
         </p>
       </CardContent>
     </Card>
