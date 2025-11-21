@@ -20,5 +20,15 @@
     "view": "عرض",
     "edit": "تعديل",
     "delete": "حذف"
+  },
+  "modal": {
+    "title": "إنشاء مبنى جديد",
+    "description": "أدخل اسم المبنى الذي تريد إنشاءه.",
+    "buildingNameLabel": "اسم المبنى",
+    "buildingNamePlaceholder": "أدخل اسم المبنى...",
+    "cancel": "إلغاء",
+    "createButton": "إنشاء مبنى",
+    "creating": "جاري الإنشاع...",
+    "errorCreating": "فشل إنشاء المبنى."
   }
 }

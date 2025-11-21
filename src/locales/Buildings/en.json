@@ -20,5 +20,15 @@
     "view": "View",
     "edit": "Edit",
     "delete": "Delete"
+  },
+  "modal": {
+    "title": "Create New Building",
+    "description": "Enter the name of the building you want to create.",
+    "buildingNameLabel": "Building Name",
+    "buildingNamePlaceholder": "Enter building name...",
+    "cancel": "Cancel",
+    "createButton": "Create Building",
+    "creating": "Creating...",
+    "errorCreating": "Failed to create building."
   }
 }
