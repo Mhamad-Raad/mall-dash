@@ -71,7 +71,7 @@ const BuildingsTable = () => {
                         <Building2 className='h-5 w-5 text-primary' />
                       </div>
                       <div className='flex flex-col gap-0.5'>
-                        <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors'>{building.name}</span>
+                        <span className='font-semibold text-lg leading-tight group-hover:text-primary transition-colors'>{building.name}</span>
                       </div>
                     </div>
                   </TableCell>
@@ -80,7 +80,7 @@ const BuildingsTable = () => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Layers className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80'>
+                      <span className='text-base font-medium text-foreground/80'>
                         {building.numberOfFloors}
                       </span>
                     </div>
@@ -90,7 +90,7 @@ const BuildingsTable = () => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Home className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80'>
+                      <span className='text-base font-medium text-foreground/80'>
                         {building.totalApartments}
                       </span>
                     </div>
@@ -100,7 +100,7 @@ const BuildingsTable = () => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Users className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80'>
+                      <span className='text-base font-medium text-foreground/80'>
                         {building.occupants}
                       </span>
                     </div>

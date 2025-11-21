@@ -131,18 +131,18 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                   {/* Business Name */}
                   <TableCell className='py-4'>
                     <div className='flex items-center gap-3 min-w-[200px]'>
-                      <Avatar className='h-11 w-11 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
+                      <Avatar className='h-14 w-14 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
                         <AvatarImage
                           src={vendor.logo}
                           alt={vendor.businessName}
                         />
                       </Avatar>
                       <div className='flex flex-col gap-0.5 min-w-0'>
-                        <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors truncate'>
+                        <span className='font-semibold text-lg leading-tight group-hover:text-primary transition-colors truncate'>
                           {vendor.businessName}
                         </span>
                         {vendor.description && (
-                          <span className='text-[11px] text-muted-foreground leading-tight truncate'>
+                          <span className='text-sm text-muted-foreground leading-tight truncate'>
                             {vendor.description}
                           </span>
                         )}
@@ -152,7 +152,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
 
                   {/* Owner Name */}
                   <TableCell className='py-4'>
-                    <span className='text-sm font-medium text-foreground/80'>
+                    <span className='text-base font-medium text-foreground/80'>
                       {vendor.ownerName}
                     </span>
                   </TableCell>
@@ -163,7 +163,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                       variant='outline'
                       className={`${getVendorTypeColor(
                         vendor.type
-                      )} font-semibold text-xs px-3 py-1`}
+                      )} font-semibold text-base px-3 py-1`}
                     >
                       {vendor.type}
                     </Badge>
@@ -176,7 +176,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                         <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                           <Mail className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                         </div>
-                        <span className='text-xs text-foreground/80 truncate'>
+                        <span className='text-base text-foreground/80 truncate'>
                           {vendor.email}
                         </span>
                       </div>
@@ -184,7 +184,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                         <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                           <Phone className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                         </div>
-                        <span className='text-xs font-medium text-foreground/80 truncate'>
+                        <span className='text-base font-medium text-foreground/80 truncate'>
                           {vendor.phoneNumber}
                         </span>
                       </div>
@@ -197,7 +197,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Clock className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80 whitespace-nowrap'>
+                      <span className='text-base font-medium text-foreground/80 whitespace-nowrap'>
                         {vendor.workingHours.open} - {vendor.workingHours.close}
                       </span>
                     </div>
