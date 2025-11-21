@@ -101,7 +101,7 @@ const UsersTable = () => {
                       {/* User Info with Avatar */}
                       <TableCell className='font-medium py-4'>
                         <div className='flex items-center gap-3'>
-                          <Avatar className='h-11 w-11 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
+                          <Avatar className='h-14 w-14 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
                             <AvatarImage
                               src={avatarSrc}
                               alt={fullName}
@@ -117,10 +117,10 @@ const UsersTable = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className='flex flex-col gap-0.5'>
-                            <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors'>
+                            <span className='font-semibold text-lg leading-tight group-hover:text-primary transition-colors'>
                               {fullName}
                             </span>
-                            <span className='text-[11px] text-muted-foreground font-mono leading-tight'>
+                            <span className='text-sm text-muted-foreground font-mono leading-tight'>
                               {user?._id.slice(-8)}
                             </span>
                           </div>
@@ -133,13 +133,13 @@ const UsersTable = () => {
                             <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                               <Mail className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                             </div>
-                            <span className='text-xs text-foreground/80'>{user.email}</span>
+                            <span className='text-base text-foreground/80'>{user.email}</span>
                           </div>
                           <div className='flex items-center gap-2.5'>
                             <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                               <Phone className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                             </div>
-                            <span className='text-xs font-medium text-foreground/80'>
+                            <span className='text-base font-medium text-foreground/80'>
                               {user.phoneNumber}
                             </span>
                           </div>
@@ -149,7 +149,7 @@ const UsersTable = () => {
                       <TableCell className='py-4'>
                         <Badge
                           variant='outline'
-                          className={`${getUserTypeColor(userRole)} font-semibold text-xs px-3 py-1`}
+                          className={`${getUserTypeColor(userRole)} font-semibold text-base px-3 py-1`}
                         >
                           {userRole}
                         </Badge>
@@ -160,7 +160,7 @@ const UsersTable = () => {
                           <div className='flex items-center justify-center w-7 h-7 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors'>
                             <Building2 className='h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors' />
                           </div>
-                          <span className='text-sm font-medium text-foreground/90'>
+                          <span className='text-base font-medium text-foreground/90'>
                             {user.buildingName || 'N/A'}
                           </span>
                         </div>
