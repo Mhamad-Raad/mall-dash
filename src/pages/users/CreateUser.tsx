@@ -161,7 +161,11 @@ export default function CreateUser() {
             <CardHeader>
               <CardTitle className='text-lg'>{t('createUser.userInformation')}</CardTitle>
               <CardDescription>
-                {t('createUser.fillDetails', { type: type.toLowerCase() })}
+                {t('createUser.fillDetails', { 
+                  type: type === 'Staff' 
+                    ? t('createUser.userType.staff.title')
+                    : t('createUser.userType.customer.title')
+                })}
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-6'>
