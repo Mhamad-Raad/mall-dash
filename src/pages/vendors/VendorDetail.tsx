@@ -215,8 +215,15 @@ const VendorDetail = () => {
       return;
     }
 
-    // Only include ProfileImageUrl if a new photo was selected
-    const vendorData: any = {
+    const vendorData: {
+      name: string;
+      description: string;
+      openingTime: string;
+      closeTime: string;
+      type: number;
+      userId: string;
+      ProfileImageUrl?: File;
+    } = {
       name: formData.name,
       description: formData.description,
       openingTime: convertToUTCFormat(formData.openingTime),
@@ -227,16 +234,8 @@ const VendorDetail = () => {
 
     // Only add ProfileImageUrl if user selected a new image file
     if (formData.photo instanceof File) {
-      console.log('Adding new photo to vendorData');
       vendorData.ProfileImageUrl = formData.photo;
-    } else {
-      console.log('No new photo selected, sending JSON only');
     }
-
-    console.log('vendorData being sent:', {
-      ...vendorData,
-      ProfileImageUrl: vendorData.ProfileImageUrl ? 'File object' : 'undefined',
-    });
 
     const result = await dispatch(updateVendor({ id, vendorData }));
 

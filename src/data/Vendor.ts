@@ -93,7 +93,7 @@ export const fetchVendorById = async (id: string) => {
 
 export const updateVendor = async (
   id: string,
-  params: {
+  vendorData: {
     name: string;
     description: string;
     openingTime: string;
@@ -104,52 +104,32 @@ export const updateVendor = async (
   }
 ) => {
   try {
-    const hasFile = params.ProfileImageUrl instanceof File;
+    const formData = new FormData();
+    Object.entries(vendorData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(key, value as any);
+        console.log(
+          `FormData appended: ${key} =`,
+          value instanceof File ? `File: ${value.name}` : value
+        );
+      }
+    });
 
-    console.log(hasFile);
+    console.log('Sending update request to:', `/Vendor/${id}`);
 
-    if (hasFile && params.ProfileImageUrl) {
-      // Use FormData for file upload
-      const formData = new FormData();
-      formData.append('name', params.name);
-      formData.append('description', params.description);
-      formData.append('openingTime', params.openingTime);
-      formData.append('closeTime', params.closeTime);
-      formData.append('type', params.type.toString());
-      formData.append('userId', params.userId);
-      formData.append('ProfileImageUrl', params.ProfileImageUrl);
+    // Create a custom config to override the default Content-Type
+    const response = await axiosInstance.put(`/Vendor/${id}`, formData, {
+      headers: {
+        key: API_KEY,
+        value: API_VALUE,
+      },
+      transformRequest: [(data) => data],
+    });
 
-      const response = await axiosInstance.put(`/Vendor/${id}`, formData, {
-        headers: {
-          key: API_KEY,
-          value: API_VALUE,
-        },
-        transformRequest: [(data) => data],
-      });
-
-      return response.data;
-    } else {
-      const response = await axiosInstance.put(
-        `/Vendor/${id}`,
-        {
-          name: params.name,
-          description: params.description,
-          openingTime: params.openingTime,
-          closeTime: params.closeTime,
-          type: params.type,
-          userId: params.userId,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            key: API_KEY,
-            value: API_VALUE,
-          },
-        }
-      );
-      return response.data;
-    }
+    console.log('Update successful:', response.data);
+    return response.data;
   } catch (error: any) {
+    console.error('Update failed:', error.response?.data || error.message);
     return { error: error?.response?.data?.message || error.message };
   }
 };
