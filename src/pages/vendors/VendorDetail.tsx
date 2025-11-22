@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,7 @@ const VendorDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation('vendors');
 
   const { vendor, loading, error, updating, updateError } = useSelector(
     (state: RootState) => state.vendor
@@ -164,40 +166,40 @@ const VendorDetail = () => {
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor name',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.nameRequired'),
       });
       return false;
     }
     if (!formData.description.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor description',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.descriptionRequired'),
       });
       return false;
     }
     if (!formData.openingTime) {
-      toast.error('Validation Error', {
-        description: 'Please select opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.openingTimeRequired'),
       });
       return false;
     }
     if (!formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Please select closing time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.closingTimeRequired'),
       });
       return false;
     }
     if (!formData.userId.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please select a user to manage this vendor',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.userRequired'),
       });
       return false;
     }
 
     // Validate time logic
     if (formData.openingTime >= formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Closing time must be after opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.timeLogicError'),
       });
       return false;
     }
@@ -211,7 +213,9 @@ const VendorDetail = () => {
     }
 
     if (!id) {
-      toast.error('Error', { description: 'Vendor ID is missing' });
+      toast.error(t('vendorDetail.error.missingId'), {
+        description: t('vendorDetail.error.missingIdDescription'),
+      });
       return;
     }
 
@@ -240,8 +244,8 @@ const VendorDetail = () => {
     const result = await dispatch(updateVendor({ id, vendorData }));
 
     if (updateVendor.fulfilled.match(result)) {
-      toast.success('Vendor Updated Successfully!', {
-        description: `${formData.name} has been updated.`,
+      toast.success(t('vendorDetail.success.updated'), {
+        description: t('vendorDetail.success.updatedDescription', { name: formData.name }),
       });
       navigate('/vendors');
     }
@@ -256,8 +260,8 @@ const VendorDetail = () => {
     navigate('/vendors');
     if (id) {
       await dispatch(deleteVendor(id));
-      toast.success('Vendor Deleted', {
-        description: 'The vendor has been successfully deleted.',
+      toast.success(t('vendorDetail.success.deleted'), {
+        description: t('vendorDetail.success.deletedDescription'),
       });
     }
   };
@@ -278,7 +282,7 @@ const VendorDetail = () => {
         <div>
           <Button variant='ghost' onClick={() => navigate(-1)}>
             <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Vendors
+            {t('vendorDetail.backToVendors')}
           </Button>
         </div>
 
@@ -331,14 +335,14 @@ const VendorDetail = () => {
             onClick={handleDelete}
             className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
           >
-            Delete Vendor
+            {t('vendorDetail.actions.deleteVendor')}
           </button>
           <button
             onClick={handleSave}
             disabled={!hasChanges || updating}
             className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {updating ? 'Saving...' : 'Save Changes'}
+            {updating ? t('vendorDetail.actions.saving') : t('vendorDetail.actions.saveChanges')}
           </button>
         </div>
       </div>
@@ -347,17 +351,17 @@ const VendorDetail = () => {
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
-        title='Delete Vendor'
-        description='Are you sure you want to permanently delete this vendor?'
-        confirmLabel='Delete'
+        title={t('vendorDetail.confirmDelete.title')}
+        description={t('vendorDetail.confirmDelete.description')}
+        confirmLabel={t('vendorDetail.confirmDelete.confirm')}
         confirmType='danger'
-        cancelLabel='Cancel'
-        warning='This action cannot be undone.'
+        cancelLabel={t('vendorDetail.confirmDelete.cancel')}
+        warning={t('vendorDetail.confirmDelete.warning')}
         changes={[
           {
-            field: 'Vendor Name',
+            field: t('vendorDetail.confirmDelete.fieldName'),
             oldValue: vendor?.businessName || '',
-            newValue: 'Will be deleted',
+            newValue: t('vendorDetail.confirmDelete.willBeDeleted'),
           },
         ]}
       />

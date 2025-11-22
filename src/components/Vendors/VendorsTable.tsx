@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Mail,
   Phone,
@@ -42,6 +43,7 @@ interface VendorsTableProps {
 
 const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('vendors');
 
   const handleRowClick = (vendorId: string) => {
     navigate(`/vendors/${vendorId}`);
@@ -57,19 +59,19 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
             <TableHeader>
               <TableRow className='hover:bg-transparent border-b bg-muted/50'>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Business
+                  {t('tableHeaders.business')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Owner
+                  {t('tableHeaders.owner')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Type
+                  {t('tableHeaders.type')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Contact
+                  {t('tableHeaders.contact')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Working Hours
+                  {t('tableHeaders.workingHours')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
               </TableRow>
@@ -94,19 +96,19 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Business
+                {t('tableHeaders.business')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Owner
+                {t('tableHeaders.owner')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Type
+                {t('tableHeaders.type')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Contact
+                {t('tableHeaders.contact')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Working Hours
+                {t('tableHeaders.workingHours')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
@@ -117,7 +119,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                 <TableCell colSpan={6} className='h-32 text-center'>
                   <div className='flex flex-col items-center justify-center gap-2 text-muted-foreground'>
                     <StoreIcon className='h-8 w-8' />
-                    <p>No vendors found</p>
+                    <p>{t('emptyState.title')}</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -165,7 +167,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                         vendor.type
                       )} font-semibold text-base px-3 py-1`}
                     >
-                      {vendor.type}
+                      {t(`types.${vendor.type.toLowerCase()}`)}
                     </Badge>
                   </TableCell>
 

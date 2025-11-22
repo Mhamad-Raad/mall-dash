@@ -17,6 +17,10 @@ import buildingsEn from './locales/Buildings/en.json';
 import buildingsAr from './locales/Buildings/ar.json';
 import buildingsKu from './locales/Buildings/ku.json';
 
+import vendorsEn from './locales/Vendors/en.json';
+import vendorsAr from './locales/Vendors/ar.json';
+import vendorsKu from './locales/Vendors/ku.json';
+
 i18n.use(initReactI18next).init({
   resources: {
     en: {
@@ -24,23 +28,26 @@ i18n.use(initReactI18next).init({
       navbar: navbarEn,
       users: usersEn,
       buildings: buildingsEn,
+      vendors: vendorsEn,
     },
     ar: {
       sidebar: sidebarAr,
       navbar: navbarAr,
       users: usersAr,
       buildings: buildingsAr,
+      vendors: vendorsAr,
     },
     ku: {
       sidebar: sidebarKu,
       navbar: navbarKu,
       users: usersKu,
       buildings: buildingsKu,
+      vendors: vendorsKu,
     },
   },
   lng: 'en', // default language
   fallbackLng: 'en',
-  ns: ['sidebar', 'navbar', 'users', 'buildings'], // namespaces
+  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors'], // namespaces
   defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });

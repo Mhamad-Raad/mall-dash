@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Search, Filter, Plus, Store, Tags } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,13 +15,14 @@ import {
 import { vendorTypes } from '@/constants/vendorTypes';
 
 const vendorTypesWithAll = [
-  { label: 'All Types', value: -1 },
-  ...vendorTypes,
+  { label: 'allTypes', value: -1 },
+  ...vendorTypes.map(vt => ({ ...vt, label: vt.label.toLowerCase() })),
 ];
 
 export default function VendorsFilters() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('vendors');
 
   const [typedSearch, setTypedSearch] = useState('');
   const [search, setSearch] = useState('');
@@ -82,10 +84,10 @@ export default function VendorsFilters() {
           </div>
           <div>
             <h2 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text'>
-              Vendors Management
+              {t('title')}
             </h2>
             <p className='text-sm text-muted-foreground mt-0.5'>
-              Manage and monitor all vendors
+              {t('subtitle')}
             </p>
           </div>
         </div>
@@ -96,7 +98,7 @@ export default function VendorsFilters() {
           onClick={handleOnCreate}
         >
           <Plus className='size-4' />
-          <span className='font-semibold'>Add Vendor</span>
+          <span className='font-semibold'>{t('addVendor')}</span>
         </Button>
       </div>
       
@@ -108,7 +110,7 @@ export default function VendorsFilters() {
               <Filter className='size-4 text-primary' />
             </div>
             <span className='text-sm font-semibold text-foreground'>
-              Filter Vendors
+              {t('filterVendors')}
             </span>
           </div>
           <div className='w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
@@ -119,7 +121,7 @@ export default function VendorsFilters() {
               </div>
               <Input
                 type='text'
-                placeholder='Search vendors...'
+                placeholder={t('searchPlaceholder')}
                 className='pl-10 bg-background w-full shadow-sm border-muted-foreground/20 focus-visible:border-primary/50 transition-colors h-11'
                 value={typedSearch}
                 onChange={(e) => setTypedSearch(e.target.value)}
@@ -133,16 +135,16 @@ export default function VendorsFilters() {
               </div>
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger className='w-full bg-background shadow-sm border-muted-foreground/20 focus:border-primary/50 transition-colors pl-10 [&>span]:pl-0 !h-11'>
-                  <SelectValue placeholder='Filter by type' />
+                  <SelectValue placeholder={t('filterByType')} />
                 </SelectTrigger>
                 <SelectContent>
                   {vendorTypesWithAll.map((vendorType) => (
                     <SelectItem key={vendorType.value} value={String(vendorType.value)}>
                       <div className='flex items-center gap-2'>
-                        <span>{vendorType.label}</span>
+                        <span>{t(`types.${vendorType.label}`)}</span>
                         {vendorType.value === -1 && (
                           <Badge variant='secondary' className='ml-auto text-xs'>
-                            All
+                            {t('all')}
                           </Badge>
                         )}
                       </div>
