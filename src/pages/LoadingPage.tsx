@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout/DashboardLayout';
-import {
-  getStoredTokens,
-  validateRefreshToken,
-  clearTokens,
-} from '@/utils/authUtils';
+import { validateRefreshToken } from '@/utils/authUtils';
 import Logo from '@/assets/Logo.jpg';
 import { Loader2 } from 'lucide-react';
 
@@ -21,21 +17,12 @@ const LoadingPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { refreshToken } = getStoredTokens();
-      if (!refreshToken) {
-        setIsAuthorized(false);
-        return;
-      }
-      const refreshTokenIsValid = await validateRefreshToken(refreshToken);
-      if (!refreshTokenIsValid) {
-        clearTokens();
-        setIsAuthorized(false);
-        return;
-      }
-      setIsAuthorized(true);
+      // Validate session using HTTP-only cookie
+      const isValid = await validateRefreshToken();
+      setIsAuthorized(isValid);
     };
 
-    // Give time for localStorage update after login
+    // Give time for cookie to be set after login
     const timer = setTimeout(() => {
       checkAuth();
     }, 50);

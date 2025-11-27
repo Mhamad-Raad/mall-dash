@@ -1,24 +1,22 @@
 import { axiosInstance } from '@/data/axiosInstance';
 
-export const validateRefreshToken = async (
-  refreshToken: string
-): Promise<boolean> => {
+export const validateRefreshToken = async (): Promise<boolean> => {
   try {
-    const response = await axiosInstance.post('/Account/validate-token', {
-      refreshToken,
-    });
-    return response.data?.isValid === true;
+    // The refresh token is sent automatically via HTTP-only cookie
+    await axiosInstance.post('/Account/NewRefreshToken', {});
+    return true;
   } catch (error) {
     return false;
   }
 };
 
+// These functions are kept for backwards compatibility but tokens are now in HTTP-only cookies
 export const getStoredTokens = () => ({
-  accessToken: localStorage.getItem('accessToken'),
-  refreshToken: localStorage.getItem('refreshToken'),
+  accessToken: null,
+  refreshToken: null,
 });
 
 export const clearTokens = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  // Tokens are now managed via HTTP-only cookies
+  // Call logout endpoint to clear them server-side
 };
