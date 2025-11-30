@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout/DashboardLayout';
 import { validateRefreshToken } from '@/utils/authUtils';
+import { useSignalR } from '@/hooks/useSignalR';
 import Logo from '@/assets/Logo.jpg';
 import { Loader2 } from 'lucide-react';
 
 const LoadingPage = () => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const navigate = useNavigate();
+
+  // Initialize SignalR connection when authorized
+  useSignalR(isAuthorized === true);
 
   useEffect(() => {
     const handler = () => navigate('/login', { replace: true });
@@ -18,8 +22,8 @@ const LoadingPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       // Validate session using HTTP-only cookie
-      const isValid = await validateRefreshToken();
-      setIsAuthorized(isValid);
+      const response = await validateRefreshToken();
+      setIsAuthorized(response !== null);
     };
 
     // Give time for cookie to be set after login

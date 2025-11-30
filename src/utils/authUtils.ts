@@ -1,12 +1,19 @@
 import { axiosInstance } from '@/data/axiosInstance';
 
-export const validateRefreshToken = async (): Promise<boolean> => {
+export interface RefreshTokenResponse {
+  accessToken?: string;
+  token?: string;
+  access_token?: string;
+}
+
+export const validateRefreshToken = async (): Promise<RefreshTokenResponse | null> => {
   try {
     // The refresh token is sent automatically via HTTP-only cookie
-    await axiosInstance.post('/Account/NewRefreshToken', {});
-    return true;
+    const response = await axiosInstance.post<RefreshTokenResponse>('/Account/NewRefreshToken', {});
+    // Return the response data which should contain the new access token
+    return response.data;
   } catch (error) {
-    return false;
+    return null;
   }
 };
 
