@@ -50,3 +50,14 @@ export const logoutUser = async () => {
     window.dispatchEvent(new Event('force-logout'));
   }
 };
+
+export const getMe = async () => {
+  try {
+    const response = await axiosInstance.get('/Account/me', {
+      headers: { key: API_KEY, value: API_VALUE },
+    });
+    return response.data;
+  } catch (error: any) {
+    return { error: error.response?.data?.message || error.message };
+  }
+};

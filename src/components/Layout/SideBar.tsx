@@ -12,6 +12,9 @@ import {
   Store,
 } from 'lucide-react';
 
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
+
 import {
   Sidebar,
   SidebarContent,
@@ -83,8 +86,8 @@ const managementItems = [
 // Settings items
 const settingsItems = [
   {
-    titleKey: 'settings',
-    url: '/settings',
+    title: 'Profile',
+    url: '/profile',
     icon: Settings,
   },
 ];
@@ -93,11 +96,15 @@ export function AppSidebar() {
   const { t } = useTranslation('sidebar');
   const location = useLocation();
   const navigate = useNavigate();
+  const { user: me } = useSelector((state: RootState) => state.me);
 
   const user = {
-    name: 'Mohammed Raad',
-    email: 'hamaraad883@gmail.com',
-    avatar: 'https://i.pravatar.cc/150?img=3',
+    name: me ? `${me.firstName} ${me.lastName}` : 'Guest User',
+    email: me?.email || '',
+    avatar: me?.profileImageUrl || '',
+    initials: me
+      ? `${me.firstName?.[0] || ''}${me.lastName?.[0] || ''}`.toUpperCase()
+      : 'GU',
   };
 
   const isActive = (url: string) => {
@@ -275,7 +282,11 @@ export function AppSidebar() {
 
       <SidebarRail />
       <SidebarFooter>
-        <NavUser user={user} onLogOut={handleUserLogout} />
+        <NavUser
+          user={user}
+          onLogOut={handleUserLogout}
+          onAccountClick={() => navigate('/profile')}
+        />
       </SidebarFooter>
     </Sidebar>
   );

@@ -13,7 +13,7 @@ import CreateBuilding from './pages/buildings/CreateBuilding';
 import Vendors from './pages/vendors/Vendors';
 import VendorDetail from './pages/vendors/VendorDetail';
 import CreateVendor from './pages/vendors/CreateVendor';
-import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import Reports from './pages/Reports';
 
 import NotFound from './pages/NotFound';
@@ -69,8 +69,8 @@ const router = createBrowserRouter([
         element: <VendorDetail />,
       },
       {
-        path: '/settings',
-        element: <Settings />,
+        path: '/profile',
+        element: <Profile />,
       },
       {
         path: '/reports',

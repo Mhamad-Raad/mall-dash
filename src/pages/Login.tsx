@@ -12,6 +12,9 @@ import { validateRefreshToken } from '@/utils/authUtils';
 import { setAccessToken } from '@/store/slices/notificationsSlice';
 import Logo from '@/assets/Logo.jpg';
 
+import { setMe } from '@/store/slices/meSlice';
+
+
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -51,6 +54,7 @@ const Login = () => {
         if (response.accessToken || response.token) {
           dispatch(setAccessToken(response.accessToken || response.token));
         }
+        dispatch(setMe(response));
         toast.success('Login successful!');
         navigate('/');
       }
