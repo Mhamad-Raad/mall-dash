@@ -8,9 +8,11 @@ import BuildingReducer from './slices/buildingSlice';
 
 import vendorsReducer from './slices/vendorsSlice';
 import vendorReducer from './slices/vendorSlice';
+import meReducer from './slices/meSlice';
 
 export const store = configureStore({
   reducer: {
+    me: meReducer,
     users: usersReducer,
     user: userReducer,
     buildings: BuildingsReducer,

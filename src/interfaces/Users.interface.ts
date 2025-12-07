@@ -1,5 +1,6 @@
 export interface UserType {
   _id: string;
+  id?: string; // Fallback for some APIs returning id instead of _id
   firstName: string;
   lastName: string;
   role: number;

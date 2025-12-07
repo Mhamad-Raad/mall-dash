@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import Layout from '@/components/Layout/DashboardLayout';
 import {
   getStoredTokens,
   validateRefreshToken,
   clearTokens,
 } from '@/utils/authUtils';
+import { fetchMe } from '@/store/slices/meSlice';
+import type { AppDispatch } from '@/store/store';
 import Logo from '@/assets/Logo.jpg';
 import { Loader2 } from 'lucide-react';
 
 const LoadingPage = () => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const handler = () => navigate('/login', { replace: true });
@@ -32,6 +36,7 @@ const LoadingPage = () => {
         setIsAuthorized(false);
         return;
       }
+      await dispatch(fetchMe());
       setIsAuthorized(true);
     };
 
