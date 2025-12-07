@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Home,
   Users,
@@ -10,6 +11,9 @@ import {
   Building2,
   Store,
 } from 'lucide-react';
+
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
 
 import {
   Sidebar,
@@ -34,32 +38,32 @@ import Logo from '@/assets/Logo.jpg';
 // Main navigation items
 const mainNavItems = [
   {
-    title: 'Dashboard',
+    titleKey: 'dashboard',
     url: '/',
     icon: Home,
   },
   {
-    title: 'Users',
+    titleKey: 'users',
     url: '/users',
     icon: Users,
   },
   {
-    title: 'Buildings',
+    titleKey: 'buildings',
     url: '/buildings',
     icon: Building2,
   },
   {
-    title: 'Vendors',
+    titleKey: 'vendors',
     url: '/vendors',
     icon: Store,
   },
   {
-    title: 'Products',
+    titleKey: 'products',
     url: '#',
     icon: Package,
   },
   {
-    title: 'Orders',
+    titleKey: 'orders',
     url: '#',
     icon: ShoppingCart,
   },
@@ -68,12 +72,12 @@ const mainNavItems = [
 // Management items
 const managementItems = [
   {
-    title: 'Analytics',
+    titleKey: 'analytics',
     url: '#',
     icon: BarChart3,
   },
   {
-    title: 'Reports',
+    titleKey: 'reports',
     url: '/reports',
     icon: FileText,
   },
@@ -82,20 +86,25 @@ const managementItems = [
 // Settings items
 const settingsItems = [
   {
-    title: 'Settings',
-    url: '/settings',
+    title: 'Profile',
+    url: '/profile',
     icon: Settings,
   },
 ];
 
 export function AppSidebar() {
+  const { t } = useTranslation('sidebar');
   const location = useLocation();
   const navigate = useNavigate();
+  const { user: me } = useSelector((state: RootState) => state.me);
 
   const user = {
-    name: 'Mohammed Raad',
-    email: 'hamaraad883@gmail.com',
-    avatar: 'https://i.pravatar.cc/150?img=3',
+    name: me ? `${me.firstName} ${me.lastName}` : 'Guest User',
+    email: me?.email || '',
+    avatar: me?.profileImageUrl || '',
+    initials: me
+      ? `${me.firstName?.[0] || ''}${me.lastName?.[0] || ''}`.toUpperCase()
+      : 'GU',
   };
 
   const isActive = (url: string) => {
@@ -131,10 +140,10 @@ export function AppSidebar() {
                 </div>
                 <div className='flex flex-col min-w-0'>
                   <span className='text-base font-bold bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent group-hover/logo:from-primary group-hover/logo:to-primary transition-all duration-300 truncate'>
-                    Akkooo Mall
+                    {t('appName')}
                   </span>
                   <span className='text-[10px] text-muted-foreground font-medium tracking-wider uppercase truncate'>
-                    Dashboard
+                    {t('appSubtitle')}
                   </span>
                 </div>
               </a>
@@ -147,15 +156,15 @@ export function AppSidebar() {
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel className='text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider'>
-            Main Menu
+            {t('mainMenu')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='mt-2'>
               {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton
                     asChild
-                    tooltip={item.title}
+                    tooltip={t(item.titleKey)}
                     isActive={isActive(item.url)}
                     className={`
                       transition-all duration-200
@@ -177,7 +186,7 @@ export function AppSidebar() {
                       className='cursor-pointer'
                     >
                       <item.icon className='transition-all group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5' />
-                      <span>{item.title}</span>
+                      <span>{t(item.titleKey)}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -189,15 +198,15 @@ export function AppSidebar() {
         {/* Management Section */}
         <SidebarGroup>
           <SidebarGroupLabel className='text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider'>
-            Management
+            {t('management')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='mt-2'>
               {managementItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton
                     asChild
-                    tooltip={item.title}
+                    tooltip={t(item.titleKey)}
                     isActive={isActive(item.url)}
                     className={`
                       transition-all duration-200
@@ -219,7 +228,7 @@ export function AppSidebar() {
                       className='cursor-pointer'
                     >
                       <item.icon className='transition-all group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5' />
-                      <span>{item.title}</span>
+                      <span>{t(item.titleKey)}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -231,15 +240,15 @@ export function AppSidebar() {
         {/* Settings Section */}
         <SidebarGroup>
           <SidebarGroupLabel className='text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider'>
-            System
+            {t('system')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='mt-2'>
               {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton
                     asChild
-                    tooltip={item.title}
+                    tooltip={t(item.titleKey)}
                     isActive={isActive(item.url)}
                     className={`
                       transition-all duration-200
@@ -261,7 +270,7 @@ export function AppSidebar() {
                       className='cursor-pointer'
                     >
                       <item.icon className='transition-all group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5' />
-                      <span>{item.title}</span>
+                      <span>{t(item.titleKey)}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -273,7 +282,11 @@ export function AppSidebar() {
 
       <SidebarRail />
       <SidebarFooter>
-        <NavUser user={user} onLogOut={handleUserLogout} />
+        <NavUser
+          user={user}
+          onLogOut={handleUserLogout}
+          onAccountClick={() => navigate('/profile')}
+        />
       </SidebarFooter>
     </Sidebar>
   );

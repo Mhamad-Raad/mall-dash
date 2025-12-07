@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Building2, Layers, Home, Users, ChevronRight } from 'lucide-react';
 import {
   Table,
@@ -19,6 +20,7 @@ const BuildingsTable = () => {
     (state: RootState) => state.buildings
   );
   const navigate = useNavigate();
+  const { t } = useTranslation('buildings');
 
   const handleRowClick = (buildingId: number) => {
     navigate(`/buildings/${buildingId}`);
@@ -40,16 +42,16 @@ const BuildingsTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Building Name
+                {t('tableHeaders.buildingName')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 text-center'>
-                Total Floors
+                {t('tableHeaders.totalFloors')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 text-center'>
-                Total Apartments
+                {t('tableHeaders.totalApartments')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 text-center'>
-                Occupants
+                {t('tableHeaders.occupancyRate')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
@@ -71,7 +73,7 @@ const BuildingsTable = () => {
                         <Building2 className='h-5 w-5 text-primary' />
                       </div>
                       <div className='flex flex-col gap-0.5'>
-                        <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors'>{building.name}</span>
+                        <span className='font-semibold text-lg leading-tight group-hover:text-primary transition-colors'>{building.name}</span>
                       </div>
                     </div>
                   </TableCell>
@@ -80,7 +82,7 @@ const BuildingsTable = () => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Layers className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80'>
+                      <span className='text-base font-medium text-foreground/80'>
                         {building.numberOfFloors}
                       </span>
                     </div>
@@ -90,7 +92,7 @@ const BuildingsTable = () => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Home className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80'>
+                      <span className='text-base font-medium text-foreground/80'>
                         {building.totalApartments}
                       </span>
                     </div>
@@ -100,7 +102,7 @@ const BuildingsTable = () => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Users className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80'>
+                      <span className='text-base font-medium text-foreground/80'>
                         {building.occupants}
                       </span>
                     </div>

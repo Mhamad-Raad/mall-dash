@@ -1,46 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  ArrowLeft,
-  Save,
-  Trash2,
-  Clock,
-  User,
-  Image as ImageIcon,
-  X,
-} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { AppDispatch, RootState } from '@/store/store';
-import {
-  fetchVendorById,
-  updateVendor,
-  clearVendor,
-  deleteVendor,
-} from '@/store/slices/vendorSlice';
+import { fetchVendorById,  updateVendor,  clearVendor,  deleteVendor } from '@/store/slices/vendorSlice';
 import { vendorTypes } from '@/constants/vendorTypes';
 import { convertToUTCFormat } from '@/lib/timeUtils';
-import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
-import { fetchUsers } from '@/data/Users';
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+import VendorDetailSkeleton from '@/components/Vendors/VendorDetailSkeleton';
+import VendorDetailError from '@/components/Vendors/VendorDetailError';
+import VendorPhotoUpload from '@/components/Vendors/VendorPhotoUpload';
+import VendorBasicInfo from '@/components/Vendors/VendorBasicInfo';
+import VendorWorkingHours from '@/components/Vendors/VendorWorkingHours';
+import VendorUserAssignment from '@/components/Vendors/VendorUserAssignment';
 
 const VendorDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation('vendors');
 
   const { vendor, loading, error, updating, updateError } = useSelector(
     (state: RootState) => state.vendor
@@ -58,20 +40,48 @@ const VendorDetail = () => {
   });
   const [preview, setPreview] = useState<string>('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Fetch vendor on mount
+  // Track if any changes have been made
+  const hasChanges = useMemo(() => {
+    if (!vendor) return false;
+
+    // Check if photo was added
+    if (formData.photo instanceof File) return true;
+
+    // Check if photo was removed
+    if (vendor.logo && !preview) return true;
+
+    // Check other fields for changes
+    return (
+      vendor.businessName !== formData.name ||
+      vendor.description !== (formData.description || '') ||
+      vendor.workingHours.open !== formData.openingTime ||
+      vendor.workingHours.close !== formData.closeTime ||
+      String(vendorTypes.find((t) => t.label === vendor.type)?.value || '1') !== formData.type ||
+      (vendor.userId || '') !== formData.userId
+    );
+  }, [vendor, formData, preview]);
+
+  // Fetch vendor on mount only
   useEffect(() => {
-    if (id) {
+    if (id && !hasFetched) {
       dispatch(fetchVendorById(id));
+      setHasFetched(true);
     }
+  }, [dispatch, id, hasFetched]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       dispatch(clearVendor());
     };
-  }, [dispatch, id]);
+  }, [dispatch]);
 
   // Update form data when vendor is loaded
   useEffect(() => {
-    if (vendor) {
+    if (vendor && !isInitialized) {
       setFormData({
         name: vendor.businessName,
         description: vendor.description || '',
@@ -87,8 +97,9 @@ const VendorDetail = () => {
       if (vendor.logo) {
         setPreview(vendor.logo);
       }
+      setIsInitialized(true);
     }
-  }, [vendor]);
+  }, [vendor, isInitialized]);
 
   // Show error toast
   useEffect(() => {
@@ -131,49 +142,64 @@ const VendorDetail = () => {
 
   const handlePhotoRemove = () => {
     setFormData((prev) => ({ ...prev, photo: null }));
-    if (vendor?.logo) {
-      setPreview(vendor.logo);
-    } else {
-      setPreview('');
-    }
+    setPreview('');
+    // Reset the file input
+    const fileInput = document.getElementById('vendor-photo') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
+
+  const handleTimeChange = useCallback((type: 'open' | 'close', time: string) => {
+    setFormData((prev) => {
+      // Only update if the value actually changed
+      const currentTime = type === 'open' ? prev.openingTime : prev.closeTime;
+      if (currentTime === time) return prev;
+      
+      return type === 'open' 
+        ? { ...prev, openingTime: time }
+        : { ...prev, closeTime: time };
+    });
+  }, []);
+
+  const handleUserSelect = useCallback((userId: string, userName: string) => {
+    setFormData((prev) => ({ ...prev, userId, userName }));
+  }, []);
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor name',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.nameRequired'),
       });
       return false;
     }
     if (!formData.description.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor description',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.descriptionRequired'),
       });
       return false;
     }
     if (!formData.openingTime) {
-      toast.error('Validation Error', {
-        description: 'Please select opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.openingTimeRequired'),
       });
       return false;
     }
     if (!formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Please select closing time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.closingTimeRequired'),
       });
       return false;
     }
     if (!formData.userId.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please select a user to manage this vendor',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.userRequired'),
       });
       return false;
     }
 
     // Validate time logic
     if (formData.openingTime >= formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Closing time must be after opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.timeLogicError'),
       });
       return false;
     }
@@ -187,12 +213,21 @@ const VendorDetail = () => {
     }
 
     if (!id) {
-      toast.error('Error', { description: 'Vendor ID is missing' });
+      toast.error(t('vendorDetail.error.missingId'), {
+        description: t('vendorDetail.error.missingIdDescription'),
+      });
       return;
     }
 
-    // Only include ProfileImageUrl if a new photo was selected
-    const vendorData: any = {
+    const vendorData: {
+      name: string;
+      description: string;
+      openingTime: string;
+      closeTime: string;
+      type: number;
+      userId: string;
+      ProfileImageUrl?: File;
+    } = {
       name: formData.name,
       description: formData.description,
       openingTime: convertToUTCFormat(formData.openingTime),
@@ -203,22 +238,14 @@ const VendorDetail = () => {
 
     // Only add ProfileImageUrl if user selected a new image file
     if (formData.photo instanceof File) {
-      console.log('Adding new photo to vendorData');
       vendorData.ProfileImageUrl = formData.photo;
-    } else {
-      console.log('No new photo selected, sending JSON only');
     }
-
-    console.log('vendorData being sent:', {
-      ...vendorData,
-      ProfileImageUrl: vendorData.ProfileImageUrl ? 'File object' : 'undefined',
-    });
 
     const result = await dispatch(updateVendor({ id, vendorData }));
 
     if (updateVendor.fulfilled.match(result)) {
-      toast.success('Vendor Updated Successfully!', {
-        description: `${formData.name} has been updated.`,
+      toast.success(t('vendorDetail.success.updated'), {
+        description: t('vendorDetail.success.updatedDescription', { name: formData.name }),
       });
       navigate('/vendors');
     }
@@ -233,294 +260,108 @@ const VendorDetail = () => {
     navigate('/vendors');
     if (id) {
       await dispatch(deleteVendor(id));
-      toast.success('Vendor Deleted', {
-        description: 'The vendor has been successfully deleted.',
+      toast.success(t('vendorDetail.success.deleted'), {
+        description: t('vendorDetail.success.deletedDescription'),
       });
     }
   };
 
-  console.log(vendor);
-
   if (loading) {
-    return (
-      <div className='flex flex-col gap-6 p-4 md:p-6'>
-        <div className='flex items-center gap-4'>
-          <Button variant='ghost' onClick={() => navigate(-1)}>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Vendors
-          </Button>
-        </div>
-        <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>Loading vendor...</p>
-        </div>
-      </div>
-    );
+    return <VendorDetailSkeleton />;
   }
 
   if (error || !vendor) {
-    return (
-      <div className='flex flex-col gap-6 p-4 md:p-6'>
-        <div className='flex items-center gap-4'>
-          <Button variant='ghost' onClick={() => navigate(-1)}>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Vendors
-          </Button>
-        </div>
-        <div className='flex items-center justify-center h-64'>
-          <p className='text-muted-foreground'>{error || 'Vendor not found'}</p>
-        </div>
-      </div>
-    );
+    return <VendorDetailError error={error || undefined} onBack={() => navigate(-1)} />;
   }
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
-        <Button variant='ghost' onClick={() => navigate(-1)}>
-          <ArrowLeft className='mr-2 h-4 w-4' />
-          Back to Vendors
-        </Button>
-        <div className='flex gap-2'>
-          <Button onClick={handleSave} disabled={updating}>
-            <Save className='mr-2 h-4 w-4' />
-            {updating ? 'Saving...' : 'Save Changes'}
-          </Button>
-          <Button
-            variant='destructive'
-            onClick={handleDelete}
-            disabled={updating}
-          >
-            <Trash2 className='mr-2 h-4 w-4' />
-            Delete
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        {/* Header */}
+        <div>
+          <Button variant='ghost' onClick={() => navigate(-1)}>
+            <ArrowLeft className='mr-2 h-4 w-4' />
+            {t('vendorDetail.backToVendors')}
           </Button>
         </div>
-      </div>
 
-      {/* Business Profile Card */}
+      {/* Vendor Information Card */}
       <Card>
-        <CardHeader>
-          <div className='flex items-start justify-between'>
-            <div className='flex items-center gap-4'>
-              <Avatar className='h-20 w-20'>
-                <AvatarImage src={vendor.logo} alt={vendor.businessName} />
-              </Avatar>
-              <div>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className='text-2xl font-bold h-auto py-2 mb-2'
-                />
-                <div className='flex items-center gap-2 mt-2'>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleInputChange('type', value)}
-                  >
-                    <SelectTrigger className='w-[180px]'>
-                      <SelectValue placeholder='Select type' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendorTypes.map((type) => (
-                        <SelectItem key={type.value} value={String(type.value)}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span className='text-sm text-muted-foreground'>
-                    ID: {vendor._id}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div>
-            <Label htmlFor='description'>Description</Label>
-            <Textarea
-              id='description'
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={3}
+        <CardContent className='p-6'>
+          <div className='flex flex-col md:flex-row gap-6'>
+            <VendorPhotoUpload
+              preview={preview}
+              onPhotoChange={handlePhotoChange}
+              onPhotoRemove={handlePhotoRemove}
+              disabled={updating}
             />
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='vendor-photo' className='flex items-center gap-2'>
-              <ImageIcon className='size-4 text-muted-foreground' />
-              Vendor Logo/Image
-            </Label>
-            <div className='flex items-center gap-4'>
-              <div className='w-20 h-20 rounded-lg bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt='Preview'
-                    className='w-full h-full object-cover'
-                  />
-                ) : (
-                  <ImageIcon className='size-8 text-muted-foreground' />
-                )}
-              </div>
-              <div className='flex-1 space-y-2'>
-                <Input
-                  id='vendor-photo'
-                  type='file'
-                  accept='image/*'
-                  onChange={handlePhotoChange}
-                  disabled={updating}
-                />
-                {formData.photo && (
-                  <div className='flex items-center justify-between'>
-                    <p className='text-xs text-muted-foreground'>
-                      Selected: {formData.photo.name}
-                    </p>
-                    <Button
-                      type='button'
-                      variant='ghost'
-                      size='sm'
-                      onClick={handlePhotoRemove}
-                      disabled={updating}
-                    >
-                      <X className='size-4' />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <VendorBasicInfo
+              name={formData.name}
+              description={formData.description}
+              type={formData.type}
+              vendorId={vendor._id}
+              onInputChange={handleInputChange}
+              disabled={updating}
+            />
           </div>
         </CardContent>
       </Card>
 
       {/* Working Hours Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            <Clock className='h-5 w-5' />
-            Working Hours
-          </CardTitle>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='openingTime'>Opening Time</Label>
-              <Input
-                id='openingTime'
-                type='time'
-                value={formData.openingTime}
-                onChange={(e) =>
-                  handleInputChange('openingTime', e.target.value)
-                }
-              />
-            </div>
-            <div className='space-y-2'>
-              <Label htmlFor='closeTime'>Closing Time</Label>
-              <Input
-                id='closeTime'
-                type='time'
-                value={formData.closeTime}
-                onChange={(e) => handleInputChange('closeTime', e.target.value)}
-              />
-            </div>
-          </div>
-          <p className='text-sm text-muted-foreground'>
-            {formData.openingTime && formData.closeTime && (
-              <>
-                Vendor will be open from {formData.openingTime} to{' '}
-                {formData.closeTime}
-              </>
-            )}
-          </p>
-        </CardContent>
-      </Card>
+      <VendorWorkingHours
+        openingTime={formData.openingTime}
+        closeTime={formData.closeTime}
+        onInputChange={handleInputChange}
+        onTimeChange={handleTimeChange}
+        disabled={updating}
+      />
 
       {/* User Assignment */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            <User className='h-5 w-5' />
-            User Assignment
-          </CardTitle>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='userId'>
-              Select User <span className='text-destructive'>*</span>
-            </Label>
-            <ObjectAutoComplete
-              fetchOptions={async (query) => {
-                const res = await fetchUsers({
-                  searchTerm: query,
-                  limit: 10,
-                  role: 2,
-                });
-                if (res.error || !res.data) return [];
-                return res.data;
-              }}
-              onSelectOption={(user: any) => {
-                if (user) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    userId: user._id || user.id,
-                    userName: `${user.firstName} ${user.lastName}`,
-                  }));
-                } else {
-                  setFormData((prev) => ({
-                    ...prev,
-                    userId: '',
-                    userName: '',
-                  }));
-                }
-              }}
-              getOptionLabel={(user: any) =>
-                `${user.firstName} ${user.lastName} (${user.email})`
-              }
-              placeholder='Search for a user by name or email...'
-              initialValue={formData.userName}
-            />
-            {formData.userName && (
-              <div className='mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md'>
-                <p className='text-sm font-medium text-primary'>
-                  Selected User: {formData.userName}
-                </p>
-                <p className='text-xs text-muted-foreground mt-1'>
-                  User ID: {formData.userId}
-                </p>
-                {vendor?.email && (
-                  <p className='text-xs text-muted-foreground mt-1'>
-                    Email: {vendor.email}
-                  </p>
-                )}
-                {vendor?.phoneNumber && (
-                  <p className='text-xs text-muted-foreground mt-1'>
-                    Phone: {vendor.phoneNumber}
-                  </p>
-                )}
-              </div>
-            )}
-            <p className='text-xs text-muted-foreground'>
-              Search and select the user who will manage this vendor
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <VendorUserAssignment
+        userId={formData.userId}
+        userName={formData.userName}
+        userEmail={vendor?.email}
+        userPhone={vendor?.phoneNumber}
+        userProfileImage={vendor?.userProfileImageUrl}
+        onUserSelect={handleUserSelect}
+      />
+      </div>
+
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
+          <button
+            onClick={handleDelete}
+            className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
+          >
+            {t('vendorDetail.actions.deleteVendor')}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!hasChanges || updating}
+            className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {updating ? t('vendorDetail.actions.saving') : t('vendorDetail.actions.saveChanges')}
+          </button>
+        </div>
+      </div>
 
       <ConfirmModal
         open={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
-        title='Delete Vendor'
-        description='Are you sure you want to permanently delete this vendor?'
-        confirmLabel='Delete'
+        title={t('vendorDetail.confirmDelete.title')}
+        description={t('vendorDetail.confirmDelete.description')}
+        confirmLabel={t('vendorDetail.confirmDelete.confirm')}
         confirmType='danger'
-        cancelLabel='Cancel'
-        warning='This action cannot be undone.'
+        cancelLabel={t('vendorDetail.confirmDelete.cancel')}
+        warning={t('vendorDetail.confirmDelete.warning')}
         changes={[
           {
-            field: 'Vendor Name',
+            field: t('vendorDetail.confirmDelete.fieldName'),
             oldValue: vendor?.businessName || '',
-            newValue: 'Will be deleted',
+            newValue: t('vendorDetail.confirmDelete.willBeDeleted'),
           },
         ]}
       />

@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { Mail, Phone, Building2, User as UserIcon, ChevronRight } from 'lucide-react';
 
@@ -36,6 +37,7 @@ const getUserTypeColor = (type: string) => {
 };
 
 const UsersTable = () => {
+  const { t } = useTranslation('users');
   const navigate = useNavigate();
 
   const {
@@ -52,7 +54,7 @@ const UsersTable = () => {
   if (error) {
     return (
       <div className='rounded-lg border bg-card shadow-sm p-8'>
-        <div className='text-center text-destructive'>Error: {error}</div>
+        <div className='text-center text-destructive'>{t('error')}: {error}</div>
       </div>
     );
   }
@@ -65,16 +67,16 @@ const UsersTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                User
+                {t('tableHeaders.user')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Contact
+                {t('tableHeaders.contact')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Role
+                {t('tableHeaders.role')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Location
+                {t('tableHeaders.location')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
@@ -87,6 +89,12 @@ const UsersTable = () => {
               : users.map((user, index) => {
                   const fullName = `${user.firstName} ${user.lastName}`;
                   const userRole = roles[user.role];
+                  // Translate role based on the role name
+                  const translatedRole = userRole === 'SuperAdmin' ? t('roles.superAdmin')
+                    : userRole === 'Admin' ? t('roles.admin')
+                    : userRole === 'Vendor' ? t('roles.vendor')
+                    : userRole === 'Tenant' ? t('roles.tenant')
+                    : userRole;
                   // Generate initials for fallback
                   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
                   // Use profileImageUrl or src (backward compatibility)
@@ -101,7 +109,7 @@ const UsersTable = () => {
                       {/* User Info with Avatar */}
                       <TableCell className='font-medium py-4'>
                         <div className='flex items-center gap-3'>
-                          <Avatar className='h-11 w-11 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
+                          <Avatar className='h-14 w-14 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
                             <AvatarImage
                               src={avatarSrc}
                               alt={fullName}
@@ -117,10 +125,10 @@ const UsersTable = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className='flex flex-col gap-0.5'>
-                            <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors'>
+                            <span className='font-semibold text-lg leading-tight group-hover:text-primary transition-colors'>
                               {fullName}
                             </span>
-                            <span className='text-[11px] text-muted-foreground font-mono leading-tight'>
+                            <span className='text-sm text-muted-foreground font-mono leading-tight'>
                               {user?._id.slice(-8)}
                             </span>
                           </div>
@@ -133,13 +141,13 @@ const UsersTable = () => {
                             <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                               <Mail className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                             </div>
-                            <span className='text-xs text-foreground/80'>{user.email}</span>
+                            <span className='text-base text-foreground/80'>{user.email}</span>
                           </div>
                           <div className='flex items-center gap-2.5'>
                             <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                               <Phone className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                             </div>
-                            <span className='text-xs font-medium text-foreground/80'>
+                            <span className='text-base font-medium text-foreground/80'>
                               {user.phoneNumber}
                             </span>
                           </div>
@@ -149,9 +157,9 @@ const UsersTable = () => {
                       <TableCell className='py-4'>
                         <Badge
                           variant='outline'
-                          className={`${getUserTypeColor(userRole)} font-semibold text-xs px-3 py-1`}
+                          className={`${getUserTypeColor(userRole)} font-semibold text-base px-3 py-1`}
                         >
-                          {userRole}
+                          {translatedRole}
                         </Badge>
                       </TableCell>
                       {/* Building/Location */}
@@ -160,7 +168,7 @@ const UsersTable = () => {
                           <div className='flex items-center justify-center w-7 h-7 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors'>
                             <Building2 className='h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors' />
                           </div>
-                          <span className='text-sm font-medium text-foreground/90'>
+                          <span className='text-base font-medium text-foreground/90'>
                             {user.buildingName || 'N/A'}
                           </span>
                         </div>

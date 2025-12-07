@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +20,18 @@ interface UserProfileCardProps {
 }
 
 const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
+  const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
+
+  const translateRole = (role: string): string => {
+    const roleMap: { [key: string]: string } = {
+      SuperAdmin: t("roles.superAdmin"),
+      Admin: t("roles.admin"),
+      Vendor: t("roles.vendor"),
+      Tenant: t("roles.tenant"),
+    };
+    return roleMap[role] || role;
+  };
 
   useEffect(() => {
     if (formData.imageFile instanceof File) {
@@ -47,9 +59,9 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>User Information</CardTitle>
+        <CardTitle className='text-lg'>{t('userDetails.userInformation')}</CardTitle>
         <CardDescription>
-          View and update user profile details
+          {t('userDetails.userInformationDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-8'>
@@ -72,7 +84,7 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
               ) : (
                 <div className='flex flex-col items-center gap-2'>
                   <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
-                  <span className='text-xs text-muted-foreground'>Upload Photo</span>
+                  <span className='text-xs text-muted-foreground'>{t('userDetails.uploadPhoto')}</span>
                 </div>
               )}
             </label>
@@ -92,11 +104,11 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
           <div className='flex-1 space-y-4 w-full'>
             <div className='space-y-2'>
               <Label htmlFor='firstName' className='text-sm font-medium'>
-                First Name <span className='text-destructive'>*</span>
+                {t('forms.firstName')} <span className='text-destructive'>*</span>
               </Label>
               <Input
                 id='firstName'
-                placeholder='John'
+                placeholder={t('forms.firstNamePlaceholder')}
                 value={formData.firstName}
                 onChange={(e) => onInputChange('firstName', e.target.value)}
                 className='h-11'
@@ -104,11 +116,11 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
             </div>
             <div className='space-y-2'>
               <Label htmlFor='lastName' className='text-sm font-medium'>
-                Last Name <span className='text-destructive'>*</span>
+                {t('forms.lastName')} <span className='text-destructive'>*</span>
               </Label>
               <Input
                 id='lastName'
-                placeholder='Doe'
+                placeholder={t('forms.lastNamePlaceholder')}
                 value={formData.lastName}
                 onChange={(e) => onInputChange('lastName', e.target.value)}
                 className='h-11'
@@ -116,19 +128,19 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
             </div>
             <div className='space-y-2'>
               <Label htmlFor='userRole' className='text-sm font-medium'>
-                User Role <span className='text-destructive'>*</span>
+                {t('forms.userRole')} <span className='text-destructive'>*</span>
               </Label>
               <Select
                 value={String(formData.role)}
                 onValueChange={(value) => onInputChange('role', Number(value))}
               >
                 <SelectTrigger id='userRole' className='h-11'>
-                  <SelectValue placeholder='Select a role' />
+                  <SelectValue placeholder={t('forms.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role, index) => (
                     <SelectItem key={index} value={String(index)}>
-                      {role}
+                      {translateRole(role)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -136,7 +148,7 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
             </div>
             {formData._id && (
               <p className='text-xs text-muted-foreground'>
-                User ID: {formData._id}
+                {t('userDetails.userId')}: {formData._id}
               </p>
             )}
           </div>

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Mail,
   Phone,
@@ -42,6 +43,7 @@ interface VendorsTableProps {
 
 const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('vendors');
 
   const handleRowClick = (vendorId: string) => {
     navigate(`/vendors/${vendorId}`);
@@ -57,19 +59,19 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
             <TableHeader>
               <TableRow className='hover:bg-transparent border-b bg-muted/50'>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Business
+                  {t('tableHeaders.business')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Owner
+                  {t('tableHeaders.owner')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Type
+                  {t('tableHeaders.type')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Contact
+                  {t('tableHeaders.contact')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                  Working Hours
+                  {t('tableHeaders.workingHours')}
                 </TableHead>
                 <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
               </TableRow>
@@ -94,19 +96,19 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Business
+                {t('tableHeaders.business')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Owner
+                {t('tableHeaders.owner')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Type
+                {t('tableHeaders.type')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Contact
+                {t('tableHeaders.contact')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Working Hours
+                {t('tableHeaders.workingHours')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
@@ -117,7 +119,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                 <TableCell colSpan={6} className='h-32 text-center'>
                   <div className='flex flex-col items-center justify-center gap-2 text-muted-foreground'>
                     <StoreIcon className='h-8 w-8' />
-                    <p>No vendors found</p>
+                    <p>{t('emptyState.title')}</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -131,18 +133,18 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                   {/* Business Name */}
                   <TableCell className='py-4'>
                     <div className='flex items-center gap-3 min-w-[200px]'>
-                      <Avatar className='h-11 w-11 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
+                      <Avatar className='h-14 w-14 border-2 border-border shadow-sm transition-all group-hover:shadow-md group-hover:border-primary/50'>
                         <AvatarImage
                           src={vendor.logo}
                           alt={vendor.businessName}
                         />
                       </Avatar>
                       <div className='flex flex-col gap-0.5 min-w-0'>
-                        <span className='font-semibold text-sm leading-tight group-hover:text-primary transition-colors truncate'>
+                        <span className='font-semibold text-lg leading-tight group-hover:text-primary transition-colors truncate'>
                           {vendor.businessName}
                         </span>
                         {vendor.description && (
-                          <span className='text-[11px] text-muted-foreground leading-tight truncate'>
+                          <span className='text-sm text-muted-foreground leading-tight truncate'>
                             {vendor.description}
                           </span>
                         )}
@@ -152,7 +154,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
 
                   {/* Owner Name */}
                   <TableCell className='py-4'>
-                    <span className='text-sm font-medium text-foreground/80'>
+                    <span className='text-base font-medium text-foreground/80'>
                       {vendor.ownerName}
                     </span>
                   </TableCell>
@@ -163,9 +165,9 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                       variant='outline'
                       className={`${getVendorTypeColor(
                         vendor.type
-                      )} font-semibold text-xs px-3 py-1`}
+                      )} font-semibold text-base px-3 py-1`}
                     >
-                      {vendor.type}
+                      {t(`types.${vendor.type.toLowerCase()}`)}
                     </Badge>
                   </TableCell>
 
@@ -176,7 +178,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                         <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                           <Mail className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                         </div>
-                        <span className='text-xs text-foreground/80 truncate'>
+                        <span className='text-base text-foreground/80 truncate'>
                           {vendor.email}
                         </span>
                       </div>
@@ -184,7 +186,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                         <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                           <Phone className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                         </div>
-                        <span className='text-xs font-medium text-foreground/80 truncate'>
+                        <span className='text-base font-medium text-foreground/80 truncate'>
                           {vendor.phoneNumber}
                         </span>
                       </div>
@@ -197,7 +199,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                       <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
                         <Clock className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
                       </div>
-                      <span className='text-xs font-medium text-foreground/80 whitespace-nowrap'>
+                      <span className='text-base font-medium text-foreground/80 whitespace-nowrap'>
                         {vendor.workingHours.open} - {vendor.workingHours.close}
                       </span>
                     </div>

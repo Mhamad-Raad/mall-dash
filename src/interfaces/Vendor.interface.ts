@@ -13,6 +13,7 @@ export interface VendorAPIResponse {
   phone: string;
   email?: string; // List endpoint returns 'email'
   userEmail?: string; // Detail endpoint returns 'userEmail'
+  userProfileImageUrl?: string; // User's profile image
 }
 
 // UI Display Type (for backwards compatibility with existing components)
@@ -31,6 +32,7 @@ export interface VendorType {
   type: string; // e.g., "Restaurant", "Market", "Bakery"
   description?: string;
   userId?: string;
+  userProfileImageUrl?: string; // User's profile image
 }
 
 export interface VendorsType {
@@ -54,5 +56,6 @@ export function mapVendorAPIToUI(apiVendor: VendorAPIResponse): VendorType {
     type: apiVendor.type,
     description: apiVendor.description,
     userId: apiVendor.userId,
+    userProfileImageUrl: apiVendor.userProfileImageUrl,
   };
 }

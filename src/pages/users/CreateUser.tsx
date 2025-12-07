@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
   Card,
@@ -17,6 +18,7 @@ import CustomerForm from '@/components/Users/forms/CustomerForm';
 import { createUser } from '@/data/Users';
 
 export default function CreateUser() {
+  const { t } = useTranslation('users');
   const navigate = useNavigate();
 
   const [type, setType] = useState('Staff');
@@ -70,8 +72,8 @@ export default function CreateUser() {
       const { confirmPassword, photo, ...userData } = staffFormData;
 
       if (staffFormData.password !== staffFormData.confirmPassword) {
-        toast.error('Passwords do not match', {
-          description: 'Please make sure both password fields are identical.',
+        toast.error(t('createUser.passwordMismatch'), {
+          description: t('createUser.passwordMismatchDesc'),
         });
         setLoading(false);
         return;
@@ -86,8 +88,8 @@ export default function CreateUser() {
       const { confirmPassword, photo, buildingId, floorId, apartmentId, ...userData } = customerFormData;
 
       if (customerFormData.password !== customerFormData.confirmPassword) {
-        toast.error('Passwords do not match', {
-          description: 'Please make sure both password fields are identical.',
+        toast.error(t('createUser.passwordMismatch'), {
+          description: t('createUser.passwordMismatchDesc'),
         });
         setLoading(false);
         return;
@@ -109,12 +111,12 @@ export default function CreateUser() {
     setLoading(false);
 
     if (res.error) {
-      toast.error('Failed to Create User', {
-        description: res.error || 'An error occurred while creating the user.',
+      toast.error(t('createUser.createError'), {
+        description: res.error || t('createUser.createErrorDesc'),
       });
     } else {
-      toast.success('User Created Successfully!', {
-        description: `${userName} has been added to the system.`,
+      toast.success(t('createUser.createSuccess'), {
+        description: t('createUser.createSuccessDesc', { name: userName }),
       });
       navigate('/users');
     }
@@ -140,10 +142,10 @@ export default function CreateUser() {
             </div>
             <div className='min-w-0'>
               <h1 className='text-xl sm:text-2xl font-bold tracking-tight'>
-                Create New User
+                {t('createUser.title')}
               </h1>
               <p className='text-xs sm:text-sm text-muted-foreground'>
-                Add a new user to the system
+                {t('createUser.subtitle')}
               </p>
             </div>
           </div>
@@ -157,9 +159,13 @@ export default function CreateUser() {
           {/* Form Fields */}
           <Card>
             <CardHeader>
-              <CardTitle className='text-lg'>User Information</CardTitle>
+              <CardTitle className='text-lg'>{t('createUser.userInformation')}</CardTitle>
               <CardDescription>
-                Fill in the details for the new {type.toLowerCase()}
+                {t('createUser.fillDetails', { 
+                  type: type === 'Staff' 
+                    ? t('createUser.userType.staff.title')
+                    : t('createUser.userType.customer.title')
+                })}
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-6'>
@@ -184,7 +190,7 @@ export default function CreateUser() {
       <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
         <div className='flex gap-2 justify-end'>
           <Button variant='outline' onClick={handleBack} className='gap-2'>
-            Cancel
+            {t('createUser.cancel')}
           </Button>
           <Button
             className='gap-2'
@@ -192,7 +198,7 @@ export default function CreateUser() {
             disabled={loading}
           >
             <Save className='size-4' />
-            {loading ? 'Creating...' : 'Create User'}
+            {loading ? t('createUser.creating') : t('createUser.createButton')}
           </Button>
         </div>
       </div>

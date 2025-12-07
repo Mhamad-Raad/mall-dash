@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 const userTypeSections = [
   {
@@ -22,11 +23,13 @@ interface UserTypeSelectorProps {
 }
 
 export default function UserTypeSelector({ selectedType, onTypeChange }: UserTypeSelectorProps) {
+  const { t } = useTranslation('users');
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>User Type</CardTitle>
-        <CardDescription>Select the type of user account to create</CardDescription>
+        <CardTitle className='text-lg'>{t('createUser.userType.title')}</CardTitle>
+        <CardDescription>{t('createUser.userType.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -43,9 +46,15 @@ export default function UserTypeSelector({ selectedType, onTypeChange }: UserTyp
               <div className='flex flex-col items-center text-center gap-3'>
                 <span className='text-5xl'>{section.icon}</span>
                 <div className='space-y-1'>
-                  <p className='font-semibold text-lg'>{section.title}</p>
+                  <p className='font-semibold text-lg'>
+                    {section.value === 'Staff' 
+                      ? t('createUser.userType.staff.title') 
+                      : t('createUser.userType.customer.title')}
+                  </p>
                   <p className='text-xs text-muted-foreground'>
-                    {section.description}
+                    {section.value === 'Staff' 
+                      ? t('createUser.userType.staff.description') 
+                      : t('createUser.userType.customer.description')}
                   </p>
                 </div>
                 {selectedType === section.value && (

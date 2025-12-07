@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Building2, ArrowLeft, Pencil, Check, X, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Building2, ArrowLeft, Pencil, Check, X, Trash2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,6 +11,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import ConfirmModal, {
   type ChangeDetail,
 } from '@/components/ui/Modals/ConfirmModal';
@@ -22,6 +31,7 @@ interface BuildingHeaderProps {
 const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation('buildings');
   const { building, loading, error } = useSelector(
     (state: RootState) => state.building
   );
@@ -53,7 +63,7 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
     );
     if (putBuildingName.fulfilled.match(resultAction)) {
       setIsEditing(false);
-      setSuccess('Building name updated.');
+      setSuccess(t('detail.nameUpdated'));
     }
     // Optionally handle error via redux error state
   };
@@ -71,7 +81,7 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
   // Changes summary for the modal
   const changes: ChangeDetail[] = [
     {
-      field: 'Building Name',
+      field: t('detail.fieldBuildingName'),
       oldValue: building?.name || '',
       newValue: editedName.trim(),
     },
@@ -85,40 +95,20 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
         className='mb-4 hover:bg-muted/50'
       >
         <ArrowLeft className='mr-2 h-4 w-4' />
-        Back to Buildings
+        {t('detail.backToBuildings')}
       </Button>
 
       <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-        <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-4 flex-1'>
           <div className='p-4 rounded-xl bg-primary/10 border-2 border-primary/20'>
             <Building2 className='h-10 w-10 text-primary' />
           </div>
-          <div className='w-full flex items-center gap-3'>
+          <div className='flex-1 flex items-center gap-3'>
             {!isEditing ? (
-              <div className='w-full flex items-center justify-between'>
-                <div className=''>
-                  <span className='text-3xl md:text-4xl font-bold'>
-                    {building?.name}
-                  </span>
-                  <Button
-                    variant='ghost'
-                    onClick={handleEditClick}
-                    size='icon'
-                    className='ml-2'
-                  >
-                    <Pencil className='w-5 h-5 text-muted-foreground' />
-                  </Button>
-                </div>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  onClick={onDeleteBuilding}
-                  className='ml-2 bg-destructive/10 text-destructive hover:bg-destructive/20'
-                  type='button'
-                  aria-label='Delete Building'
-                >
-                  <Trash2 className='w-5 h-5' />
-                </Button>
+              <div className='flex items-center gap-2'>
+                <span className='text-3xl md:text-4xl font-bold'>
+                  {building?.name}
+                </span>
               </div>
             ) : (
               <TooltipProvider>
@@ -148,9 +138,9 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
                     <TooltipContent>
                       {!confirmEnabled
                         ? !editedName.trim()
-                          ? 'Name required'
-                          : 'Name must be changed'
-                        : 'Confirm name change'}
+                          ? t('detail.nameRequired')
+                          : t('detail.nameMustBeChanged')
+                        : t('detail.confirmNameChange')}
                     </TooltipContent>
                   </Tooltip>
                   <Button
@@ -175,12 +165,12 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
                 {/* Confirmation Modal for changing name */}
                 <ConfirmModal
                   open={showConfirmModal}
-                  title='Confirm Name Change'
-                  description={`Are you sure you want to change the building name?`}
-                  warning='Please double check all details before confirming.'
+                  title={t('detail.confirmNameChangeTitle')}
+                  description={t('detail.confirmNameChangeDescription')}
+                  warning={t('detail.confirmNameChangeWarning')}
                   confirmType='warning'
-                  confirmLabel='Confirm'
-                  cancelLabel='Cancel'
+                  confirmLabel={t('detail.confirm')}
+                  cancelLabel={t('modal.cancel')}
                   changes={changes}
                   onCancel={() => setShowConfirmModal(false)}
                   onConfirm={handleModalConfirm}
@@ -189,6 +179,37 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
             )}
           </div>
         </div>
+
+        {/* Actions section - only show when not editing */}
+        {!isEditing && (
+          <div className='flex items-center gap-2'>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant='outline' size='icon'>
+                  <MoreHorizontal className='h-4 w-4' />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                <DropdownMenuLabel>{t('detail.actionsLabel')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleEditClick}
+                  className='cursor-pointer'
+                >
+                  <Pencil className='mr-2 h-4 w-4' />
+                  {t('detail.editBuildingName')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={onDeleteBuilding}
+                  className='text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer'
+                >
+                  <Trash2 className='mr-2 h-4 w-4' />
+                  {t('detail.deleteBuilding')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
     </div>
   );

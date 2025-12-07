@@ -1,20 +1,54 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import en from './locales/en.json';
-import ar from './locales/ar.json';
-import ku from './locales/ku.json';
+import sidebarEn from './locales/Sidebar/en.json';
+import sidebarAr from './locales/Sidebar/ar.json';
+import sidebarKu from './locales/Sidebar/ku.json';
+
+import navbarEn from './locales/Navbar/en.json';
+import navbarAr from './locales/Navbar/ar.json';
+import navbarKu from './locales/Navbar/ku.json';
+
+import usersEn from './locales/Users/en.json';
+import usersAr from './locales/Users/ar.json';
+import usersKu from './locales/Users/ku.json';
+
+import buildingsEn from './locales/Buildings/en.json';
+import buildingsAr from './locales/Buildings/ar.json';
+import buildingsKu from './locales/Buildings/ku.json';
+
+import vendorsEn from './locales/Vendors/en.json';
+import vendorsAr from './locales/Vendors/ar.json';
+import vendorsKu from './locales/Vendors/ku.json';
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: { translation: en },
-    ar: { translation: ar },
+    en: {
+      sidebar: sidebarEn,
+      navbar: navbarEn,
+      users: usersEn,
+      buildings: buildingsEn,
+      vendors: vendorsEn,
+    },
+    ar: {
+      sidebar: sidebarAr,
+      navbar: navbarAr,
+      users: usersAr,
+      buildings: buildingsAr,
+      vendors: vendorsAr,
+    },
     ku: {
-      translation: ku,
+      sidebar: sidebarKu,
+      navbar: navbarKu,
+      users: usersKu,
+      buildings: buildingsKu,
+      vendors: vendorsKu,
     },
   },
   lng: 'en', // default language
   fallbackLng: 'en',
+  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors'], // namespaces
+  defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });
 

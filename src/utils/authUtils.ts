@@ -1,24 +1,29 @@
 import { axiosInstance } from '@/data/axiosInstance';
 
-export const validateRefreshToken = async (
-  refreshToken: string
-): Promise<boolean> => {
+export interface RefreshTokenResponse {
+  accessToken?: string;
+  token?: string;
+  access_token?: string;
+}
+
+export const validateRefreshToken = async (): Promise<RefreshTokenResponse | null> => {
   try {
-    const response = await axiosInstance.post('/Account/validate-token', {
-      refreshToken,
-    });
-    return response.data?.isValid === true;
+    // The refresh token is sent automatically via HTTP-only cookie
+    const response = await axiosInstance.post<RefreshTokenResponse>('/Account/NewRefreshToken', {});
+    // Return the response data which should contain the new access token
+    return response.data;
   } catch (error) {
-    return false;
+    return null;
   }
 };
 
+// These functions are kept for backwards compatibility but tokens are now in HTTP-only cookies
 export const getStoredTokens = () => ({
-  accessToken: localStorage.getItem('accessToken'),
-  refreshToken: localStorage.getItem('refreshToken'),
+  accessToken: null,
+  refreshToken: null,
 });
 
 export const clearTokens = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  // Tokens are now managed via HTTP-only cookies
+  // Call logout endpoint to clear them server-side
 };

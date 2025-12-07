@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -8,35 +9,30 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Store, Clock, User, FileText, Image as ImageIcon, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Store, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
+import TimelineSlider from '@/components/Vendors/TimelineSlider';
+import VendorPhotoUpload from '@/components/Vendors/VendorPhotoUpload';
+import VendorBasicInfo from '@/components/Vendors/VendorBasicInfo';
+import VendorUserAssignment from '@/components/Vendors/VendorUserAssignment';
 
 import { vendorTypes } from '@/constants/vendorTypes';
 import { createVendor } from '@/data/Vendor';
-import { fetchUsers } from '@/data/Users';
 import { convertToUTCFormat } from '@/lib/timeUtils';
 
 const CreateVendor = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('vendors');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preview, setPreview] = useState<string>('');
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    openingTime: '',
-    closeTime: '',
+    openingTime: '09:00',
+    closeTime: '17:00',
     type: '1',
     userId: '',
     userName: '',
@@ -60,6 +56,13 @@ const CreateVendor = () => {
     }));
   };
 
+  const handleTimeChange = (type: 'open' | 'close', time: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [type === 'open' ? 'openingTime' : 'closeTime']: time,
+    }));
+  };
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setFormData((prev) => ({ ...prev, photo: file }));
@@ -71,40 +74,40 @@ const CreateVendor = () => {
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor name',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.nameRequired'),
       });
       return false;
     }
     if (!formData.description.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor description',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.descriptionRequired'),
       });
       return false;
     }
     if (!formData.openingTime) {
-      toast.error('Validation Error', {
-        description: 'Please select opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.openingTimeRequired'),
       });
       return false;
     }
     if (!formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Please select closing time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.closingTimeRequired'),
       });
       return false;
     }
     if (!formData.userId.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please select a user to manage this vendor',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.userRequired'),
       });
       return false;
     }
 
     // Validate time logic
     if (formData.openingTime >= formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Closing time must be after opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.timeLogicError'),
       });
       return false;
     }
@@ -140,19 +143,19 @@ const CreateVendor = () => {
       console.log('Response:', res);
 
       if (res.error) {
-        toast.error('Failed to Create Vendor', {
-          description: res.error || 'An error occurred while creating the vendor.',
+        toast.error(t('createVendor.error.title'), {
+          description: res.error || t('createVendor.error.description'),
         });
       } else {
-        toast.success('Vendor Created Successfully!', {
-          description: `${formData.name} has been added to the system.`,
+        toast.success(t('createVendor.success.title'), {
+          description: t('createVendor.success.description', { name: formData.name }),
         });
         navigate('/vendors');
       }
     } catch (error) {
       console.error('Error creating vendor:', error);
-      toast.error('Failed to Create Vendor', {
-        description: 'An unexpected error occurred. Please try again.',
+      toast.error(t('createVendor.error.title'), {
+        description: t('createVendor.error.unexpected'),
       });
     } finally {
       setIsSubmitting(false);
@@ -177,10 +180,10 @@ const CreateVendor = () => {
         </Button>
         <div>
           <h1 className='text-3xl font-bold tracking-tight'>
-            Create New Vendor
+            {t('createVendor.title')}
           </h1>
           <p className='text-muted-foreground'>
-            Add a new vendor to your mall directory
+            {t('createVendor.subtitle')}
           </p>
         </div>
       </div>
@@ -194,224 +197,115 @@ const CreateVendor = () => {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <Store className='h-5 w-5' />
-                  Basic Information
+                  {t('createVendor.basicInfo.title')}
                 </CardTitle>
                 <CardDescription>
-                  Enter the vendor's basic details
+                  {t('createVendor.basicInfo.subtitle')}
                 </CardDescription>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>
-                    Vendor Name <span className='text-destructive'>*</span>
-                  </Label>
-                  <Input
-                    id='name'
-                    placeholder='e.g., Aland StakeHouse'
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
+              <CardContent className='p-6'>
+                <div className='flex flex-col md:flex-row gap-6'>
+                  <VendorPhotoUpload
+                    preview={preview}
+                    onPhotoChange={handlePhotoChange}
+                    onPhotoRemove={handlePhotoRemove}
+                    disabled={isSubmitting}
                   />
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='description'>
-                    Description <span className='text-destructive'>*</span>
-                  </Label>
-                  <Textarea
-                    id='description'
-                    placeholder='Brief description of the vendor and their offerings...'
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange('description', e.target.value)
-                    }
-                    className='resize-none h-24'
-                    required
+                  <VendorBasicInfo
+                    name={formData.name}
+                    description={formData.description}
+                    type={formData.type}
+                    vendorId=""
+                    onInputChange={handleInputChange}
+                    disabled={isSubmitting}
                   />
-                  <p className='text-xs text-muted-foreground'>
-                    {formData.description.length}/500 characters
-                  </p>
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='vendor-photo' className='flex items-center gap-2'>
-                    <ImageIcon className='size-4 text-muted-foreground' />
-                    Vendor Logo/Image (Optional)
-                  </Label>
-                  <div className='flex items-center gap-4'>
-                    <div className='w-20 h-20 rounded-lg bg-muted flex items-center justify-center border-2 border-dashed overflow-hidden'>
-                      {preview ? (
-                        <img
-                          src={preview}
-                          alt='Preview'
-                          className='w-full h-full object-cover'
-                        />
-                      ) : (
-                        <ImageIcon className='size-8 text-muted-foreground' />
-                      )}
-                    </div>
-                    <div className='flex-1 space-y-2'>
-                      <Input
-                        id='vendor-photo'
-                        type='file'
-                        accept='image/*'
-                        onChange={handlePhotoChange}
-                        disabled={isSubmitting}
-                      />
-                      {formData.photo && (
-                        <div className='flex items-center justify-between'>
-                          <p className='text-xs text-muted-foreground'>
-                            Selected: {formData.photo.name}
-                          </p>
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='sm'
-                            onClick={handlePhotoRemove}
-                            disabled={isSubmitting}
-                          >
-                            <X className='size-4' />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='type'>
-                    Vendor Type <span className='text-destructive'>*</span>
-                  </Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleInputChange('type', value)}
-                  >
-                    <SelectTrigger id='type'>
-                      <SelectValue placeholder='Select vendor type' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendorTypes.map((type) => (
-                        <SelectItem key={type.value} value={String(type.value)}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               </CardContent>
             </Card>
 
             {/* Working Hours */}
-            <Card>
-              <CardHeader>
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b">
                 <CardTitle className='flex items-center gap-2'>
-                  <Clock className='h-5 w-5' />
-                  Working Hours
+                  <Clock className='h-5 w-5 text-primary' />
+                  <div>
+                    <div className="text-lg font-semibold">{t('createVendor.workingHours.title')}</div>
+                    <div className="text-xs font-normal text-muted-foreground">{t('createVendor.workingHours.subtitle')}</div>
+                  </div>
                 </CardTitle>
-                <CardDescription>
-                  Set the vendor's operating hours
-                </CardDescription>
               </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <CardContent className='space-y-6 pt-6'>
+                {/* Time Inputs with Icons */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='space-y-2'>
-                    <Label htmlFor='openingTime'>
-                      Opening Time <span className='text-destructive'>*</span>
+                    <Label htmlFor='openingTime' className='text-sm font-medium'>
+                      {t('createVendor.workingHours.openingTime')} <span className='text-destructive'>*</span>
                     </Label>
-                    <Input
-                      id='openingTime'
-                      type='time'
-                      value={formData.openingTime}
-                      onChange={(e) =>
-                        handleInputChange('openingTime', e.target.value)
-                      }
-                      required
-                    />
+                    <div className='relative'>
+                      <Input
+                        id='openingTime'
+                        type='time'
+                        value={formData.openingTime}
+                        onChange={(e) => handleInputChange('openingTime', e.target.value)}
+                        disabled={isSubmitting}
+                        className='pl-10 h-11 text-base'
+                        required
+                      />
+                      <Clock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none' />
+                    </div>
                   </div>
                   <div className='space-y-2'>
-                    <Label htmlFor='closeTime'>
-                      Closing Time <span className='text-destructive'>*</span>
+                    <Label htmlFor='closeTime' className='text-sm font-medium'>
+                      {t('createVendor.workingHours.closingTime')} <span className='text-destructive'>*</span>
                     </Label>
-                    <Input
-                      id='closeTime'
-                      type='time'
-                      value={formData.closeTime}
-                      onChange={(e) =>
-                        handleInputChange('closeTime', e.target.value)
-                      }
-                      required
-                    />
+                    <div className='relative'>
+                      <Input
+                        id='closeTime'
+                        type='time'
+                        value={formData.closeTime}
+                        onChange={(e) => handleInputChange('closeTime', e.target.value)}
+                        disabled={isSubmitting}
+                        className='pl-10 h-11 text-base'
+                        required
+                      />
+                      <Clock className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none' />
+                    </div>
                   </div>
                 </div>
-                <p className='text-sm text-muted-foreground'>
-                  {formData.openingTime && formData.closeTime && (
-                    <>
-                      Vendor will be open from {formData.openingTime} to{' '}
-                      {formData.closeTime}
-                    </>
-                  )}
-                </p>
+
+                {/* Visual Schedule Display */}
+                {formData.openingTime && formData.closeTime && (
+                  <TimelineSlider
+                    openingTime={formData.openingTime}
+                    closeTime={formData.closeTime}
+                    onTimeChange={handleTimeChange}
+                    disabled={isSubmitting}
+                  />
+                )}
+
+                {/* Validation message */}
+                {formData.openingTime && formData.closeTime && formData.openingTime >= formData.closeTime && (
+                  <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
+                    <p className='text-sm text-destructive font-medium'>
+                      {t('createVendor.workingHours.validationError')}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* User Assignment */}
-            <Card>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <User className='h-5 w-5' />
-                  User Assignment
-                </CardTitle>
-                <CardDescription>
-                  Assign a user to manage this vendor
-                </CardDescription>
-              </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='userId'>
-                    Select User <span className='text-destructive'>*</span>
-                  </Label>
-                  <ObjectAutoComplete
-                    fetchOptions={async (query) => {
-                      const res = await fetchUsers({ searchTerm: query, limit: 10, role: 2 });
-                      if (res.error || !res.data) return [];
-                      return res.data;
-                    }}
-                    onSelectOption={(user: any) => {
-                      if (user) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          userId: user._id || user.id,
-                          userName: `${user.firstName} ${user.lastName}`,
-                        }));
-                      } else {
-                        setFormData((prev) => ({
-                          ...prev,
-                          userId: '',
-                          userName: '',
-                        }));
-                      }
-                    }}
-                    getOptionLabel={(user: any) =>
-                      `${user.firstName} ${user.lastName} (${user.email})`
-                    }
-                    placeholder='Search for a user by name or email...'
-                  />
-                  {formData.userName && (
-                    <div className='mt-2 p-3 bg-primary/5 border border-primary/20 rounded-md'>
-                      <p className='text-sm font-medium text-primary'>
-                        Selected User: {formData.userName}
-                      </p>
-                      <p className='text-xs text-muted-foreground mt-1'>
-                        User ID: {formData.userId}
-                      </p>
-                    </div>
-                  )}
-                  <p className='text-xs text-muted-foreground'>
-                    Search and select the user who will manage this vendor
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <VendorUserAssignment
+              userId={formData.userId}
+              userName={formData.userName}
+              onUserSelect={(userId, userName) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  userId,
+                  userName,
+                }));
+              }}
+            />
           </div>
 
           {/* Sidebar - Preview & Actions */}
@@ -421,43 +315,45 @@ const CreateVendor = () => {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <FileText className='h-5 w-5' />
-                  Preview
+                  {t('createVendor.preview.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Vendor Name
+                    {t('createVendor.preview.vendorName')}
                   </p>
                   <p className='text-sm font-semibold'>
-                    {formData.name || 'Not set'}
+                    {formData.name || t('createVendor.preview.notSet')}
                   </p>
                 </div>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Type
+                    {t('createVendor.preview.type')}
                   </p>
                   <p className='text-sm'>
-                    {vendorTypes.find((t) => t.value === parseInt(formData.type))
-                      ?.label || 'Not selected'}
+                    {(() => {
+                      const typeObj = vendorTypes.find((vt) => vt.value === parseInt(formData.type));
+                      return typeObj ? t(`types.${typeObj.label.toLowerCase()}`) : t('createVendor.preview.notSelected');
+                    })()}
                   </p>
                 </div>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Hours
+                    {t('createVendor.preview.hours')}
                   </p>
                   <p className='text-sm'>
                     {formData.openingTime && formData.closeTime
                       ? `${formData.openingTime} - ${formData.closeTime}`
-                      : 'Not set'}
+                      : t('createVendor.preview.notSet')}
                   </p>
                 </div>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Assigned User
+                    {t('createVendor.preview.assignedUser')}
                   </p>
                   <p className='text-sm'>
-                    {formData.userName || 'Not assigned'}
+                    {formData.userName || t('createVendor.preview.notAssigned')}
                   </p>
                   {formData.userId && (
                     <p className='text-xs font-mono text-muted-foreground'>
@@ -468,7 +364,7 @@ const CreateVendor = () => {
                 {formData.photo && (
                   <div className='space-y-2'>
                     <p className='text-sm font-medium text-muted-foreground'>
-                      Logo/Image
+                      {t('createVendor.preview.logoImage')}
                     </p>
                     <div className='w-full h-32 rounded-lg bg-muted flex items-center justify-center border overflow-hidden'>
                       <img
@@ -490,7 +386,7 @@ const CreateVendor = () => {
                   className='w-full'
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Vendor'}
+                  {isSubmitting ? t('createVendor.actions.creating') : t('createVendor.actions.create')}
                 </Button>
                 <Button
                   type='button'
@@ -499,7 +395,7 @@ const CreateVendor = () => {
                   onClick={handleCancel}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  {t('createVendor.actions.cancel')}
                 </Button>
               </CardContent>
             </Card>
@@ -508,9 +404,7 @@ const CreateVendor = () => {
             <Card className='bg-muted/50'>
               <CardContent className='pt-6'>
                 <p className='text-sm text-muted-foreground'>
-                  <span className='font-medium'>Note:</span> All fields marked
-                  with <span className='text-destructive'>*</span> are required.
-                  Make sure to provide accurate information for the vendor.
+                  <span className='font-medium'>{t('createVendor.note')}</span> {t('createVendor.noteMessage')}
                 </p>
               </CardContent>
             </Card>

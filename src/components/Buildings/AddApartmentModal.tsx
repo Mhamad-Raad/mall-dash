@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AddApartmentModalProps {
   open: boolean;
@@ -22,12 +23,13 @@ const AddApartmentModal = ({
   onConfirm,
   floorNumber,
 }: AddApartmentModalProps) => {
+  const { t } = useTranslation('buildings');
   const [apartmentName, setApartmentName] = useState('');
   const [error, setError] = useState('');
 
   const handleConfirm = () => {
     if (!apartmentName.trim()) {
-      setError('Apartment name is required.');
+      setError(t('detail.addApartmentModal.apartmentNameRequired'));
       return;
     }
     setError('');
@@ -40,27 +42,27 @@ const AddApartmentModal = ({
       <DialogContent className='max-w-sm'>
         <DialogHeader>
           <DialogTitle>
-            Create a new apartment for Floor {floorNumber}
+            {t('detail.addApartmentModal.title', { floorNumber })}
           </DialogTitle>
         </DialogHeader>
         <div className='space-y-2 pt-2'>
           <label htmlFor='apartmentName' className='font-medium text-sm block'>
-            Apartment Name
+            {t('detail.addApartmentModal.apartmentNameLabel')}
           </label>
           <Input
             id='apartmentName'
             value={apartmentName}
             onChange={(e) => setApartmentName(e.target.value)}
-            placeholder='Apartment Name'
+            placeholder={t('detail.addApartmentModal.apartmentNamePlaceholder')}
             autoFocus
           />
           {error && <div className='text-destructive text-xs'>{error}</div>}
         </div>
         <DialogFooter className='mt-4'>
           <Button variant='outline' onClick={onCancel}>
-            Cancel
+            {t('detail.addApartmentModal.cancel')}
           </Button>
-          <Button onClick={handleConfirm}>Add Apartment</Button>
+          <Button onClick={handleConfirm}>{t('detail.addApartmentModal.addApartment')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
