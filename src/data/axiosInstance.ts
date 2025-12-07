@@ -1,21 +1,19 @@
 import axios, { AxiosError } from 'axios';
 
-import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-
-import { clearTokens } from '@/utils/authUtils';
+import type { AxiosInstance } from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 let isRefreshing = false;
 let failedQueue: {
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (error: any) => void;
 }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach((prom) => {
     if (error) prom.reject(error);
-    else prom.resolve(token!);
+    else prom.resolve();
   });
   failedQueue = [];
 };
@@ -26,16 +24,8 @@ export const axiosInstance: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// No request interceptor needed for Authorization header
+// Tokens are now sent via HTTP-only cookies automatically with withCredentials: true
 
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -45,11 +35,10 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         try {
-          const token = await new Promise<string>((resolve, reject) => {
+          await new Promise<void>((resolve, reject) => {
             failedQueue.push({ resolve, reject });
           });
 
-          originalRequest.headers.Authorization = `Bearer ${token}`;
           return axiosInstance(originalRequest);
         } catch (err) {
           return Promise.reject(err);
@@ -60,31 +49,20 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
+        // Call the new refresh token endpoint
+        // The refresh token is sent automatically via HTTP-only cookie
+        await axios.post(
+          `${API_URL}/Account/NewRefreshToken`,
+          {},
+          { withCredentials: true }
+        );
 
-        const response = await axios.post(`${API_URL}/Account/refresh`, {
-          refreshToken,
-        });
+        // New tokens are set as HTTP-only cookies by the backend
+        processQueue(null);
 
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
-        console.log('here', refreshToken);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
-
-        axiosInstance.defaults.headers.common[
-          'Authorization'
-        ] = `Bearer ${accessToken}`;
-
-        processQueue(null, accessToken);
-
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
       } catch (err: any) {
-        processQueue(err, null);
-        clearTokens();
+        processQueue(err);
         window.dispatchEvent(new Event('force-logout'));
         throw new Error(err?.message);
       } finally {

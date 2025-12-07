@@ -1,21 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import Layout from '@/components/Layout/DashboardLayout';
-import {
-  getStoredTokens,
-  validateRefreshToken,
-  clearTokens,
-} from '@/utils/authUtils';
-import { fetchMe } from '@/store/slices/meSlice';
-import type { AppDispatch } from '@/store/store';
+import { validateRefreshToken } from '@/utils/authUtils';
+import { useSignalR } from '@/hooks/useSignalR';
 import Logo from '@/assets/Logo.jpg';
 import { Loader2 } from 'lucide-react';
 
 const LoadingPage = () => {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
+
+  // Initialize SignalR connection when authorized
+  useSignalR(isAuthorized === true);
 
   useEffect(() => {
     const handler = () => navigate('/login', { replace: true });
@@ -25,22 +21,12 @@ const LoadingPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { refreshToken } = getStoredTokens();
-      if (!refreshToken) {
-        setIsAuthorized(false);
-        return;
-      }
-      const refreshTokenIsValid = await validateRefreshToken(refreshToken);
-      if (!refreshTokenIsValid) {
-        clearTokens();
-        setIsAuthorized(false);
-        return;
-      }
-      await dispatch(fetchMe());
-      setIsAuthorized(true);
+      // Validate session using HTTP-only cookie
+      const response = await validateRefreshToken();
+      setIsAuthorized(response !== null);
     };
 
-    // Give time for localStorage update after login
+    // Give time for cookie to be set after login
     const timer = setTimeout(() => {
       checkAuth();
     }, 50);

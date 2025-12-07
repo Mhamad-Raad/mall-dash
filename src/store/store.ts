@@ -10,6 +10,8 @@ import vendorsReducer from './slices/vendorsSlice';
 import vendorReducer from './slices/vendorSlice';
 import meReducer from './slices/meSlice';
 
+import notificationsReducer from './slices/notificationsSlice';
+
 export const store = configureStore({
   reducer: {
     me: meReducer,
@@ -19,6 +21,7 @@ export const store = configureStore({
     building: BuildingReducer,
     vendors: vendorsReducer,
     vendor: vendorReducer,
+    notifications: notificationsReducer,
   },
 });
 

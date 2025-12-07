@@ -24,14 +24,8 @@ export const loginUser = async ({
       }
     );
 
-    const data = response.data;
-
-    if (data.accessToken && data.refreshToken) {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-    }
-
-    return data;
+    // Tokens are now set as HTTP-only cookies by the backend
+    return response.data;
   } catch (error: any) {
     return { error: error.response?.data?.message || error.message };
   }
@@ -39,27 +33,20 @@ export const loginUser = async ({
 
 export const logoutUser = async () => {
   try {
-    const accessToken = localStorage.getItem('accessToken');
-
-    // Optional: Call backend to invalidate refresh token server-side
-    if (accessToken) {
-      await axiosInstance.post(
-        '/Account/logout',
-        { accessToken },
-        {
-          headers: { key: API_KEY, value: API_VALUE },
-        }
-      );
-    }
+    // Call backend to invalidate refresh token and clear HTTP-only cookies
+    await axiosInstance.post(
+      '/Account/logout',
+      {},
+      {
+        headers: { key: API_KEY, value: API_VALUE },
+      }
+    );
   } catch (error: any) {
     console.error(
       'Logout error:',
       error.response?.data?.message || error.message
     );
   } finally {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-
     window.dispatchEvent(new Event('force-logout'));
   }
 };
