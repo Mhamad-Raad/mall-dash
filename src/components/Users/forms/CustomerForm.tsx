@@ -134,12 +134,15 @@ export default function CustomerForm({
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Mail className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>{t('forms.contactInformation')}</h3>
+          <h3 className='text-base font-semibold'>
+            {t('forms.contactInformation')}
+          </h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='customer-email' className='text-sm font-medium'>
-              {t('forms.emailAddress')} <span className='text-destructive'>*</span>
+              {t('forms.emailAddress')}{' '}
+              <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-email'
@@ -152,7 +155,8 @@ export default function CustomerForm({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-phone' className='text-sm font-medium'>
-              {t('forms.phoneNumber')} <span className='text-destructive'>*</span>
+              {t('forms.phoneNumber')}{' '}
+              <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-phone'
@@ -190,7 +194,8 @@ export default function CustomerForm({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-confirm' className='text-sm font-medium'>
-              {t('forms.confirmPassword')} <span className='text-destructive'>*</span>
+              {t('forms.confirmPassword')}{' '}
+              <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='customer-confirm'
@@ -205,81 +210,6 @@ export default function CustomerForm({
         <p className='text-xs text-muted-foreground'>
           {t('forms.passwordRequirement')}
         </p>
-      </div>
-
-      <Separator />
-
-      {/* Address */}
-      <div className='space-y-4'>
-        <div className='flex items-center gap-2 pb-2'>
-          <Building2 className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>{t('forms.addressInformation')}</h3>
-          <span className='text-xs text-muted-foreground font-normal ml-auto'>
-            {t('forms.optional')}
-          </span>
-        </div>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='customer-building' className='text-sm font-medium'>
-              {t('forms.building')}
-            </Label>
-            <Select
-              value={formData.buildingId}
-              onValueChange={(value) => onInputChange('buildingId', value)}
-            >
-              <SelectTrigger id='customer-building' className='h-11'>
-                <SelectValue placeholder={t('forms.selectBuilding')} />
-              </SelectTrigger>
-              <SelectContent>
-                {buildings.map((b, index) => (
-                  <SelectItem key={index} value={index.toString()}>
-                    {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='customer-floor' className='text-sm font-medium'>
-              {t('forms.floor')}
-            </Label>
-            <Select
-              value={formData.floorId}
-              onValueChange={(value) => onInputChange('floorId', value)}
-            >
-              <SelectTrigger id='customer-floor' className='h-11'>
-                <SelectValue placeholder={t('forms.selectFloor')} />
-              </SelectTrigger>
-              <SelectContent>
-                {floors.map((f, index) => (
-                  <SelectItem key={index} value={index.toString()}>
-                    Floor {f}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='customer-apartment' className='text-sm font-medium'>
-              {t('forms.apartment')}
-            </Label>
-            <Select
-              value={formData.apartmentId}
-              onValueChange={(value) => onInputChange('apartmentId', value)}
-            >
-              <SelectTrigger id='customer-apartment' className='h-11'>
-                <SelectValue placeholder={t('forms.selectApartment')} />
-              </SelectTrigger>
-              <SelectContent>
-                {apartments.map((a, index) => (
-                  <SelectItem key={index} value={index.toString()}>
-                    #{a}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
       </div>
     </div>
   );

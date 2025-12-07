@@ -54,13 +54,19 @@ const UserDetail = () => {
     if (!user || !user._id) return false;
 
     // Check if password is being changed
-    if (password && confirmPassword && password === confirmPassword) return true;
+    if (password && confirmPassword && password === confirmPassword)
+      return true;
 
     // Check if image file was added
     if (formData.imageFile instanceof File) return true;
 
     // Check if image was removed (user had an image, but now it's cleared)
-    if (user.profileImageUrl && !formData.profileImageUrl && !formData.imageFile) return true;
+    if (
+      user.profileImageUrl &&
+      !formData.profileImageUrl &&
+      !formData.imageFile
+    )
+      return true;
 
     // Check other fields for changes
     return (
@@ -202,7 +208,9 @@ const UserDetail = () => {
     // Include password in update if it's set and matches confirmation
     const updateData = {
       ...formData,
-      ...(password && confirmPassword && password === confirmPassword ? { password } : {}),
+      ...(password && confirmPassword && password === confirmPassword
+        ? { password }
+        : {}),
     };
     await dispatch(updateUser({ id: id || user._id, update: updateData }));
   };
@@ -218,11 +226,11 @@ const UserDetail = () => {
     <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
       {/* Scrollable Content */}
       <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
-        <UserDetailHeader
-          onBack={() => navigate(-1)}
-          hasChanges={hasChanges}
+        <UserDetailHeader onBack={() => navigate(-1)} hasChanges={hasChanges} />
+        <UserProfileCard
+          formData={formData}
+          onInputChange={handleInputChange}
         />
-        <UserProfileCard formData={formData} onInputChange={handleInputChange} />
         <div className='grid gap-6 lg:grid-cols-2'>
           <ContactInfoCard
             formData={formData}
