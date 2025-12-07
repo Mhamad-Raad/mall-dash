@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Building2, Layers, Home, Users, ChevronRight } from 'lucide-react';
 import {
   Table,
@@ -19,6 +20,7 @@ const BuildingsTable = () => {
     (state: RootState) => state.buildings
   );
   const navigate = useNavigate();
+  const { t } = useTranslation('buildings');
 
   const handleRowClick = (buildingId: number) => {
     navigate(`/buildings/${buildingId}`);
@@ -40,16 +42,16 @@ const BuildingsTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Building Name
+                {t('tableHeaders.buildingName')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 text-center'>
-                Total Floors
+                {t('tableHeaders.totalFloors')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 text-center'>
-                Total Apartments
+                {t('tableHeaders.totalApartments')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 text-center'>
-                Occupants
+                {t('tableHeaders.occupancyRate')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>

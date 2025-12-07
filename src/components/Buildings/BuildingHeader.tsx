@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Building2, ArrowLeft, Pencil, Check, X, Trash2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ interface BuildingHeaderProps {
 const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation('buildings');
   const { building, loading, error } = useSelector(
     (state: RootState) => state.building
   );
@@ -61,7 +63,7 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
     );
     if (putBuildingName.fulfilled.match(resultAction)) {
       setIsEditing(false);
-      setSuccess('Building name updated.');
+      setSuccess(t('detail.nameUpdated'));
     }
     // Optionally handle error via redux error state
   };
@@ -79,7 +81,7 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
   // Changes summary for the modal
   const changes: ChangeDetail[] = [
     {
-      field: 'Building Name',
+      field: t('detail.fieldBuildingName'),
       oldValue: building?.name || '',
       newValue: editedName.trim(),
     },
@@ -93,7 +95,7 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
         className='mb-4 hover:bg-muted/50'
       >
         <ArrowLeft className='mr-2 h-4 w-4' />
-        Back to Buildings
+        {t('detail.backToBuildings')}
       </Button>
 
       <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
@@ -136,9 +138,9 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
                     <TooltipContent>
                       {!confirmEnabled
                         ? !editedName.trim()
-                          ? 'Name required'
-                          : 'Name must be changed'
-                        : 'Confirm name change'}
+                          ? t('detail.nameRequired')
+                          : t('detail.nameMustBeChanged')
+                        : t('detail.confirmNameChange')}
                     </TooltipContent>
                   </Tooltip>
                   <Button
@@ -163,12 +165,12 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
                 {/* Confirmation Modal for changing name */}
                 <ConfirmModal
                   open={showConfirmModal}
-                  title='Confirm Name Change'
-                  description={`Are you sure you want to change the building name?`}
-                  warning='Please double check all details before confirming.'
+                  title={t('detail.confirmNameChangeTitle')}
+                  description={t('detail.confirmNameChangeDescription')}
+                  warning={t('detail.confirmNameChangeWarning')}
                   confirmType='warning'
-                  confirmLabel='Confirm'
-                  cancelLabel='Cancel'
+                  confirmLabel={t('detail.confirm')}
+                  cancelLabel={t('modal.cancel')}
                   changes={changes}
                   onCancel={() => setShowConfirmModal(false)}
                   onConfirm={handleModalConfirm}
@@ -188,21 +190,21 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align='end'>
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('detail.actionsLabel')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleEditClick}
                   className='cursor-pointer'
                 >
                   <Pencil className='mr-2 h-4 w-4' />
-                  Edit building name
+                  {t('detail.editBuildingName')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={onDeleteBuilding}
                   className='text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer'
                 >
                   <Trash2 className='mr-2 h-4 w-4' />
-                  Delete building
+                  {t('detail.deleteBuilding')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import type { Apartment, Occupant } from '@/interfaces/Building.interface';
 import { useEffect, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
 
@@ -41,6 +42,7 @@ const EditApartmentDialog = ({
   setApartmentName,
   onDelete,
 }: EditApartmentDialogProps) => {
+  const { t } = useTranslation('buildings');
   const [pendingOccupant, setPendingOccupant] = useState<
     UserResult | null | 'remove'
   >(null);
@@ -106,22 +108,22 @@ const EditApartmentDialog = ({
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <Home className='h-5 w-5 text-primary' />
-            Edit Apartment {apartment?.apartmentName}
+            {t('detail.apartment.editApartment')} {apartment?.apartmentName}
           </DialogTitle>
           <DialogDescription>
-            Manage apartment occupants. Add or edit occupant information.
+            {t('detail.apartment.manageOccupants')}
           </DialogDescription>
         </DialogHeader>
 
         <div className='mb-4'>
           <Label htmlFor='apartment-name' className='text-xs font-semibold'>
-            Apartment Name
+            {t('detail.apartment.apartmentNameLabel')}
           </Label>
           <Input
             id='apartment-name'
             value={apartmentName}
             onChange={(e) => setApartmentName(e.target.value)}
-            placeholder='Enter apartment name'
+            placeholder={t('detail.apartment.apartmentNamePlaceholder')}
             className='mt-1'
           />
         </div>
@@ -132,7 +134,7 @@ const EditApartmentDialog = ({
               fetchOptions={fetchUserObjects}
               getOptionLabel={(user) => `${user.name} (${user.email})`}
               onSelectOption={(user) => setPendingOccupant(user)}
-              placeholder='Search user by name, email, or number'
+              placeholder={t('detail.apartment.searchUserPlaceholder')}
               debounceMs={250}
             />
           )}
@@ -144,7 +146,7 @@ const EditApartmentDialog = ({
               <div className='flex items-center justify-between'>
                 <h3 className='text-sm font-semibold flex items-center gap-2'>
                   <Users className='h-4 w-4' />
-                  Occupant
+                  {t('detail.apartment.occupantLabel')}
                 </h3>
               </div>
               {occupant ? (
@@ -185,7 +187,7 @@ const EditApartmentDialog = ({
               ) : (
                 <div className='text-center py-8 border rounded-lg bg-muted/30'>
                   <p className='text-sm text-muted-foreground mb-3'>
-                    No occupants assigned
+                    {t('detail.apartment.noOccupantsAssigned')}
                   </p>
                 </div>
               )}
@@ -200,7 +202,7 @@ const EditApartmentDialog = ({
             onClick={onClose}
             className='w-full sm:w-auto'
           >
-            Cancel
+            {t('detail.apartment.cancel')}
           </Button>
           {apartment?.id && onDelete && (
             <Button
@@ -208,11 +210,11 @@ const EditApartmentDialog = ({
               onClick={() => onDelete(apartment.id)}
               className='w-full sm:w-auto'
             >
-              Delete Apartment
+              {t('detail.apartment.deleteApartment')}
             </Button>
           )}
           <Button onClick={handleSave} className='w-full sm:w-auto'>
-            Save Changes
+            {t('detail.apartment.saveChanges')}
           </Button>
         </div>
       </DialogContent>

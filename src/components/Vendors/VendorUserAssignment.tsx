@@ -1,5 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { User, Mail, Phone, CheckCircle2, UserCheck, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +28,7 @@ const VendorUserAssignment = memo(({
   userProfileImage,
   onUserSelect,
 }: VendorUserAssignmentProps) => {
+  const { t } = useTranslation('vendors');
   const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
 
   // Reset selectedUser when userName is cleared (empty string)
@@ -39,13 +41,13 @@ const VendorUserAssignment = memo(({
   const getRoleBadge = (role: number) => {
     switch (role) {
       case 0:
-        return <Badge variant="destructive" className="text-xs"><Shield className="w-3 h-3 mr-1" />Admin</Badge>;
+        return <Badge variant="destructive" className="text-xs"><Shield className="w-3 h-3 mr-1" />{t('userAssignment.roles.admin')}</Badge>;
       case 1:
-        return <Badge variant="secondary" className="text-xs"><UserCheck className="w-3 h-3 mr-1" />Manager</Badge>;
+        return <Badge variant="secondary" className="text-xs"><UserCheck className="w-3 h-3 mr-1" />{t('userAssignment.roles.manager')}</Badge>;
       case 2:
-        return <Badge variant="outline" className="text-xs"><User className="w-3 h-3 mr-1" />Vendor</Badge>;
+        return <Badge variant="outline" className="text-xs"><User className="w-3 h-3 mr-1" />{t('userAssignment.roles.vendor')}</Badge>;
       default:
-        return <Badge variant="outline" className="text-xs">User</Badge>;
+        return <Badge variant="outline" className="text-xs">{t('userAssignment.roles.user')}</Badge>;
     }
   };
 
@@ -59,8 +61,8 @@ const VendorUserAssignment = memo(({
         <CardTitle className='flex items-center gap-2'>
           <UserCheck className='h-5 w-5 text-primary' />
           <div>
-            <div className="text-lg font-semibold">User Assignment</div>
-            <div className="text-xs font-normal text-muted-foreground">Assign a manager to this vendor</div>
+            <div className="text-lg font-semibold">{t('userAssignment.title')}</div>
+            <div className="text-xs font-normal text-muted-foreground">{t('userAssignment.subtitle')}</div>
           </div>
         </CardTitle>
       </CardHeader>
@@ -68,7 +70,7 @@ const VendorUserAssignment = memo(({
         <div className='space-y-3 relative'>
           <Label htmlFor='userId' className="text-sm font-semibold flex items-center gap-2">
             <User className="w-4 h-4" />
-            Select Vendor Manager
+            {t('userAssignment.selectManager')}
             <span className='text-destructive'>*</span>
           </Label>
           <ObjectAutoComplete
@@ -96,7 +98,7 @@ const VendorUserAssignment = memo(({
             getOptionLabel={(user: UserType) =>
               `${user.firstName} ${user.lastName} (${user.email})`
             }
-            placeholder='🔍 Search by name or email...'
+            placeholder={t('userAssignment.searchPlaceholder')}
             initialValue={userName}
           />
           
@@ -132,7 +134,7 @@ const VendorUserAssignment = memo(({
                       <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
                         <Mail className="w-4 h-4 text-blue-500 flex-shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className='text-xs text-gray-500 dark:text-gray-400'>Email</p>
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>{t('userAssignment.email')}</p>
                           <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
                             {selectedUser?.email || userEmail}
                           </p>
@@ -144,7 +146,7 @@ const VendorUserAssignment = memo(({
                       <div className='flex items-center gap-2 p-2 bg-white/60 dark:bg-gray-800/60 rounded-md border border-gray-200 dark:border-gray-700'>
                         <Phone className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className='text-xs text-gray-500 dark:text-gray-400'>Phone</p>
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>{t('userAssignment.phone')}</p>
                           <p className='text-xs font-medium text-gray-900 dark:text-gray-100 truncate'>
                             {selectedUser?.phoneNumber || userPhone}
                           </p>
@@ -163,7 +165,7 @@ const VendorUserAssignment = memo(({
                     className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors'
                   >
                     <Mail className="w-3 h-3" />
-                    Send Email
+                    {t('userAssignment.sendEmail')}
                   </a>
                 )}
                 {(selectedUser?.phoneNumber || userPhone) && (
@@ -172,7 +174,7 @@ const VendorUserAssignment = memo(({
                     className='flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors'
                   >
                     <Phone className="w-3 h-3" />
-                    Call
+                    {t('userAssignment.call')}
                   </a>
                 )}
               </div>
@@ -184,9 +186,9 @@ const VendorUserAssignment = memo(({
                   <UserCheck className="w-8 h-8 text-gray-400 dark:text-gray-600" />
                 </div>
                 <div>
-                  <h4 className='font-semibold text-gray-700 dark:text-gray-300'>No Manager Assigned</h4>
+                  <h4 className='font-semibold text-gray-700 dark:text-gray-300'>{t('userAssignment.noUserAssigned')}</h4>
                   <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-                    Please select a vendor manager from the dropdown above
+                    {t('userAssignment.searchPlaceholder')}
                   </p>
                 </div>
               </div>

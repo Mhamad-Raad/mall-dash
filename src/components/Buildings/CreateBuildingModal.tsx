@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { createBuilding } from '@/data/Buildings';
 
@@ -30,6 +31,7 @@ const CreateBuildingModal = ({
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
+  const { t } = useTranslation('buildings');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,25 +71,25 @@ const CreateBuildingModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-md'>
         <DialogHeader>
-          <DialogTitle>Create New Building</DialogTitle>
+          <DialogTitle>{t('modal.title')}</DialogTitle>
           <DialogDescription>
-            Enter the name of the building you want to create.
+            {t('modal.description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className='grid gap-4 py-4'>
             <div className='grid gap-2'>
-              <Label htmlFor='name'>Building Name</Label>
+              <Label htmlFor='name'>{t('modal.buildingNameLabel')}</Label>
               <Input
                 id='name'
                 value={buildingName}
                 onChange={(e) => setBuildingName(e.target.value)}
-                placeholder='Enter building name...'
+                placeholder={t('modal.buildingNamePlaceholder')}
                 className='col-span-3'
                 autoFocus
               />
             </div>
-            {error && <span className='text-red-500'>{error}</span>}
+            {error && <span className='text-red-500'>{t('modal.errorCreating')}</span>}
           </div>
           <DialogFooter>
             <Button
@@ -96,13 +98,13 @@ const CreateBuildingModal = ({
               onClick={handleClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {t('modal.cancel')}
             </Button>
             <Button
               type='submit'
               disabled={isSubmitting || !buildingName.trim()}
             >
-              {isSubmitting ? 'Creating...' : 'Create Building'}
+              {isSubmitting ? t('modal.creating') : t('modal.createButton')}
             </Button>
           </DialogFooter>
         </form>

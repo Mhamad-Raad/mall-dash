@@ -1,4 +1,5 @@
 import { Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ const VendorWorkingHours = ({
   onTimeChange,
   disabled,
 }: VendorWorkingHoursProps) => {
+  const { t } = useTranslation('vendors');
   const hasInvalidTime = openingTime && closeTime && openingTime >= closeTime;
 
   return (
@@ -26,7 +28,7 @@ const VendorWorkingHours = ({
       <CardHeader>
         <CardTitle className='flex items-center gap-2'>
           <Clock className='h-5 w-5' />
-          Working Hours
+          {t('vendorDetail.workingHours.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className='space-y-6'>
@@ -34,7 +36,7 @@ const VendorWorkingHours = ({
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div className='space-y-2'>
             <Label htmlFor='openingTime' className='text-sm font-medium'>
-              Opening Time <span className='text-destructive'>*</span>
+              {t('createVendor.workingHours.openingTime')} <span className='text-destructive'>*</span>
             </Label>
             <div className='relative'>
               <Input
@@ -50,7 +52,7 @@ const VendorWorkingHours = ({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='closeTime' className='text-sm font-medium'>
-              Closing Time <span className='text-destructive'>*</span>
+              {t('createVendor.workingHours.closingTime')} <span className='text-destructive'>*</span>
             </Label>
             <div className='relative'>
               <Input
@@ -80,7 +82,7 @@ const VendorWorkingHours = ({
         {hasInvalidTime && (
           <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
             <p className='text-sm text-destructive font-medium'>
-              ⚠️ Closing time must be after opening time
+              {t('createVendor.workingHours.validationError')}
             </p>
           </div>
         )}

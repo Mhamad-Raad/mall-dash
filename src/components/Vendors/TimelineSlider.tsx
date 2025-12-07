@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Slider } from '@/components/ui/slider';
 
 interface TimelineSliderProps {
@@ -9,6 +10,7 @@ interface TimelineSliderProps {
 }
 
 const TimelineSlider = memo(({ openingTime, closeTime, onTimeChange, disabled }: TimelineSliderProps) => {
+  const { t } = useTranslation('vendors');
   if (!openingTime || !closeTime) return null;
 
   const [openHour, openMin] = openingTime.split(':').map(Number);
@@ -31,11 +33,11 @@ const TimelineSlider = memo(({ openingTime, closeTime, onTimeChange, disabled }:
   const minutes = totalMinutes % 60;
 
   const getScheduleLabel = () => {
-    if (openHour < 12 && closeHour <= 14) return '🌅 Morning hours';
-    if (openHour < 12 && closeHour >= 17) return '☀️ All day service';
-    if (openHour >= 17) return '🌙 Evening/night hours';
-    if (openHour >= 12 && closeHour < 17) return '🌤️ Afternoon hours';
-    return '📅 Custom schedule';
+    if (openHour < 12 && closeHour <= 14) return t('timeline.morningHours');
+    if (openHour < 12 && closeHour >= 17) return t('timeline.allDayService');
+    if (openHour >= 17) return t('timeline.eveningHours');
+    if (openHour >= 12 && closeHour < 17) return t('timeline.afternoonHours');
+    return t('timeline.customSchedule');
   };
 
   const minutesToTime = (mins: number) => {
@@ -64,10 +66,10 @@ const TimelineSlider = memo(({ openingTime, closeTime, onTimeChange, disabled }:
   return (
     <div className='p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20'>
       <div className='flex items-center justify-between mb-3'>
-        <p className='text-sm font-semibold text-primary'>Business Schedule</p>
+        <p className='text-sm font-semibold text-primary'>{t('timeline.businessSchedule')}</p>
         {totalMinutes > 0 && (
           <span className='text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded'>
-            {hours}h {minutes > 0 ? `${minutes}m` : ''} open
+            {hours}h {minutes > 0 ? `${minutes}m` : ''} {t('timeline.open')}
           </span>
         )}
       </div>
@@ -102,10 +104,10 @@ const TimelineSlider = memo(({ openingTime, closeTime, onTimeChange, disabled }:
           <div className='flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800'>
             <div className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse'></div>
             <span className='font-semibold text-emerald-700 dark:text-emerald-400'>{openingTime}</span>
-            <span className='text-emerald-600 dark:text-emerald-500 text-[10px]'>OPEN</span>
+            <span className='text-emerald-600 dark:text-emerald-500 text-[10px]'>{t('timeline.openLabel').toUpperCase()}</span>
           </div>
           <div className='flex items-center gap-2 bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800'>
-            <span className='text-orange-600 dark:text-orange-500 text-[10px]'>CLOSE</span>
+            <span className='text-orange-600 dark:text-orange-500 text-[10px]'>{t('timeline.closeLabel').toUpperCase()}</span>
             <span className='font-semibold text-orange-700 dark:text-orange-400'>{closeTime}</span>
             <div className='w-2 h-2 rounded-full bg-orange-500 animate-pulse'></div>
           </div>

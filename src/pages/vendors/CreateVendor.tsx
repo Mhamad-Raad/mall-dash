@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -23,6 +24,7 @@ import { convertToUTCFormat } from '@/lib/timeUtils';
 
 const CreateVendor = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('vendors');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preview, setPreview] = useState<string>('');
 
@@ -72,40 +74,40 @@ const CreateVendor = () => {
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor name',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.nameRequired'),
       });
       return false;
     }
     if (!formData.description.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please enter vendor description',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.descriptionRequired'),
       });
       return false;
     }
     if (!formData.openingTime) {
-      toast.error('Validation Error', {
-        description: 'Please select opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.openingTimeRequired'),
       });
       return false;
     }
     if (!formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Please select closing time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.closingTimeRequired'),
       });
       return false;
     }
     if (!formData.userId.trim()) {
-      toast.error('Validation Error', {
-        description: 'Please select a user to manage this vendor',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.userRequired'),
       });
       return false;
     }
 
     // Validate time logic
     if (formData.openingTime >= formData.closeTime) {
-      toast.error('Validation Error', {
-        description: 'Closing time must be after opening time',
+      toast.error(t('createVendor.validation.error'), {
+        description: t('createVendor.validation.timeLogicError'),
       });
       return false;
     }
@@ -141,19 +143,19 @@ const CreateVendor = () => {
       console.log('Response:', res);
 
       if (res.error) {
-        toast.error('Failed to Create Vendor', {
-          description: res.error || 'An error occurred while creating the vendor.',
+        toast.error(t('createVendor.error.title'), {
+          description: res.error || t('createVendor.error.description'),
         });
       } else {
-        toast.success('Vendor Created Successfully!', {
-          description: `${formData.name} has been added to the system.`,
+        toast.success(t('createVendor.success.title'), {
+          description: t('createVendor.success.description', { name: formData.name }),
         });
         navigate('/vendors');
       }
     } catch (error) {
       console.error('Error creating vendor:', error);
-      toast.error('Failed to Create Vendor', {
-        description: 'An unexpected error occurred. Please try again.',
+      toast.error(t('createVendor.error.title'), {
+        description: t('createVendor.error.unexpected'),
       });
     } finally {
       setIsSubmitting(false);
@@ -178,10 +180,10 @@ const CreateVendor = () => {
         </Button>
         <div>
           <h1 className='text-3xl font-bold tracking-tight'>
-            Create New Vendor
+            {t('createVendor.title')}
           </h1>
           <p className='text-muted-foreground'>
-            Add a new vendor to your mall directory
+            {t('createVendor.subtitle')}
           </p>
         </div>
       </div>
@@ -195,10 +197,10 @@ const CreateVendor = () => {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <Store className='h-5 w-5' />
-                  Basic Information
+                  {t('createVendor.basicInfo.title')}
                 </CardTitle>
                 <CardDescription>
-                  Enter the vendor's basic details
+                  {t('createVendor.basicInfo.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className='p-6'>
@@ -227,8 +229,8 @@ const CreateVendor = () => {
                 <CardTitle className='flex items-center gap-2'>
                   <Clock className='h-5 w-5 text-primary' />
                   <div>
-                    <div className="text-lg font-semibold">Working Hours</div>
-                    <div className="text-xs font-normal text-muted-foreground">Set the vendor's operating hours</div>
+                    <div className="text-lg font-semibold">{t('createVendor.workingHours.title')}</div>
+                    <div className="text-xs font-normal text-muted-foreground">{t('createVendor.workingHours.subtitle')}</div>
                   </div>
                 </CardTitle>
               </CardHeader>
@@ -237,7 +239,7 @@ const CreateVendor = () => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='space-y-2'>
                     <Label htmlFor='openingTime' className='text-sm font-medium'>
-                      Opening Time <span className='text-destructive'>*</span>
+                      {t('createVendor.workingHours.openingTime')} <span className='text-destructive'>*</span>
                     </Label>
                     <div className='relative'>
                       <Input
@@ -254,7 +256,7 @@ const CreateVendor = () => {
                   </div>
                   <div className='space-y-2'>
                     <Label htmlFor='closeTime' className='text-sm font-medium'>
-                      Closing Time <span className='text-destructive'>*</span>
+                      {t('createVendor.workingHours.closingTime')} <span className='text-destructive'>*</span>
                     </Label>
                     <div className='relative'>
                       <Input
@@ -285,7 +287,7 @@ const CreateVendor = () => {
                 {formData.openingTime && formData.closeTime && formData.openingTime >= formData.closeTime && (
                   <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
                     <p className='text-sm text-destructive font-medium'>
-                      ⚠️ Closing time must be after opening time
+                      {t('createVendor.workingHours.validationError')}
                     </p>
                   </div>
                 )}
@@ -313,43 +315,45 @@ const CreateVendor = () => {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <FileText className='h-5 w-5' />
-                  Preview
+                  {t('createVendor.preview.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Vendor Name
+                    {t('createVendor.preview.vendorName')}
                   </p>
                   <p className='text-sm font-semibold'>
-                    {formData.name || 'Not set'}
+                    {formData.name || t('createVendor.preview.notSet')}
                   </p>
                 </div>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Type
+                    {t('createVendor.preview.type')}
                   </p>
                   <p className='text-sm'>
-                    {vendorTypes.find((t) => t.value === parseInt(formData.type))
-                      ?.label || 'Not selected'}
+                    {(() => {
+                      const typeObj = vendorTypes.find((vt) => vt.value === parseInt(formData.type));
+                      return typeObj ? t(`types.${typeObj.label.toLowerCase()}`) : t('createVendor.preview.notSelected');
+                    })()}
                   </p>
                 </div>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Hours
+                    {t('createVendor.preview.hours')}
                   </p>
                   <p className='text-sm'>
                     {formData.openingTime && formData.closeTime
                       ? `${formData.openingTime} - ${formData.closeTime}`
-                      : 'Not set'}
+                      : t('createVendor.preview.notSet')}
                   </p>
                 </div>
                 <div className='space-y-2'>
                   <p className='text-sm font-medium text-muted-foreground'>
-                    Assigned User
+                    {t('createVendor.preview.assignedUser')}
                   </p>
                   <p className='text-sm'>
-                    {formData.userName || 'Not assigned'}
+                    {formData.userName || t('createVendor.preview.notAssigned')}
                   </p>
                   {formData.userId && (
                     <p className='text-xs font-mono text-muted-foreground'>
@@ -360,7 +364,7 @@ const CreateVendor = () => {
                 {formData.photo && (
                   <div className='space-y-2'>
                     <p className='text-sm font-medium text-muted-foreground'>
-                      Logo/Image
+                      {t('createVendor.preview.logoImage')}
                     </p>
                     <div className='w-full h-32 rounded-lg bg-muted flex items-center justify-center border overflow-hidden'>
                       <img
@@ -382,7 +386,7 @@ const CreateVendor = () => {
                   className='w-full'
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Vendor'}
+                  {isSubmitting ? t('createVendor.actions.creating') : t('createVendor.actions.create')}
                 </Button>
                 <Button
                   type='button'
@@ -391,7 +395,7 @@ const CreateVendor = () => {
                   onClick={handleCancel}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  {t('createVendor.actions.cancel')}
                 </Button>
               </CardContent>
             </Card>
@@ -400,9 +404,7 @@ const CreateVendor = () => {
             <Card className='bg-muted/50'>
               <CardContent className='pt-6'>
                 <p className='text-sm text-muted-foreground'>
-                  <span className='font-medium'>Note:</span> All fields marked
-                  with <span className='text-destructive'>*</span> are required.
-                  Make sure to provide accurate information for the vendor.
+                  <span className='font-medium'>{t('createVendor.note')}</span> {t('createVendor.noteMessage')}
                 </p>
               </CardContent>
             </Card>

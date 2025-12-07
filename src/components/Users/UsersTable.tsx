@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { Mail, Phone, Building2, User as UserIcon, ChevronRight } from 'lucide-react';
 
@@ -36,6 +37,7 @@ const getUserTypeColor = (type: string) => {
 };
 
 const UsersTable = () => {
+  const { t } = useTranslation('users');
   const navigate = useNavigate();
 
   const {
@@ -52,7 +54,7 @@ const UsersTable = () => {
   if (error) {
     return (
       <div className='rounded-lg border bg-card shadow-sm p-8'>
-        <div className='text-center text-destructive'>Error: {error}</div>
+        <div className='text-center text-destructive'>{t('error')}: {error}</div>
       </div>
     );
   }
@@ -65,16 +67,16 @@ const UsersTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                User
+                {t('tableHeaders.user')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Contact
+                {t('tableHeaders.contact')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Role
+                {t('tableHeaders.role')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Location
+                {t('tableHeaders.location')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
@@ -87,6 +89,12 @@ const UsersTable = () => {
               : users.map((user, index) => {
                   const fullName = `${user.firstName} ${user.lastName}`;
                   const userRole = roles[user.role];
+                  // Translate role based on the role name
+                  const translatedRole = userRole === 'SuperAdmin' ? t('roles.superAdmin')
+                    : userRole === 'Admin' ? t('roles.admin')
+                    : userRole === 'Vendor' ? t('roles.vendor')
+                    : userRole === 'Tenant' ? t('roles.tenant')
+                    : userRole;
                   // Generate initials for fallback
                   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
                   // Use profileImageUrl or src (backward compatibility)
@@ -151,7 +159,7 @@ const UsersTable = () => {
                           variant='outline'
                           className={`${getUserTypeColor(userRole)} font-semibold text-base px-3 py-1`}
                         >
-                          {userRole}
+                          {translatedRole}
                         </Badge>
                       </TableCell>
                       {/* Building/Location */}

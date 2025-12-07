@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -27,7 +28,18 @@ type StaffFormProps = {
 };
 
 export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
+  const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
+
+  const translateRole = (role: string): string => {
+    const roleMap: { [key: string]: string } = {
+      SuperAdmin: t("roles.superAdmin"),
+      Admin: t("roles.admin"),
+      Vendor: t("roles.vendor"),
+      Tenant: t("roles.tenant"),
+    };
+    return roleMap[role] || role;
+  };
 
   useEffect(() => {
     if (formData.photo instanceof File) {
@@ -67,7 +79,7 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               <div className='flex flex-col items-center gap-2'>
                 <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
                 <span className='text-xs text-muted-foreground'>
-                  Upload Photo
+                  {t('forms.uploadPhoto')}
                 </span>
               </div>
             )}
@@ -88,11 +100,11 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
         <div className='flex-1 space-y-4 w-full'>
           <div className='space-y-2'>
             <Label htmlFor='admin-firstname' className='text-sm font-medium'>
-              First Name <span className='text-destructive'>*</span>
+              {t('forms.firstName')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-firstname'
-              placeholder='John'
+              placeholder={t('forms.firstNamePlaceholder')}
               value={formData.firstName}
               onChange={(e) => onInputChange('firstName', e.target.value)}
               className='h-11'
@@ -100,11 +112,11 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
           </div>
           <div className='space-y-2'>
             <Label htmlFor='admin-lastname' className='text-sm font-medium'>
-              Last Name <span className='text-destructive'>*</span>
+              {t('forms.lastName')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-lastname'
-              placeholder='Doe'
+              placeholder={t('forms.lastNamePlaceholder')}
               value={formData.lastName}
               onChange={(e) => onInputChange('lastName', e.target.value)}
               className='h-11'
@@ -112,19 +124,19 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
           </div>
           <div className='space-y-2'>
             <Label htmlFor='staff-role' className='text-sm font-medium'>
-              User Role <span className='text-destructive'>*</span>
+              {t('forms.userRole')} <span className='text-destructive'>*</span>
             </Label>
             <Select
               value={formData.role.toString()}
               onValueChange={(value) => onInputChange('role', parseInt(value))}
             >
               <SelectTrigger id='staff-role' className='h-11'>
-                <SelectValue placeholder='Select a role' />
+                <SelectValue placeholder={t('forms.selectRole')} />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role, index) => (
                   <SelectItem key={index} value={index.toString()}>
-                    {role}
+                    {translateRole(role)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -144,17 +156,17 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Mail className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>Contact Information</h3>
+          <h3 className='text-base font-semibold'>{t('forms.contactInformation')}</h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='admin-email' className='text-sm font-medium'>
-              Email Address <span className='text-destructive'>*</span>
+              {t('forms.emailAddress')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-email'
               type='email'
-              placeholder='john.doe@example.com'
+              placeholder={t('forms.emailPlaceholder')}
               value={formData.email}
               onChange={(e) => onInputChange('email', e.target.value)}
               className='h-11'
@@ -162,12 +174,12 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
           </div>
           <div className='space-y-2'>
             <Label htmlFor='admin-phone' className='text-sm font-medium'>
-              Phone Number <span className='text-destructive'>*</span>
+              {t('forms.phoneNumber')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-phone'
               type='tel'
-              placeholder='+1 (555) 000-0000'
+              placeholder={t('forms.phonePlaceholder')}
               value={formData.phoneNumber}
               onChange={(e) => onInputChange('phoneNumber', e.target.value)}
               className='h-11'
@@ -182,17 +194,17 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Lock className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>Security</h3>
+          <h3 className='text-base font-semibold'>{t('forms.security')}</h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='admin-password' className='text-sm font-medium'>
-              Password <span className='text-destructive'>*</span>
+              {t('forms.password')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-password'
               type='password'
-              placeholder='••••••••'
+              placeholder={t('forms.passwordPlaceholder')}
               value={formData.password}
               onChange={(e) => onInputChange('password', e.target.value)}
               className='h-11'
@@ -203,12 +215,12 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               htmlFor='admin-confirm-password'
               className='text-sm font-medium'
             >
-              Confirm Password <span className='text-destructive'>*</span>
+              {t('forms.confirmPassword')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-confirm-password'
               type='password'
-              placeholder='••••••••'
+              placeholder={t('forms.passwordPlaceholder')}
               value={formData.confirmPassword}
               onChange={(e) => onInputChange('confirmPassword', e.target.value)}
               className='h-11'
@@ -216,7 +228,7 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
           </div>
         </div>
         <p className='text-xs text-muted-foreground'>
-          Password must be at least 8 characters long
+          {t('forms.passwordRequirement')}
         </p>
       </div>
     </div>

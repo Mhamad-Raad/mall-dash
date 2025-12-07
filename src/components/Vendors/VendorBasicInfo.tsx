@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -27,17 +28,19 @@ const VendorBasicInfo = ({
   onInputChange,
   disabled,
 }: VendorBasicInfoProps) => {
+  const { t } = useTranslation('vendors');
+  
   return (
     <div className='flex-1 space-y-4'>
       <div className='space-y-2'>
         <Label htmlFor='name'>
-          Business Name <span className='text-destructive'>*</span>
+          {t('createVendor.basicInfo.businessName')} <span className='text-destructive'>*</span>
         </Label>
         <Input
           id='name'
           value={name}
           onChange={(e) => onInputChange('name', e.target.value)}
-          placeholder='Enter business name'
+          placeholder={t('createVendor.basicInfo.businessNamePlaceholder')}
           disabled={disabled}
           className='text-lg font-semibold'
         />
@@ -45,7 +48,7 @@ const VendorBasicInfo = ({
 
       <div className='space-y-2'>
         <Label htmlFor='type'>
-          Business Type <span className='text-destructive'>*</span>
+          {t('createVendor.basicInfo.businessType')} <span className='text-destructive'>*</span>
         </Label>
         <Select
           value={type}
@@ -53,12 +56,12 @@ const VendorBasicInfo = ({
           disabled={disabled}
         >
           <SelectTrigger>
-            <SelectValue placeholder='Select type' />
+            <SelectValue placeholder={t('createVendor.basicInfo.selectType')} />
           </SelectTrigger>
           <SelectContent>
             {vendorTypes.map((type) => (
               <SelectItem key={type.value} value={String(type.value)}>
-                {type.label}
+                {t(`types.${type.label.toLowerCase()}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -67,21 +70,21 @@ const VendorBasicInfo = ({
 
       <div className='space-y-2'>
         <Label htmlFor='description'>
-          Description <span className='text-destructive'>*</span>
+          {t('createVendor.basicInfo.description')} <span className='text-destructive'>*</span>
         </Label>
         <Textarea
           id='description'
           value={description}
           onChange={(e) => onInputChange('description', e.target.value)}
           rows={6}
-          placeholder='Describe your business...'
+          placeholder={t('createVendor.basicInfo.descriptionPlaceholder')}
           disabled={disabled}
         />
       </div>
 
       <div className='pt-2'>
         <span className='text-xs text-muted-foreground'>
-          ID: {vendorId}
+          {t('createVendor.basicInfo.id')}: {vendorId}
         </span>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -18,8 +19,25 @@ import { fetchBuildingsByName } from '@/data/Buildings';
 const roles = ['SuperAdmin', 'Admin', 'Vendor', 'Tenant'];
 
 const UsersFilters = () => {
+  const { t } = useTranslation('users');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Helper function to translate role names
+  const translateRole = (roleName: string) => {
+    switch (roleName) {
+      case 'SuperAdmin':
+        return t('roles.superAdmin');
+      case 'Admin':
+        return t('roles.admin');
+      case 'Vendor':
+        return t('roles.vendor');
+      case 'Tenant':
+        return t('roles.tenant');
+      default:
+        return roleName;
+    }
+  };
 
   // Use index, -1 means "All"
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
@@ -107,10 +125,10 @@ const UsersFilters = () => {
           </div>
           <div>
             <h2 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text'>
-              Users Management
+              {t('title')}
             </h2>
             <p className='text-sm text-muted-foreground mt-0.5'>
-              Manage and monitor all users across your platform
+              {t('subtitle')}
             </p>
           </div>
         </div>
@@ -121,7 +139,7 @@ const UsersFilters = () => {
           onClick={handleOnCreate}
         >
           <Plus className='size-4' />
-          <span className='font-semibold'>Add User</span>
+          <span className='font-semibold'>{t('addUser')}</span>
         </Button>
       </div>
       
@@ -133,7 +151,7 @@ const UsersFilters = () => {
               <Filter className='size-4 text-primary' />
             </div>
             <span className='text-sm font-semibold text-foreground'>
-              Filter Users
+              {t('filterUsers')}
             </span>
           </div>
           <div className='w-full grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
@@ -144,7 +162,7 @@ const UsersFilters = () => {
                 </div>
                 <Input
                   type='text'
-                  placeholder='Name or email...'
+                  placeholder={t('searchPlaceholder')}
                   className='pl-10 bg-background w-full shadow-sm border-muted-foreground/20 focus-visible:border-primary/50 transition-colors h-11'
                   value={typedSearch}
                   onChange={(e) => setTypedSearch(e.target.value)}
@@ -159,7 +177,7 @@ const UsersFilters = () => {
               <AutoComplete
                 fetchOptions={fetchBuildingNames}
                 onSelectOption={handleBuildingNameSelect}
-                placeholder='Select building...'
+                placeholder={t('buildingPlaceholder')}
                 debounceMs={200}
                 className='w-full [&_input]:pl-10'
               />
@@ -176,16 +194,16 @@ const UsersFilters = () => {
               >
                 <SelectTrigger className='w-full bg-background shadow-sm border-muted-foreground/20 focus:border-primary/50 transition-colors pl-10 [&>span]:pl-0 !h-11'>
                   <SelectValue
-                    placeholder='Select role'
+                    placeholder={t('rolePlaceholder')}
                     children={
-                      role === -1 ? 'All Roles' : roles[role] || 'Unknown'
+                      role === -1 ? t('allRoles') : (roles[role] ? translateRole(roles[role]) : 'Unknown')
                     }
                   />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='-1'>
                     <div className='flex items-center gap-2'>
-                      <span>All Roles</span>
+                      <span>{t('allRoles')}</span>
                       <Badge variant='secondary' className='ml-auto text-xs'>
                         All
                       </Badge>
@@ -194,7 +212,7 @@ const UsersFilters = () => {
                   {roles.map((roleName, idx) => (
                     <SelectItem key={roleName} value={String(idx)}>
                       <div className='flex items-center gap-2'>
-                        <span>{roleName}</span>
+                        <span>{translateRole(roleName)}</span>
                       </div>
                     </SelectItem>
                   ))}
