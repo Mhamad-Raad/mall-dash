@@ -132,7 +132,7 @@ export default function NotificationPopover() {
         >
           <Bell className='size-[1.1rem] transition-transform group-hover:scale-110 group-hover:rotate-12' />
           {unreadCount > 0 && (
-            <span className='absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-gradient-to-br from-red-500 to-red-600 rounded-full border-2 border-background shadow-lg animate-pulse'>
+            <span className='absolute -top-0.5 -right-0.5 flex items-center justify-center w-[18px] h-[18px] text-[10px] font-bold text-white bg-gradient-to-br from-blue-500 to-blue-600 rounded-full border-2 border-background shadow-lg leading-[18px]'>
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
