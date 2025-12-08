@@ -2,6 +2,8 @@ import { useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Home, Users, Store, Package, Building2, FileText, Settings } from 'lucide-react';
 import { Fragment } from 'react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
@@ -20,6 +22,11 @@ import NotificationPopover from './NotificationPopover';
 export default function Navbar() {
   const location = useLocation();
   const { t } = useTranslation('navbar');
+  
+  // Get data from Redux store
+  const { user } = useSelector((state: RootState) => state.user);
+  const { vendor } = useSelector((state: RootState) => state.vendor);
+  const { building } = useSelector((state: RootState) => state.building);
 
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -36,6 +43,31 @@ export default function Navbar() {
       case 'settings': return <Settings className={iconClass} />;
       default: return null;
     }
+  };
+
+  const getDisplayName = (segment: string, parentSegment?: string): string => {
+    // Check if this is an ID (MongoDB ObjectId format or UUID)
+    const isId = /^[a-f\d]{24}$/i.test(segment) || /^[a-f\d-]{36}$/i.test(segment) || /^\d+$/.test(segment);
+    
+    if (!isId) {
+      return getTranslatedSegment(segment);
+    }
+
+    // If it's an ID, try to get the actual name from the store
+    if (parentSegment === 'users' && user?._id === segment) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    
+    if (parentSegment === 'vendors' && vendor?._id === segment) {
+      return vendor.businessName || segment;
+    }
+    
+    if (parentSegment === 'buildings' && building?.id.toString() === segment) {
+      return building.name || segment;
+    }
+
+    // Fallback to the segment itself
+    return segment;
   };
 
   const getTranslatedSegment = (segment: string) => {
@@ -56,8 +88,11 @@ export default function Navbar() {
     const segments = path.split('/').filter(Boolean);
     return segments.map((segment, index) => {
       const url = '/' + segments.slice(0, index + 1).join('/');
+      const parentSegment = index > 0 ? segments[index - 1] : undefined;
+      const displayName = getDisplayName(segment, parentSegment);
+      
       return {
-        label: getTranslatedSegment(segment),
+        label: displayName,
         url,
         isLast: index === segments.length - 1,
         segment,
