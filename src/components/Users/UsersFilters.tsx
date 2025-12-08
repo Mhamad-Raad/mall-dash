@@ -130,10 +130,6 @@ const UsersFilters = () => {
     setSearch('');
   };
 
-  const clearBuilding = () => {
-    setByBuildingName('');
-  };
-
   const clearAllFilters = () => {
     setTypedSearch('');
     setSearch('');
@@ -246,24 +242,26 @@ const UsersFilters = () => {
         </div>
 
         {/* Active Filters Badge & Clear Button */}
-        {hasActiveFilters && (
-          <div className='flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300'>
-            <Badge variant='secondary' className='gap-1.5 py-1.5 px-3 shadow-sm'>
-              <span className='size-1.5 rounded-full bg-primary animate-pulse' />
-              <span className='font-medium'>Filtered</span>
-            </Badge>
-            <Button
-              type='button'
-              variant='ghost'
-              size='sm'
-              onClick={clearAllFilters}
-              className='h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg'
-              title='Clear all filters'
-            >
-              <X className='size-4' />
-            </Button>
-          </div>
-        )}
+        <div className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${hasActiveFilters ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
+          {hasActiveFilters && (
+            <>
+              <Badge variant='secondary' className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'>
+                <span className='size-1.5 rounded-full bg-primary animate-pulse' />
+                <span className='font-medium'>Filtered</span>
+              </Badge>
+              <Button
+                type='button'
+                variant='ghost'
+                size='sm'
+                onClick={clearAllFilters}
+                className='h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg shrink-0'
+                title='Clear all filters'
+              >
+                <X className='size-4' />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
