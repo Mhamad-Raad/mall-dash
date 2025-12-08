@@ -127,12 +127,14 @@ export default function NotificationPopover() {
         <Button
           variant='ghost'
           size='icon'
-          className='relative hover:bg-accent transition-colors'
+          className='relative hover:bg-accent/50 transition-all duration-200 rounded-lg group'
           aria-label='Notifications'
         >
-          <Bell className='size-4' />
+          <Bell className='size-[1.1rem] transition-transform group-hover:scale-110 group-hover:rotate-12' />
           {unreadCount > 0 && (
-            <span className='absolute top-1 right-1 size-2 bg-blue-500 rounded-full' />
+            <span className='absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-gradient-to-br from-red-500 to-red-600 rounded-full border-2 border-background shadow-lg animate-pulse'>
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
           )}
         </Button>
       </PopoverTrigger>

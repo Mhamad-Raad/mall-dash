@@ -35,8 +35,16 @@ const LocaleToggle = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline' size='icon' aria-label='Change language'>
-          <Languages className='h-[1.2rem] w-[1.2rem]' />
+        <Button 
+          variant='ghost' 
+          size='icon' 
+          aria-label='Change language'
+          className='hover:bg-accent/50 transition-all duration-200 rounded-lg group relative'
+        >
+          <Languages className='h-[1.1rem] w-[1.1rem] transition-transform group-hover:scale-110' />
+          <span className='absolute -bottom-0.5 right-1.5 text-[8px] font-semibold uppercase opacity-60 group-hover:opacity-100 transition-opacity'>
+            {currentLocale}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end'>
