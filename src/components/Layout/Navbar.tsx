@@ -45,29 +45,39 @@ export default function Navbar() {
     }
   };
 
-  const getDisplayName = (segment: string, parentSegment?: string): string => {
+  const getDisplayName = (segment: string, parentSegment?: string): { label: string; shouldShow: boolean } => {
     // Check if this is an ID (MongoDB ObjectId format or UUID)
     const isId = /^[a-f\d]{24}$/i.test(segment) || /^[a-f\d-]{36}$/i.test(segment) || /^\d+$/.test(segment);
     
     if (!isId) {
-      return getTranslatedSegment(segment);
+      return { label: getTranslatedSegment(segment), shouldShow: true };
     }
 
     // If it's an ID, try to get the actual name from the store
-    if (parentSegment === 'users' && user?._id === segment) {
-      return `${user.firstName} ${user.lastName}`;
+    if (parentSegment === 'users') {
+      if (user?._id === segment) {
+        return { label: `${user.firstName} ${user.lastName}`, shouldShow: true };
+      }
+      // Don't show anything until user data is loaded
+      return { label: '', shouldShow: false };
     }
     
-    if (parentSegment === 'vendors' && vendor?._id === segment) {
-      return vendor.businessName || segment;
+    if (parentSegment === 'vendors') {
+      if (vendor?._id === segment) {
+        return { label: vendor.businessName || segment, shouldShow: true };
+      }
+      return { label: '', shouldShow: false };
     }
     
-    if (parentSegment === 'buildings' && building?.id.toString() === segment) {
-      return building.name || segment;
+    if (parentSegment === 'buildings') {
+      if (building?.id.toString() === segment) {
+        return { label: building.name || segment, shouldShow: true };
+      }
+      return { label: '', shouldShow: false };
     }
 
-    // Fallback to the segment itself
-    return segment;
+    // For unknown IDs, don't show them
+    return { label: segment, shouldShow: false };
   };
 
   const getTranslatedSegment = (segment: string) => {
@@ -89,16 +99,17 @@ export default function Navbar() {
     return segments.map((segment, index) => {
       const url = '/' + segments.slice(0, index + 1).join('/');
       const parentSegment = index > 0 ? segments[index - 1] : undefined;
-      const displayName = getDisplayName(segment, parentSegment);
+      const { label, shouldShow } = getDisplayName(segment, parentSegment);
       
       return {
-        label: displayName,
+        label,
+        shouldShow,
         url,
         isLast: index === segments.length - 1,
         segment,
         icon: getSegmentIcon(segment),
       };
-    });
+    }).filter(item => item.shouldShow); // Only show items that have loaded data
   };
 
   const breadcrumbItems = getBreadcrumbItems();
