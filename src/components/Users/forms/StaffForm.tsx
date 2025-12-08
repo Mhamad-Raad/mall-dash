@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { PasswordStrengthIndicator } from '@/components/ui/PasswordStrengthIndicator';
 import {
   Select,
   SelectContent,
@@ -196,7 +197,7 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
           <Lock className='size-5 text-primary' />
           <h3 className='text-base font-semibold'>{t('forms.security')}</h3>
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div className='space-y-2'>
             <Label htmlFor='admin-password' className='text-sm font-medium'>
               {t('forms.password')} <span className='text-destructive'>*</span>
@@ -227,9 +228,12 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
             />
           </div>
         </div>
-        <p className='text-xs text-muted-foreground'>
-          {t('forms.passwordRequirement')}
-        </p>
+        
+        {/* Password Strength Indicator */}
+        <PasswordStrengthIndicator 
+          password={formData.password}
+          className='mt-4'
+        />
       </div>
     </div>
   );
