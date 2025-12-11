@@ -8,16 +8,20 @@ interface VendorState {
   vendor: VendorType | null;
   loading: boolean;
   error: string | null;
+  errors: string[];
   updating: boolean;
   updateError: string | null;
+  updateErrors: string[];
 }
 
 const initialState: VendorState = {
   vendor: null,
   loading: false,
   error: null,
+  errors: [],
   updating: false,
   updateError: null,
+  updateErrors: [],
 };
 
 export const fetchVendorById = createAsyncThunk(
@@ -27,12 +31,12 @@ export const fetchVendorById = createAsyncThunk(
       const data = await fetchVendorByIdAPI(id);
 
       if (data.error) {
-        return rejectWithValue(data.error);
+        return rejectWithValue({ error: data.error, errors: data.errors || [] });
       }
 
       return data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch vendor');
+      return rejectWithValue({ error: 'Failed to fetch vendor', errors: [] });
     }
   }
 );
@@ -61,12 +65,12 @@ export const updateVendor = createAsyncThunk(
       const data = await updateVendorAPI(id, vendorData);
 
       if (data.error) {
-        return rejectWithValue(data.error);
+        return rejectWithValue({ error: data.error, errors: data.errors || [] });
       }
 
       return data;
     } catch (error) {
-      return rejectWithValue('Failed to update vendor');
+      return rejectWithValue({ error: 'Failed to update vendor', errors: [] });
     }
   }
 );
@@ -78,12 +82,12 @@ export const deleteVendor = createAsyncThunk(
       const data = await deleteVendorAPI(id);
 
       if (data.error) {
-        return rejectWithValue(data.error);
+        return rejectWithValue({ error: data.error, errors: data.errors || [] });
       }
 
       return { id };
     } catch (error) {
-      return rejectWithValue('Failed to delete vendor');
+      return rejectWithValue({ error: 'Failed to delete vendor', errors: [] });
     }
   }
 );
@@ -94,12 +98,16 @@ const vendorSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.errors = [];
       state.updateError = null;
+      state.updateErrors = [];
     },
     clearVendor: (state) => {
       state.vendor = null;
       state.error = null;
+      state.errors = [];
       state.updateError = null;
+      state.updateErrors = [];
     },
   },
   extraReducers: (builder) => {
@@ -108,6 +116,7 @@ const vendorSlice = createSlice({
       .addCase(fetchVendorById.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(
         fetchVendorById.fulfilled,
@@ -115,16 +124,20 @@ const vendorSlice = createSlice({
           state.loading = false;
           state.vendor = mapVendorAPIToUI(action.payload);
           state.error = null;
+          state.errors = [];
         }
       )
       .addCase(fetchVendorById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       // Update vendor
       .addCase(updateVendor.pending, (state) => {
         state.updating = true;
         state.updateError = null;
+        state.updateErrors = [];
       })
       .addCase(
         updateVendor.fulfilled,
@@ -132,11 +145,14 @@ const vendorSlice = createSlice({
           state.updating = false;
           state.vendor = mapVendorAPIToUI(action.payload);
           state.updateError = null;
+          state.updateErrors = [];
         }
       )
       .addCase(updateVendor.rejected, (state, action) => {
         state.updating = false;
-        state.updateError = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.updateError = payload?.error || 'An error occurred';
+        state.updateErrors = payload?.errors || [];
       });
   },
 });
