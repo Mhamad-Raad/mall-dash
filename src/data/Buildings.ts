@@ -15,7 +15,11 @@ export const fetchBuildings = async (params?: {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -26,7 +30,11 @@ export const fetchBuildingById = async (id: number) => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -40,7 +48,11 @@ export const fetchBuildingsByName = async (searchName: string) => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -55,7 +67,11 @@ export const updateBuildingName = async (id: number, name: string) => {
     );
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -64,7 +80,11 @@ export const addBuildingFloor = async (buildingId: number) => {
     const response = await axiosInstance.post(`/Building/${buildingId}/floor`);
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -73,7 +93,11 @@ export const deleteBuildingFloor = async (floorId: number) => {
     const response = await axiosInstance.delete(`/Building/floor/${floorId}`);
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -92,7 +116,11 @@ export const updateApartment = async (
     );
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -110,7 +138,11 @@ export const addApartmentToFloor = async (
     );
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -121,7 +153,11 @@ export const deleteApartment = async (apartmentId: number) => {
     );
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -146,7 +182,11 @@ export const createBuilding = async (params: {
     );
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -160,6 +200,10 @@ export const deleteBuilding = async (id: number) => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };

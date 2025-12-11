@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Layers, Plus, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import {
   Accordion,
   AccordionContent,
@@ -46,8 +48,18 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
   const handleAddFloorConfirm = async () => {
     setShowAddModal(false);
     if (building?.id) {
-      await dispatch(postBuildingFloor(building.id));
-      // You can refresh the full building here if wanted.
+      const result = await dispatch(postBuildingFloor(building.id));
+      if (postBuildingFloor.rejected.match(result)) {
+        const payload = result.payload as { error: string; errors: string[] } | undefined;
+        showValidationErrors(
+          t('detail.floors.failedToAddFloor') || 'Failed to add floor',
+          payload?.errors?.length ? payload.errors : payload?.error,
+          'An error occurred while adding the floor'
+        );
+      } else {
+        toast.success(t('detail.floors.floorAdded') || 'Floor added successfully!');
+        await dispatch(getBuildingById(building.id));
+      }
     }
   };
 
@@ -63,18 +75,19 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
     if (deleteFloor?.id) {
       const result = await dispatch(removeBuildingFloor(deleteFloor.id));
       if (removeBuildingFloor.rejected.match(result)) {
-        // result.payload might be string or object or undefined
-        const payload: any = result.payload;
-        const errMsg =
-          payload?.error ??
-          payload?.message ??
-          (typeof payload === 'string' ? payload : null) ??
-          t('detail.floors.failedToDeleteFloor');
-        setDeleteError(errMsg || t('detail.floors.failedToDeleteFloor'));
+        const payload = result.payload as { error?: string; errors?: string[] } | undefined;
+        const errMsg = payload?.error ?? t('detail.floors.failedToDeleteFloor');
+        setDeleteError(errMsg);
+        showValidationErrors(
+          t('detail.floors.failedToDeleteFloor') || 'Failed to delete floor',
+          payload?.errors?.length ? payload.errors : errMsg,
+          'An error occurred while deleting the floor'
+        );
       } else {
         setShowDeleteModal(false);
         setDeleteFloor(null);
         setDeleteError(null);
+        toast.success(t('detail.floors.floorDeleted') || 'Floor deleted successfully!');
       }
     }
   };
@@ -82,14 +95,24 @@ const BuildingFloors = ({ onApartmentEdit }: { onApartmentEdit: any }) => {
   const addApartmnet = async (apartmentName: string) => {
     setShowAddApartmentModal(false);
     if (addAptTargetFloor?.id) {
-      await dispatch(
+      const result = await dispatch(
         addApartmentToFloorThunk({
           floorId: addAptTargetFloor.id,
           apartmentName,
         })
       );
-      if (building?.id) {
-        await dispatch(getBuildingById(building.id));
+      if (addApartmentToFloorThunk.rejected.match(result)) {
+        const payload = result.payload as { error: string; errors: string[] } | undefined;
+        showValidationErrors(
+          t('detail.floors.failedToAddApartment') || 'Failed to add apartment',
+          payload?.errors?.length ? payload.errors : payload?.error,
+          'An error occurred while adding the apartment'
+        );
+      } else {
+        toast.success(t('detail.floors.apartmentAdded') || 'Apartment added successfully!');
+        if (building?.id) {
+          await dispatch(getBuildingById(building.id));
+        }
       }
     }
     setAddAptTargetFloor(null);

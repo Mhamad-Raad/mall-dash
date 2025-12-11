@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Building2, ArrowLeft, Pencil, Check, X, Trash2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
@@ -64,8 +66,15 @@ const BuildingHeader = ({ onDeleteBuilding }: BuildingHeaderProps) => {
     if (putBuildingName.fulfilled.match(resultAction)) {
       setIsEditing(false);
       setSuccess(t('detail.nameUpdated'));
+      toast.success(t('detail.nameUpdated'));
+    } else if (putBuildingName.rejected.match(resultAction)) {
+      const payload = resultAction.payload as { error: string; errors: string[] } | undefined;
+      showValidationErrors(
+        t('detail.nameUpdateFailed') || 'Failed to update building name',
+        payload?.errors?.length ? payload.errors : payload?.error,
+        'An error occurred while updating the building name'
+      );
     }
-    // Optionally handle error via redux error state
   };
 
   const handleShowModal = () => {

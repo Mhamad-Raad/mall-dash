@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/store/store';
+import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 
 import BuildingHeader from '@/components/Buildings/BuildingHeader';
 import BuildingSummaryCards from '@/components/Buildings/BuildingSummaryCards';
@@ -44,9 +46,19 @@ const BuildingDetail = () => {
 
   const confirmDeleteBuilding = async () => {
     setShowDeleteBuildingModal(false);
-    navigate('/buildings');
     if (id) {
-      await dispatch(deleteBuildingThunk(Number(id)));
+      const result = await dispatch(deleteBuildingThunk(Number(id)));
+      if (deleteBuildingThunk.rejected.match(result)) {
+        const payload = result.payload as { error: string; errors: string[] } | undefined;
+        showValidationErrors(
+          'Failed to delete building',
+          payload?.errors?.length ? payload.errors : payload?.error,
+          'An error occurred while deleting the building'
+        );
+      } else {
+        toast.success('Building deleted successfully!');
+        navigate('/buildings');
+      }
     }
   };
 
@@ -79,13 +91,23 @@ const BuildingDetail = () => {
   const handleSave = async (occupant: any, name: string) => {
     setIsDialogOpen(false);
     if (selectedApartment) {
-      await dispatch(
+      const result = await dispatch(
         updateApartmentThunk({
           id: selectedApartment.id,
           apartmentName: name,
           userId: occupant,
         })
       );
+      if (updateApartmentThunk.rejected.match(result)) {
+        const payload = result.payload as { error: string; errors: string[] } | undefined;
+        showValidationErrors(
+          'Failed to update apartment',
+          payload?.errors?.length ? payload.errors : payload?.error,
+          'An error occurred while updating the apartment'
+        );
+      } else {
+        toast.success('Apartment updated successfully!');
+      }
     }
     if (building?.id) {
       await dispatch(getBuildingById(building.id));
@@ -103,7 +125,17 @@ const BuildingDetail = () => {
     setIsDialogOpen(false);
     try {
       if (deleteApartmentId) {
-        await dispatch(deleteApartmentThunk(deleteApartmentId));
+        const result = await dispatch(deleteApartmentThunk(deleteApartmentId));
+        if (deleteApartmentThunk.rejected.match(result)) {
+          const payload = result.payload as { error: string; errors: string[] } | undefined;
+          showValidationErrors(
+            'Failed to delete apartment',
+            payload?.errors?.length ? payload.errors : payload?.error,
+            'An error occurred while deleting the apartment'
+          );
+        } else {
+          toast.success('Apartment deleted successfully!');
+        }
         if (building?.id) await dispatch(getBuildingById(building.id));
       }
     } finally {
