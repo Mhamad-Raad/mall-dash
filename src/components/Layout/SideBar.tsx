@@ -86,7 +86,7 @@ const managementItems = [
 // Settings items
 const settingsItems = [
   {
-    title: 'Profile',
+    titleKey: 'profile',
     url: '/profile',
     icon: Settings,
   },
