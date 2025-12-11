@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 
 type ThemeOption = 'light' | 'dark' | 'system';
-type ColorThemeOption = 'default' | 'claude' | 'dark-matter';
+type ColorThemeOption = 'default' | 'claude' | 'dark-matter' | 'cosmic-night' | 'supabase' | 'ocean-breeze';
 type FontThemeOption = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
 
 interface ThemeCardProps {
@@ -346,6 +346,36 @@ const Themes = () => {
         primary: '#6366f1',
         secondary: '#d4d0c8',
         accent: '#e9d5ff',
+      },
+    },
+    {
+      colorTheme: 'cosmic-night',
+      titleKey: 'cosmicNightColorTheme',
+      descriptionKey: 'cosmicNightColorThemeDescription',
+      colors: {
+        primary: '#7c3aed',
+        secondary: '#e0e7ff',
+        accent: '#c4b5fd',
+      },
+    },
+    {
+      colorTheme: 'supabase',
+      titleKey: 'supabaseColorTheme',
+      descriptionKey: 'supabaseColorThemeDescription',
+      colors: {
+        primary: '#3ecf8e',
+        secondary: '#f0f0f0',
+        accent: '#b8f0d8',
+      },
+    },
+    {
+      colorTheme: 'ocean-breeze',
+      titleKey: 'oceanBreezeColorTheme',
+      descriptionKey: 'oceanBreezeColorThemeDescription',
+      colors: {
+        primary: '#2dd4bf',
+        secondary: '#e0f2fe',
+        accent: '#99f6e4',
       },
     },
   ];

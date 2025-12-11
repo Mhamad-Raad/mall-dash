@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
-type ColorTheme = 'default' | 'claude' | 'dark-matter';
+type ColorTheme = 'default' | 'claude' | 'dark-matter' | 'cosmic-night' | 'supabase' | 'ocean-breeze';
 type FontTheme = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
 
 type ThemeProviderProps = {
@@ -60,7 +60,7 @@ export function ThemeProvider({
     // Remove all theme classes
     root.classList.remove(
       'light', 'dark',
-      'theme-claude', 'theme-dark-matter',
+      'theme-claude', 'theme-dark-matter', 'theme-cosmic-night', 'theme-supabase', 'theme-ocean-breeze',
       'font-modern', 'font-classic', 'font-mono', 'font-rounded', 'font-elegant', 'font-compact', 'font-playful'
     );
 
