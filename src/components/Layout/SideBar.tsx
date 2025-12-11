@@ -185,7 +185,7 @@ export function AppSidebar() {
                       }}
                       className='cursor-pointer'
                     >
-                      <item.icon className='transition-all group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5' />
+                      <item.icon className='size-5 shrink-0' />
                       <span>{t(item.titleKey)}</span>
                     </a>
                   </SidebarMenuButton>
@@ -227,7 +227,7 @@ export function AppSidebar() {
                       }}
                       className='cursor-pointer'
                     >
-                      <item.icon className='transition-all group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5' />
+                      <item.icon className='size-5 shrink-0' />
                       <span>{t(item.titleKey)}</span>
                     </a>
                   </SidebarMenuButton>
@@ -269,7 +269,7 @@ export function AppSidebar() {
                       }}
                       className='cursor-pointer'
                     >
-                      <item.icon className='transition-all group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5' />
+                      <item.icon className='size-5 shrink-0' />
                       <span>{t(item.titleKey)}</span>
                     </a>
                   </SidebarMenuButton>

@@ -73,9 +73,9 @@ export function NavUser({
               size='lg'
               className='w-full transition-all duration-200 hover:bg-sidebar-accent/50 data-[state=open]:bg-sidebar-accent'
             >
-              <Avatar className='h-9 w-9 rounded-full ring-2 ring-primary/20 transition-all duration-200'>
+              <Avatar className='h-8 w-8 shrink-0 rounded-full transition-all duration-200'>
                 <AvatarImage src={user.avatar} alt={user.name} className='object-cover' />
-                <AvatarFallback className='rounded-full bg-gradient-to-br from-primary/80 to-primary text-primary-foreground font-semibold'>
+                <AvatarFallback className='rounded-full bg-gradient-to-br from-primary/80 to-primary text-primary-foreground font-semibold text-xs'>
                   {initials}
                 </AvatarFallback>
               </Avatar>
