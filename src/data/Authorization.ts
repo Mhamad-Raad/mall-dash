@@ -27,7 +27,11 @@ export const loginUser = async ({
     // Tokens are now set as HTTP-only cookies by the backend
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -58,6 +62,10 @@ export const getMe = async () => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };

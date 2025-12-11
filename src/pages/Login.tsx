@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -46,8 +47,12 @@ const Login = () => {
 
     try {
       const response = await loginUser({ email, password });
-      if (response.error) {
-        toast.error('Email or password is incorrect');
+      if (response.error || response.errors?.length > 0) {
+        showValidationErrors(
+          'Login Failed',
+          response.errors?.length > 0 ? response.errors : response.error,
+          'Email or password is incorrect'
+        );
         setIsLocked(true);
       } else {
         // Store the access token for SignalR connection
