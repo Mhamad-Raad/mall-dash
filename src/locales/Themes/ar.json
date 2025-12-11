@@ -1,0 +1,22 @@
+{
+  "title": "السمات",
+  "subtitle": "تخصيص مظهر لوحة التحكم",
+  "appearanceTitle": "المظهر",
+  "appearanceSubtitle": "اختر بين الوضع الفاتح والداكن",
+  "lightTheme": "فاتح",
+  "lightThemeDescription": "مظهر نظيف ومشرق",
+  "darkTheme": "داكن",
+  "darkThemeDescription": "مريح للعين في الإضاءة المنخفضة",
+  "systemTheme": "النظام",
+  "systemThemeDescription": "يتبع إعدادات جهازك",
+  "colorThemeTitle": "سمة الألوان",
+  "colorThemeSubtitle": "اختر نظام ألوان للواجهة",
+  "defaultColorTheme": "الافتراضي",
+  "defaultColorThemeDescription": "سمة أبيض وأسود كلاسيكية",
+  "claudeColorTheme": "كلود",
+  "claudeColorThemeDescription": "ألوان ترابية دافئة مع لمسات كهرمانية",
+  "darkMatterColorTheme": "المادة المظلمة",
+  "darkMatterColorThemeDescription": "درجات بنفسجية أنيقة مع لمسات ناعمة",
+  "moreThemesTitle": "المزيد من السمات قريباً",
+  "moreThemesDescription": "نحن نعمل على إضافة المزيد من السمات الملونة وخيارات التخصيص. ترقبوا!"
+}

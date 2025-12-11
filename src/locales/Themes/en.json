@@ -1,0 +1,22 @@
+{
+  "title": "Themes",
+  "subtitle": "Customize the appearance of the dashboard",
+  "appearanceTitle": "Appearance",
+  "appearanceSubtitle": "Choose between light and dark mode",
+  "lightTheme": "Light",
+  "lightThemeDescription": "A clean and bright appearance",
+  "darkTheme": "Dark",
+  "darkThemeDescription": "Easy on the eyes in low light",
+  "systemTheme": "System",
+  "systemThemeDescription": "Follows your device settings",
+  "colorThemeTitle": "Color Theme",
+  "colorThemeSubtitle": "Choose a color scheme for the interface",
+  "defaultColorTheme": "Default",
+  "defaultColorThemeDescription": "Classic black and white theme",
+  "claudeColorTheme": "Claude",
+  "claudeColorThemeDescription": "Warm earth tones with amber accents",
+  "darkMatterColorTheme": "Dark Matter",
+  "darkMatterColorThemeDescription": "Elegant purple tones with soft accents",
+  "moreThemesTitle": "More Themes Coming Soon",
+  "moreThemesDescription": "We're working on adding more color themes and customization options. Stay tuned!"
+}

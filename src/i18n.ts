@@ -21,6 +21,10 @@ import vendorsEn from './locales/Vendors/en.json';
 import vendorsAr from './locales/Vendors/ar.json';
 import vendorsKu from './locales/Vendors/ku.json';
 
+import themesEn from './locales/Themes/en.json';
+import themesAr from './locales/Themes/ar.json';
+import themesKu from './locales/Themes/ku.json';
+
 i18n.use(initReactI18next).init({
   resources: {
     en: {
@@ -29,6 +33,7 @@ i18n.use(initReactI18next).init({
       users: usersEn,
       buildings: buildingsEn,
       vendors: vendorsEn,
+      themes: themesEn,
     },
     ar: {
       sidebar: sidebarAr,
@@ -36,6 +41,7 @@ i18n.use(initReactI18next).init({
       users: usersAr,
       buildings: buildingsAr,
       vendors: vendorsAr,
+      themes: themesAr,
     },
     ku: {
       sidebar: sidebarKu,
@@ -43,11 +49,12 @@ i18n.use(initReactI18next).init({
       users: usersKu,
       buildings: buildingsKu,
       vendors: vendorsKu,
+      themes: themesKu,
     },
   },
   lng: 'en', // default language
   fallbackLng: 'en',
-  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors'], // namespaces
+  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors', 'themes'], // namespaces
   defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });

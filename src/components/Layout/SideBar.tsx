@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,6 +11,9 @@ import {
   ShoppingCart,
   Building2,
   Store,
+  ChevronRight,
+  User,
+  Palette,
 } from 'lucide-react';
 
 import { useSelector } from 'react-redux';
@@ -24,10 +28,19 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarRail,
   SidebarHeader,
   SidebarFooter,
 } from '@/components/ui/sidebar';
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 import { NavUser } from '@/components/ui/nav-user';
 
@@ -83,12 +96,17 @@ const managementItems = [
   },
 ];
 
-// Settings items
-const settingsItems = [
+// Settings sub-items
+const settingsSubItems = [
   {
     titleKey: 'profile',
     url: '/profile',
-    icon: Settings,
+    icon: User,
+  },
+  {
+    titleKey: 'themes',
+    url: '/settings/themes',
+    icon: Palette,
   },
 ];
 
@@ -97,6 +115,10 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user: me } = useSelector((state: RootState) => state.me);
+  const [settingsOpen, setSettingsOpen] = useState(() => {
+    // Open settings menu by default if we're on a settings page
+    return location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings');
+  });
 
   const user = {
     name: me ? `${me.firstName} ${me.lastName}` : 'Guest User',
@@ -244,37 +266,44 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className='mt-2'>
-              {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.titleKey}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={t(item.titleKey)}
-                    isActive={isActive(item.url)}
-                    className={`
-                      transition-all duration-200
-                      ${
-                        isActive(item.url)
-                          ? 'bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm'
-                          : 'hover:bg-muted/50'
-                      }
-                    `}
-                  >
-                    <a
-                      href={item.url}
-                      onClick={(e) => {
-                        if (item.url !== '#') {
-                          e.preventDefault();
-                          navigate(item.url);
-                        }
-                      }}
-                      className='cursor-pointer'
-                    >
-                      <item.icon className='size-5 shrink-0' />
-                      <span>{t(item.titleKey)}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <Collapsible
+                  open={settingsOpen}
+                  onOpenChange={setSettingsOpen}
+                  className='group/collapsible [&[data-state=open]>button>svg.chevron]:rotate-90'
+                >
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip={t('settings')}>
+                      <Settings className='size-5 shrink-0' />
+                      <span>{t('settings')}</span>
+                      <ChevronRight className='chevron ml-auto size-4 shrink-0 transition-transform duration-200' />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {settingsSubItems.map((item) => (
+                        <SidebarMenuSubItem key={item.titleKey}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isActive(item.url)}
+                          >
+                            <a
+                              href={item.url}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(item.url);
+                              }}
+                            >
+                              <item.icon className='size-4 shrink-0' />
+                              <span>{t(item.titleKey)}</span>
+                            </a>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
