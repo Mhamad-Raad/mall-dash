@@ -17,6 +17,15 @@ const buildings = ['Sky Tower', 'Rose Heights', 'Emerald Plaza'];
 const floors = ['1', '2', '3', '4', '5'];
 const apartments = ['101', '202', '303', '404', '505'];
 
+type FieldErrors = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  phoneNumber?: string;
+};
+
 type CustomerFormProps = {
   formData: {
     firstName: string;
@@ -31,11 +40,18 @@ type CustomerFormProps = {
     photo?: File | null;
   };
   onInputChange: (field: string, value: unknown) => void;
+  errors?: FieldErrors;
+};
+
+const FieldError = ({ message }: { message?: string }) => {
+  if (!message) return null;
+  return <p className='text-sm text-destructive mt-1'>{message}</p>;
 };
 
 export default function CustomerForm({
   formData,
   onInputChange,
+  errors = {},
 }: CustomerFormProps) {
   const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
@@ -107,7 +123,9 @@ export default function CustomerForm({
               value={formData.firstName}
               onChange={(e) => onInputChange('firstName', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.firstName}
             />
+            <FieldError message={errors.firstName} />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-lastname' className='text-sm font-medium'>
@@ -119,7 +137,9 @@ export default function CustomerForm({
               value={formData.lastName}
               onChange={(e) => onInputChange('lastName', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.lastName}
             />
+            <FieldError message={errors.lastName} />
           </div>
           {formData.photo && (
             <p className='text-xs text-muted-foreground'>
@@ -152,7 +172,9 @@ export default function CustomerForm({
               value={formData.email}
               onChange={(e) => onInputChange('email', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.email}
             />
+            <FieldError message={errors.email} />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-phone' className='text-sm font-medium'>
@@ -166,7 +188,9 @@ export default function CustomerForm({
               value={formData.phoneNumber}
               onChange={(e) => onInputChange('phoneNumber', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.phoneNumber}
             />
+            <FieldError message={errors.phoneNumber} />
           </div>
         </div>
       </div>
@@ -191,7 +215,9 @@ export default function CustomerForm({
               value={formData.password}
               onChange={(e) => onInputChange('password', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.password}
             />
+            <FieldError message={errors.password} />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='customer-confirm' className='text-sm font-medium'>
@@ -205,7 +231,9 @@ export default function CustomerForm({
               value={formData.confirmPassword}
               onChange={(e) => onInputChange('confirmPassword', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.confirmPassword}
             />
+            <FieldError message={errors.confirmPassword} />
           </div>
         </div>
         

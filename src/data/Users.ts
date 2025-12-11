@@ -120,6 +120,10 @@ export const createUser = async (userData: {
     return response.data;
   } catch (error: any) {
     console.error('Create user failed:', error.response?.data || error.message);
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };

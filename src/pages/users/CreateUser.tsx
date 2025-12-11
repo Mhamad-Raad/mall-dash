@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import {
   Card,
   CardHeader,
@@ -47,15 +48,85 @@ export default function CreateUser() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Handler to update staff form data
+  // Validation function - returns field-level errors
+  const validateForm = useCallback(() => {
+    const errors: Record<string, string> = {};
+    const formData = type === 'Staff' ? staffFormData : customerFormData;
+
+    // Required fields
+    if (!formData.firstName.trim()) {
+      errors.firstName = t('forms.validation.firstNameRequired');
+    }
+    if (!formData.lastName.trim()) {
+      errors.lastName = t('forms.validation.lastNameRequired');
+    }
+    if (!formData.email.trim()) {
+      errors.email = t('forms.validation.emailRequired');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = t('forms.validation.emailInvalid');
+    }
+    if (!formData.phoneNumber.trim()) {
+      errors.phoneNumber = t('forms.validation.phoneRequired');
+    }
+
+    // Password validation
+    if (!formData.password) {
+      errors.password = t('forms.validation.passwordRequired');
+    } else {
+      const passwordErrors: string[] = [];
+      if (formData.password.length < 8) {
+        passwordErrors.push(t('forms.validation.passwordMinLength'));
+      }
+      if (!/[A-Z]/.test(formData.password)) {
+        passwordErrors.push(t('forms.validation.passwordUppercase'));
+      }
+      if (!/[a-z]/.test(formData.password)) {
+        passwordErrors.push(t('forms.validation.passwordLowercase'));
+      }
+      if (!/[0-9]/.test(formData.password)) {
+        passwordErrors.push(t('forms.validation.passwordNumber'));
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+        passwordErrors.push(t('forms.validation.passwordSpecial'));
+      }
+      if (passwordErrors.length > 0) {
+        errors.password = passwordErrors.join('. ');
+      }
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = t('createUser.passwordMismatch');
+    }
+
+    return errors;
+  }, [type, staffFormData, customerFormData, t]);
+
+  // Handler to update staff form data and clear field error
   const handleStaffInputChange = (field: string, value: unknown) => {
     setStaffFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
-  // Handler to update customer form data
+  // Handler to update customer form data and clear field error
   const handleCustomerInputChange = (field: string, value: unknown) => {
     setCustomerFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handleBack = () => {
@@ -63,6 +134,13 @@ export default function CreateUser() {
   };
 
   const handleCreateUser = async () => {
+    // Frontend validation - field-level errors
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setLoading(true);
 
     let data = {};
@@ -71,14 +149,6 @@ export default function CreateUser() {
     if (type === 'Staff') {
       const { confirmPassword, photo, ...userData } = staffFormData;
 
-      if (staffFormData.password !== staffFormData.confirmPassword) {
-        toast.error(t('createUser.passwordMismatch'), {
-          description: t('createUser.passwordMismatchDesc'),
-        });
-        setLoading(false);
-        return;
-      }
-
       userName = `${staffFormData.firstName} ${staffFormData.lastName}`;
       data = {
         ...userData,
@@ -86,14 +156,6 @@ export default function CreateUser() {
       };
     } else if (type === 'Customer') {
       const { confirmPassword, photo, buildingId, floorId, apartmentId, ...userData } = customerFormData;
-
-      if (customerFormData.password !== customerFormData.confirmPassword) {
-        toast.error(t('createUser.passwordMismatch'), {
-          description: t('createUser.passwordMismatchDesc'),
-        });
-        setLoading(false);
-        return;
-      }
 
       userName = `${customerFormData.firstName} ${customerFormData.lastName}`;
       data = {
@@ -110,10 +172,12 @@ export default function CreateUser() {
 
     setLoading(false);
 
-    if (res.error) {
-      toast.error(t('createUser.createError'), {
-        description: res.error || t('createUser.createErrorDesc'),
-      });
+    if (res.error || res.errors?.length > 0) {
+      showValidationErrors(
+        t('createUser.createError'),
+        res.errors?.length > 0 ? res.errors : res.error,
+        t('createUser.createErrorDesc')
+      );
     } else {
       toast.success(t('createUser.createSuccess'), {
         description: t('createUser.createSuccessDesc', { name: userName }),
@@ -173,12 +237,14 @@ export default function CreateUser() {
                 <StaffForm
                   formData={staffFormData}
                   onInputChange={handleStaffInputChange}
+                  errors={fieldErrors}
                 />
               )}
               {type === 'Customer' && (
                 <CustomerForm
                   formData={customerFormData}
                   onInputChange={handleCustomerInputChange}
+                  errors={fieldErrors}
                 />
               )}
             </CardContent>
