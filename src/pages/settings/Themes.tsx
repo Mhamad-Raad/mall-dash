@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Check, Monitor, Moon, Sun, Palette } from 'lucide-react';
+import { Check, Monitor, Moon, Sun, Palette, Type } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 type ThemeOption = 'light' | 'dark' | 'system';
 type ColorThemeOption = 'default' | 'claude' | 'dark-matter';
+type FontThemeOption = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
 
 interface ThemeCardProps {
   theme: ThemeOption;
@@ -24,6 +25,16 @@ interface ColorThemeCardProps {
   title: string;
   description: string;
   colors: { primary: string; secondary: string; accent: string };
+}
+
+interface FontThemeCardProps {
+  fontTheme: FontThemeOption;
+  currentFontTheme: FontThemeOption;
+  onSelect: (fontTheme: FontThemeOption) => void;
+  title: string;
+  description: string;
+  fontFamily: string;
+  sampleText: string;
 }
 
 const ThemeCard = ({
@@ -140,6 +151,63 @@ const ColorThemeCard = ({
   );
 };
 
+const FontThemeCard = ({
+  fontTheme,
+  currentFontTheme,
+  onSelect,
+  title,
+  description,
+  fontFamily,
+  sampleText,
+}: FontThemeCardProps) => {
+  const isSelected = currentFontTheme === fontTheme;
+
+  return (
+    <Card
+      className={cn(
+        'relative cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]',
+        isSelected
+          ? 'ring-2 ring-primary shadow-lg'
+          : 'hover:ring-1 hover:ring-primary/50'
+      )}
+      onClick={() => onSelect(fontTheme)}
+    >
+      {isSelected && (
+        <div className='absolute top-3 right-3 z-10'>
+          <div className='bg-primary text-primary-foreground rounded-full p-1'>
+            <Check className='size-4' />
+          </div>
+        </div>
+      )}
+      <CardHeader className='pb-3'>
+        <div className='flex items-center gap-3'>
+          <div
+            className={cn(
+              'p-2 rounded-lg transition-colors',
+              isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
+            )}
+          >
+            <Type className='size-5' />
+          </div>
+          <div>
+            <CardTitle className='text-lg'>{title}</CardTitle>
+            <CardDescription className='text-sm'>{description}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div
+          className='p-4 rounded-lg border bg-muted/30 text-center'
+          style={{ fontFamily }}
+        >
+          <p className='text-2xl font-semibold mb-1'>{sampleText}</p>
+          <p className='text-sm text-muted-foreground'>Aa Bb Cc 123</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Theme preview components
 const LightPreview = () => (
   <div className='bg-white p-3 space-y-2'>
@@ -212,7 +280,7 @@ const SystemPreview = () => (
 
 const Themes = () => {
   const { t } = useTranslation('themes');
-  const { theme, setTheme, colorTheme, setColorTheme } = useTheme();
+  const { theme, setTheme, colorTheme, setColorTheme, fontTheme, setFontTheme } = useTheme();
 
   const themeOptions: {
     theme: ThemeOption;
@@ -282,6 +350,71 @@ const Themes = () => {
     },
   ];
 
+  const fontThemeOptions: {
+    fontTheme: FontThemeOption;
+    titleKey: string;
+    descriptionKey: string;
+    fontFamily: string;
+    sampleText: string;
+  }[] = [
+    {
+      fontTheme: 'default',
+      titleKey: 'defaultFontTheme',
+      descriptionKey: 'defaultFontThemeDescription',
+      fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'modern',
+      titleKey: 'modernFontTheme',
+      descriptionKey: 'modernFontThemeDescription',
+      fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'classic',
+      titleKey: 'classicFontTheme',
+      descriptionKey: 'classicFontThemeDescription',
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'mono',
+      titleKey: 'monoFontTheme',
+      descriptionKey: 'monoFontThemeDescription',
+      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'rounded',
+      titleKey: 'roundedFontTheme',
+      descriptionKey: 'roundedFontThemeDescription',
+      fontFamily: '"Nunito", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'elegant',
+      titleKey: 'elegantFontTheme',
+      descriptionKey: 'elegantFontThemeDescription',
+      fontFamily: '"Playfair Display", serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'compact',
+      titleKey: 'compactFontTheme',
+      descriptionKey: 'compactFontThemeDescription',
+      fontFamily: '"IBM Plex Sans", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'playful',
+      titleKey: 'playfulFontTheme',
+      descriptionKey: 'playfulFontThemeDescription',
+      fontFamily: '"Poppins", sans-serif',
+      sampleText: 'The quick fox',
+    },
+  ];
+
   return (
     <div className='p-6 space-y-8'>
       <div>
@@ -327,6 +460,28 @@ const Themes = () => {
               title={t(option.titleKey)}
               description={t(option.descriptionKey)}
               colors={option.colors}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Font Theme Section */}
+      <div className='space-y-4'>
+        <div>
+          <h2 className='text-xl font-semibold'>{t('fontThemeTitle')}</h2>
+          <p className='text-muted-foreground text-sm'>{t('fontThemeSubtitle')}</p>
+        </div>
+        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
+          {fontThemeOptions.map((option) => (
+            <FontThemeCard
+              key={option.fontTheme}
+              fontTheme={option.fontTheme}
+              currentFontTheme={fontTheme}
+              onSelect={setFontTheme}
+              title={t(option.titleKey)}
+              description={t(option.descriptionKey)}
+              fontFamily={option.fontFamily}
+              sampleText={option.sampleText}
             />
           ))}
         </div>

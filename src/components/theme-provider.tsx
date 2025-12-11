@@ -2,13 +2,16 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
 type ColorTheme = 'default' | 'claude' | 'dark-matter';
+type FontTheme = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
   defaultColorTheme?: ColorTheme;
+  defaultFontTheme?: FontTheme;
   storageKey?: string;
   colorStorageKey?: string;
+  fontStorageKey?: string;
 };
 
 type ThemeProviderState = {
@@ -16,6 +19,8 @@ type ThemeProviderState = {
   setTheme: (theme: Theme) => void;
   colorTheme: ColorTheme;
   setColorTheme: (colorTheme: ColorTheme) => void;
+  fontTheme: FontTheme;
+  setFontTheme: (fontTheme: FontTheme) => void;
 };
 
 const initialState: ThemeProviderState = {
@@ -23,6 +28,8 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
   colorTheme: 'default',
   setColorTheme: () => null,
+  fontTheme: 'default',
+  setFontTheme: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
@@ -31,8 +38,10 @@ export function ThemeProvider({
   children,
   defaultTheme = 'system',
   defaultColorTheme = 'default',
+  defaultFontTheme = 'default',
   storageKey = 'vite-ui-theme',
   colorStorageKey = 'vite-ui-color-theme',
+  fontStorageKey = 'vite-ui-font-theme',
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
@@ -41,16 +50,28 @@ export function ThemeProvider({
   const [colorTheme, setColorTheme] = useState<ColorTheme>(
     () => (localStorage.getItem(colorStorageKey) as ColorTheme) || defaultColorTheme
   );
+  const [fontTheme, setFontTheme] = useState<FontTheme>(
+    () => (localStorage.getItem(fontStorageKey) as FontTheme) || defaultFontTheme
+  );
 
   useEffect(() => {
     const root = window.document.documentElement;
 
     // Remove all theme classes
-    root.classList.remove('light', 'dark', 'theme-claude', 'theme-dark-matter');
+    root.classList.remove(
+      'light', 'dark',
+      'theme-claude', 'theme-dark-matter',
+      'font-modern', 'font-classic', 'font-mono', 'font-rounded', 'font-elegant', 'font-compact', 'font-playful'
+    );
 
     // Apply color theme class (if not default)
     if (colorTheme !== 'default') {
       root.classList.add(`theme-${colorTheme}`);
+    }
+
+    // Apply font theme class (if not default)
+    if (fontTheme !== 'default') {
+      root.classList.add(`font-${fontTheme}`);
     }
 
     // Apply light/dark mode
@@ -65,7 +86,7 @@ export function ThemeProvider({
     }
 
     root.classList.add(theme);
-  }, [theme, colorTheme]);
+  }, [theme, colorTheme, fontTheme]);
 
   const value = {
     theme,
@@ -77,6 +98,11 @@ export function ThemeProvider({
     setColorTheme: (colorTheme: ColorTheme) => {
       localStorage.setItem(colorStorageKey, colorTheme);
       setColorTheme(colorTheme);
+    },
+    fontTheme,
+    setFontTheme: (fontTheme: FontTheme) => {
+      localStorage.setItem(fontStorageKey, fontTheme);
+      setFontTheme(fontTheme);
     },
   };
 
