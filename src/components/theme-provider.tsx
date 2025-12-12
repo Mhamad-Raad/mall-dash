@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
-type ColorTheme = 'default' | 'claude' | 'cosmic-night' | 'supabase' | 'ocean-breeze' | 'aurora';
-type FontTheme = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
+type ColorTheme = 'default' | 'claude' | 'cosmic-night' | 'supabase' | 'ocean-breeze' | 'aurora' | 'midnight-rose' | 'neon-cyber' | 'slate-storm';
+type FontTheme = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful' | 'times' | 'roboto' | 'opensans' | 'lato' | 'montserrat' | 'sourcecode' | 'literary' | 'thin';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -61,7 +61,9 @@ export function ThemeProvider({
     root.classList.remove(
       'light', 'dark',
       'theme-claude', 'theme-cosmic-night', 'theme-supabase', 'theme-ocean-breeze', 'theme-aurora',
-      'font-modern', 'font-classic', 'font-mono', 'font-rounded', 'font-elegant', 'font-compact', 'font-playful'
+      'theme-midnight-rose', 'theme-neon-cyber', 'theme-slate-storm',
+      'font-modern', 'font-classic', 'font-mono', 'font-rounded', 'font-elegant', 'font-compact', 'font-playful',
+      'font-times', 'font-roboto', 'font-opensans', 'font-lato', 'font-montserrat', 'font-sourcecode', 'font-literary', 'font-thin'
     );
 
     // Apply color theme class (if not default)

@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 
 type ThemeOption = 'light' | 'dark' | 'system';
-type ColorThemeOption = 'default' | 'claude' | 'cosmic-night' | 'supabase' | 'ocean-breeze' | 'aurora';
-type FontThemeOption = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
+type ColorThemeOption = 'default' | 'claude' | 'cosmic-night' | 'supabase' | 'ocean-breeze' | 'aurora' | 'midnight-rose' | 'neon-cyber' | 'slate-storm';
+type FontThemeOption = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful' | 'times' | 'roboto' | 'opensans' | 'lato' | 'montserrat' | 'sourcecode' | 'literary' | 'thin';
 
 interface ThemeCardProps {
   theme: ThemeOption;
@@ -378,6 +378,36 @@ const Themes = () => {
         accent: '#f0abfc',
       },
     },
+    {
+      colorTheme: 'midnight-rose',
+      titleKey: 'midnightRoseColorTheme',
+      descriptionKey: 'midnightRoseColorThemeDescription',
+      colors: {
+        primary: '#e11d48',
+        secondary: '#ddd6fe',
+        accent: '#fda4af',
+      },
+    },
+    {
+      colorTheme: 'neon-cyber',
+      titleKey: 'neonCyberColorTheme',
+      descriptionKey: 'neonCyberColorThemeDescription',
+      colors: {
+        primary: '#ec4899',
+        secondary: '#67e8f9',
+        accent: '#22d3d1',
+      },
+    },
+    {
+      colorTheme: 'slate-storm',
+      titleKey: 'slateStormColorTheme',
+      descriptionKey: 'slateStormColorThemeDescription',
+      colors: {
+        primary: '#64748b',
+        secondary: '#cbd5e1',
+        accent: '#94a3b8',
+      },
+    },
   ];
 
   const fontThemeOptions: {
@@ -441,6 +471,62 @@ const Themes = () => {
       titleKey: 'playfulFontTheme',
       descriptionKey: 'playfulFontThemeDescription',
       fontFamily: '"Poppins", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'times',
+      titleKey: 'timesFontTheme',
+      descriptionKey: 'timesFontThemeDescription',
+      fontFamily: '"Times New Roman", Times, serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'roboto',
+      titleKey: 'robotoFontTheme',
+      descriptionKey: 'robotoFontThemeDescription',
+      fontFamily: '"Roboto", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'opensans',
+      titleKey: 'opensansFontTheme',
+      descriptionKey: 'opensansFontThemeDescription',
+      fontFamily: '"Open Sans", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'lato',
+      titleKey: 'latoFontTheme',
+      descriptionKey: 'latoFontThemeDescription',
+      fontFamily: '"Lato", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'montserrat',
+      titleKey: 'montserratFontTheme',
+      descriptionKey: 'montserratFontThemeDescription',
+      fontFamily: '"Montserrat", sans-serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'sourcecode',
+      titleKey: 'sourcecodeFontTheme',
+      descriptionKey: 'sourcecodeFontThemeDescription',
+      fontFamily: '"Source Code Pro", monospace',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'literary',
+      titleKey: 'literaryFontTheme',
+      descriptionKey: 'literaryFontThemeDescription',
+      fontFamily: '"Merriweather", serif',
+      sampleText: 'The quick fox',
+    },
+    {
+      fontTheme: 'thin',
+      titleKey: 'thinFontTheme',
+      descriptionKey: 'thinFontThemeDescription',
+      fontFamily: '"Raleway", sans-serif',
       sampleText: 'The quick fox',
     },
   ];
