@@ -34,6 +34,7 @@ import {
   SidebarRail,
   SidebarHeader,
   SidebarFooter,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 
 import {
@@ -217,6 +218,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        <SidebarSeparator className='my-2' />
+
         {/* Management Section */}
         <SidebarGroup>
           <SidebarGroupLabel className='text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider'>
@@ -258,6 +261,8 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarSeparator className='my-2' />
 
         {/* Settings Section */}
         <SidebarGroup>

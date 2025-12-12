@@ -792,6 +792,36 @@ body {
   letter-spacing: var(--tracking-normal);
 }
 
+/* Custom Scrollbar Styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
