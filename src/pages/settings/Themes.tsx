@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 
 type ThemeOption = 'light' | 'dark' | 'system';
-type ColorThemeOption = 'default' | 'claude' | 'cosmic-night' | 'supabase' | 'ocean-breeze';
+type ColorThemeOption = 'default' | 'claude' | 'cosmic-night' | 'supabase' | 'ocean-breeze' | 'aurora';
 type FontThemeOption = 'default' | 'modern' | 'classic' | 'mono' | 'rounded' | 'elegant' | 'compact' | 'playful';
 
 interface ThemeCardProps {
@@ -366,6 +366,16 @@ const Themes = () => {
         primary: '#2dd4bf',
         secondary: '#e0f2fe',
         accent: '#99f6e4',
+      },
+    },
+    {
+      colorTheme: 'aurora',
+      titleKey: 'auroraColorTheme',
+      descriptionKey: 'auroraColorThemeDescription',
+      colors: {
+        primary: '#38bdf8',
+        secondary: '#e0e7ff',
+        accent: '#f0abfc',
       },
     },
   ];

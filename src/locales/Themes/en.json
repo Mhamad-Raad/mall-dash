@@ -21,6 +21,8 @@
   "supabaseColorThemeDescription": "Fresh green tones with clean design",
   "oceanBreezeColorTheme": "Ocean Breeze",
   "oceanBreezeColorThemeDescription": "Calming teal and aqua tones",
+  "auroraColorTheme": "Aurora",
+  "auroraColorThemeDescription": "Northern lights with ethereal blue and pink",
   "fontThemeTitle": "Font",
   "fontThemeSubtitle": "Choose a typography style for the interface",
   "defaultFontTheme": "System",
