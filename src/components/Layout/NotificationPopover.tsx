@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import {
@@ -294,7 +294,7 @@ export default function NotificationPopover() {
           </div>
         ) : (
           <>
-            <ScrollArea className='h-[380px]'>
+            <div className='h-[380px] overflow-y-auto'>
               <div className='p-2 space-y-1'>
                 {filteredNotifications.map((notification) => {
                   const Icon = getNotificationIcon(notification.type);
@@ -374,7 +374,7 @@ export default function NotificationPopover() {
                   );
                 })}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Footer */}
             <div className='border-t p-2 bg-muted/30'>
