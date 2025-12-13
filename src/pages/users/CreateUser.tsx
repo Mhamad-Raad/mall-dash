@@ -88,9 +88,6 @@ export default function CreateUser() {
       if (!/[0-9]/.test(formData.password)) {
         passwordErrors.push(t('forms.validation.passwordNumber'));
       }
-      if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-        passwordErrors.push(t('forms.validation.passwordSpecial'));
-      }
       if (passwordErrors.length > 0) {
         errors.password = passwordErrors.join('. ');
       }

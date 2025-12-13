@@ -19,16 +19,16 @@ export function PasswordStrengthIndicator({ password, className = '' }: Password
       met: password.length >= 8,
     },
     {
-      label: 'Contains a digit (0-9)',
-      met: /\d/.test(password),
+      label: 'Contains an uppercase letter (A-Z)',
+      met: /[A-Z]/.test(password),
     },
     {
       label: 'Contains a lowercase letter (a-z)',
       met: /[a-z]/.test(password),
     },
     {
-      label: 'Contains an uppercase letter (A-Z)',
-      met: /[A-Z]/.test(password),
+      label: 'Contains a digit (0-9)',
+      met: /\d/.test(password),
     },
   ];
 
