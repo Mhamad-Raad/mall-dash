@@ -25,7 +25,8 @@ import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchProductById, updateProduct } from '@/data/Products';
 import { fetchCategories } from '@/data/Categories';
 import type { ProductType } from '@/interfaces/Products.interface';
-
+import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
+import type { ChangeDetail } from '@/components/ui/Modals/ConfirmModal';
 const ProductDetail = () => {
   const { t } = useTranslation('products');
   const { id } = useParams();
@@ -49,6 +50,10 @@ const ProductDetail = () => {
   // Image State
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+
+  // Confirmation Modal State
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [changes, setChanges] = useState<ChangeDetail[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -98,35 +103,105 @@ const ProductDetail = () => {
     return [];
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id) return;
+    if (!id || !product) return;
 
     if (!name || !price || !categoryId) {
       toast.error('Please fill in all required fields');
       return;
     }
 
+    const newChanges: ChangeDetail[] = [];
+
+    if (name !== product.name) {
+      newChanges.push({
+        field: 'Name',
+        oldValue: product.name,
+        newValue: name,
+      });
+    }
+
+    if (description !== (product.description || '')) {
+      newChanges.push({
+        field: 'Description',
+        oldValue: product.description || '',
+        newValue: description,
+      });
+    }
+
+    const currentPrice = parseFloat(price);
+    if (!isNaN(currentPrice) && currentPrice !== product.price) {
+      newChanges.push({
+        field: 'Price',
+        oldValue: product.price,
+        newValue: currentPrice,
+      });
+    }
+
+    const currentDiscount = discountPrice ? parseFloat(discountPrice) : null;
+    if (currentDiscount !== product.discountPrice) {
+      newChanges.push({
+        field: 'Discount Price',
+        oldValue: product.discountPrice ?? 'None',
+        newValue: currentDiscount ?? 'None',
+      });
+    }
+
+    if (inStock !== product.inStock) {
+      newChanges.push({
+        field: 'In Stock',
+        oldValue: product.inStock ? 'Yes' : 'No',
+        newValue: inStock ? 'Yes' : 'No',
+      });
+    }
+
+    if (isWeightable !== product.isWeightable) {
+      newChanges.push({
+        field: 'Weightable',
+        oldValue: product.isWeightable ? 'Yes' : 'No',
+        newValue: isWeightable ? 'Yes' : 'No',
+      });
+    }
+
+    if (categoryId !== product.categoryId) {
+      newChanges.push({
+        field: 'Category',
+        oldValue: product.categoryName,
+        newValue: categoryName,
+      });
+    }
+
+    if (imageFile) {
+      newChanges.push({
+        field: 'Image',
+        oldValue: 'Current Image',
+        newValue: 'New Image Selected',
+      });
+    }
+
+    setChanges(newChanges);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmUpdate = async () => {
+    if (!id) return;
+    setShowConfirmModal(false);
     setSaving(true);
+
     const formData = new FormData();
     formData.append('Id', id);
     formData.append('Name', name);
     formData.append('Description', description);
     formData.append('Price', price);
     if (discountPrice) formData.append('DiscountPrice', discountPrice);
-    formData.append('CategoryId', categoryId.toString());
+    formData.append('CategoryId', categoryId!.toString());
     formData.append('InStock', String(inStock));
     formData.append('IsWeightable', String(isWeightable));
 
     if (imageFile) {
       formData.append('ProductImageUrl', imageFile);
     } else {
-      // If no new image, do we send the old URL?
-      // Usually for multipart, if we don't send file, we might send the string or nothing.
-      // Based on user input "ProductImageUrl Type:string", maybe we send the string if not changed?
-      // But typically backend ignores missing file field in update.
-      // I'll leave it out if not changed, or send the URL string if it's required as string.
-      // Let's try sending the string URL if no file is there, just in case.
       if (product?.productImageUrl) {
         formData.append('ProductImageUrl', product.productImageUrl);
       }
@@ -180,7 +255,7 @@ const ProductDetail = () => {
       </div>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleFormSubmit}
         className='grid grid-cols-1 lg:grid-cols-3 gap-6'
       >
         {/* Left Column - Main Info */}
@@ -370,6 +445,17 @@ const ProductDetail = () => {
           </Button>
         </div>
       </form>
+
+      <ConfirmModal
+        open={showConfirmModal}
+        onCancel={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmUpdate}
+        title='Update Product'
+        description="Are you sure you want to update this product's details? Please review the changes below."
+        confirmLabel='Update'
+        confirmType='success'
+        changes={changes}
+      />
     </div>
   );
 };

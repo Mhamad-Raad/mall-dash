@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
-import { fetchVendors } from '@/data/Vendor';
-import { fetchCategories } from '@/data/Categories';
+import { fetchVendors, fetchVendorById } from '@/data/Vendor';
+import { fetchCategories, fetchCategoryById } from '@/data/Categories';
 
 // We need simple interfaces for the autocomplete options if the full types are complex
 interface VendorOption {
@@ -57,6 +57,8 @@ const ProductsFilters = () => {
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryOption | null>(null);
 
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Debounce for search input
   const debounceRef = useRef<any>(null);
 
@@ -70,8 +72,36 @@ const ProductsFilters = () => {
     };
   }, [typedSearch]);
 
+  // Initial load from URL
+  useEffect(() => {
+    const initFilters = async () => {
+      const vId = searchParams.get('vendorId');
+      const cId = searchParams.get('categoryId');
+
+      if (vId) {
+        const vendor = await fetchVendorById(vId);
+        if (vendor && !vendor.error) {
+          setSelectedVendor({ id: vendor.id, name: vendor.name });
+        }
+      }
+
+      if (cId) {
+        const category = await fetchCategoryById(parseInt(cId));
+        if (category && !category.error) {
+          setSelectedCategory({ id: category.id, name: category.name });
+        }
+      }
+
+      setIsInitialized(true);
+    };
+
+    initFilters();
+  }, []);
+
   // Sync state with URL
   useEffect(() => {
+    if (!isInitialized) return;
+
     const params = new URLSearchParams(searchParams);
 
     // Search
@@ -92,31 +122,33 @@ const ProductsFilters = () => {
     if (selectedVendor) {
       params.set('vendorId', selectedVendor.id.toString());
     } else {
-      const vId = params.get('vendorId');
-      if (!vId) setSelectedVendor(null); // Clear if removed from URL
+      params.delete('vendorId');
     }
 
     // Category
     if (selectedCategory) {
       params.set('categoryId', selectedCategory.id.toString());
     } else {
-      const cId = params.get('categoryId');
-      if (!cId) setSelectedCategory(null);
+      params.delete('categoryId');
     }
 
-    // Reset page on filter change
+    // Reset page on filter change (only if params changed)
+    // Note: This logic might reset page even if we are just syncing initial state?
+    // No, isInitialized protects us.
+    // But if we navigate to page 2, this effect runs?
+    // Dependency array: [search, inStock, selectedVendor, selectedCategory, isInitialized]
+    // If we navigate to page 2, none of these change. So effect doesn't run.
+
+    // Check if params actually changed before navigating to avoid loop or unnecessary replacement
+    // But since we use navigate with replace, it's fine.
+    // However, we want to ensure we don't reset page if only page changed (handled by dependency array).
+
     params.set('page', '1');
 
     navigate(`${window.location.pathname}?${params.toString()}`, {
       replace: true,
     });
-  }, [search, inStock, selectedVendor, selectedCategory]);
-
-  // Initial load from URL for objects (Vendor/Category) is tricky because we only have ID in URL.
-  // We might need to fetch the object by ID if we want to show the name.
-  // For now, I'll skip fetching the initial object name and just let it be empty or handle it if needed.
-  // Or I can just rely on the user re-selecting if they want to filter.
-  // Ideally we should fetch the vendor/category details if ID is present.
+  }, [search, inStock, selectedVendor, selectedCategory, isInitialized]);
 
   const handleOnCreate = () => {
     navigate('/products/create');
@@ -133,9 +165,6 @@ const ProductsFilters = () => {
     setInStock('all');
     setSelectedVendor(null);
     setSelectedCategory(null);
-    // We might need to force clear the AutoComplete inputs.
-    // The ObjectAutoComplete component might need a key to reset or exposed method.
-    // I'll add a key to force re-render.
   };
 
   // Wrapper for fetching vendors
@@ -198,46 +227,42 @@ const ProductsFilters = () => {
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
           {/* Search */}
           <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
             <Input
               placeholder='Search products...'
-              className='pl-9'
               value={typedSearch}
               onChange={(e) => setTypedSearch(e.target.value)}
+              className='pl-9 pr-9'
             />
             {typedSearch && (
               <button
                 onClick={clearSearch}
                 className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
               >
-                <X className='size-4' />
+                <X className='h-4 w-4' />
               </button>
             )}
           </div>
 
           {/* Vendor Filter */}
-          <div className='relative z-20'>
-            <ObjectAutoComplete
-              fetchOptions={loadVendors}
-              onSelectOption={setSelectedVendor}
-              getOptionLabel={(v) => v.name}
-              placeholder='Select Vendor'
-              initialValue={selectedVendor?.name}
-            />
-          </div>
+          <ObjectAutoComplete
+            fetchOptions={loadVendors}
+            onSelectOption={setSelectedVendor}
+            getOptionLabel={(v) => v.name}
+            placeholder='Select Vendor'
+            initialValue={selectedVendor?.name}
+          />
 
           {/* Category Filter */}
-          <div className='relative z-10'>
-            <ObjectAutoComplete
-              fetchOptions={loadCategories}
-              onSelectOption={setSelectedCategory}
-              getOptionLabel={(c) => c.name}
-              placeholder='Select Category'
-              initialValue={selectedCategory?.name}
-            />
-          </div>
+          <ObjectAutoComplete
+            fetchOptions={loadCategories}
+            onSelectOption={setSelectedCategory}
+            getOptionLabel={(c) => c.name}
+            placeholder='Select Category'
+            initialValue={selectedCategory?.name}
+          />
 
-          {/* In Stock Filter */}
+          {/* Stock Filter */}
           <Select value={inStock} onValueChange={setInStock}>
             <SelectTrigger>
               <SelectValue placeholder='Stock Status' />
@@ -250,19 +275,58 @@ const ProductsFilters = () => {
           </Select>
         </div>
 
-        {(typedSearch ||
+        {/* Active Filters Summary (Optional) */}
+        {(search ||
+          inStock !== 'all' ||
           selectedVendor ||
-          selectedCategory ||
-          inStock !== 'all') && (
-          <div className='flex justify-end'>
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={clearAllFilters}
-              className='text-muted-foreground'
-            >
-              Clear all filters
-            </Button>
+          selectedCategory) && (
+          <div className='flex items-center gap-2 pt-2 border-t'>
+            <span className='text-xs text-muted-foreground font-medium uppercase tracking-wider'>
+              Active Filters:
+            </span>
+            <div className='flex flex-wrap gap-2'>
+              {search && (
+                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
+                  Search: {search}
+                  <X className='w-3 h-3 cursor-pointer' onClick={clearSearch} />
+                </div>
+              )}
+              {selectedVendor && (
+                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
+                  Vendor: {selectedVendor.name}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => setSelectedVendor(null)}
+                  />
+                </div>
+              )}
+              {selectedCategory && (
+                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
+                  Category: {selectedCategory.name}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => setSelectedCategory(null)}
+                  />
+                </div>
+              )}
+              {inStock !== 'all' && (
+                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
+                  Stock: {inStock === 'true' ? 'In Stock' : 'Out of Stock'}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => setInStock('all')}
+                  />
+                </div>
+              )}
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={clearAllFilters}
+                className='ml-auto h-6 text-xs hover:bg-destructive/10 hover:text-destructive'
+              >
+                Clear All
+              </Button>
+            </div>
           </div>
         )}
       </div>

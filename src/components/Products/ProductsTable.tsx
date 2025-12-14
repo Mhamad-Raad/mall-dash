@@ -118,7 +118,7 @@ const ProductsTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading && products.length === 0
+              {loading
                 ? Array.from({ length: 5 }).map((_, index) => (
                     <ProductsTableSkeleton key={`skeleton-${index}`} />
                   ))
