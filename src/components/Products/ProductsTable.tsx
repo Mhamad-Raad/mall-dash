@@ -1,15 +1,7 @@
-import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  ShoppingBag,
-  Tag,
-  Store,
-  Trash2,
-  Edit,
-  ChevronRight,
-} from 'lucide-react';
+import { ShoppingBag, Tag, Store, Edit } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -26,14 +18,10 @@ import {
 
 import ProductsTableSkeleton from './ProductsTableSkeleton';
 import CustomTablePagination from '../CustomTablePagination';
-import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
 
 import { fetchProducts } from '@/store/slices/productsSlice';
 
 import type { RootState, AppDispatch } from '@/store/store';
-import type { ProductType } from '@/interfaces/Products.interface';
-import { deleteProduct as deleteProductAPI } from '@/data/Products';
-import { toast } from 'sonner';
 
 const ProductsTable = () => {
   const { t } = useTranslation('products');
@@ -44,9 +32,6 @@ const ProductsTable = () => {
     (state: RootState) => state.products
   );
 
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
   const handleRowClick = (productId: number) => {
     navigate(`/products/${productId}`);
   };
@@ -54,30 +39,6 @@ const ProductsTable = () => {
   const handleEdit = (e: React.MouseEvent, productId: number) => {
     e.stopPropagation();
     navigate(`/products/${productId}`);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent, productId: number) => {
-    e.stopPropagation();
-    setDeleteId(productId);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteId) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteProductAPI(deleteId);
-      if (res.error) {
-        toast.error(res.error);
-      } else {
-        toast.success('Product deleted successfully');
-        dispatch(fetchProducts({ page, limit })); // Refetch
-      }
-    } catch (err) {
-      toast.error('Failed to delete product');
-    } finally {
-      setIsDeleting(false);
-      setDeleteId(null);
-    }
   };
 
   if (error) {
@@ -212,14 +173,6 @@ const ProductsTable = () => {
                           >
                             <Edit className='h-4 w-4' />
                           </Button>
-                          <Button
-                            variant='ghost'
-                            size='icon'
-                            className='h-8 w-8 text-muted-foreground hover:text-destructive'
-                            onClick={(e) => handleDeleteClick(e, product.id)}
-                          >
-                            <Trash2 className='h-4 w-4' />
-                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -237,16 +190,6 @@ const ProductsTable = () => {
           />
         </div>
       </div>
-
-      <ConfirmModal
-        open={!!deleteId}
-        onCancel={() => setDeleteId(null)}
-        onConfirm={confirmDelete}
-        title='Delete Product'
-        description='Are you sure you want to delete this product? This action cannot be undone.'
-        confirmType='danger'
-        confirmLabel={isDeleting ? 'Deleting...' : 'Delete'}
-      />
     </>
   );
 };

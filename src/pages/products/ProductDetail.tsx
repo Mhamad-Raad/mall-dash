@@ -11,6 +11,7 @@ import {
   Check,
   X,
   Store,
+  Trash2,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
-import { fetchProductById, updateProduct } from '@/data/Products';
+import {
+  fetchProductById,
+  updateProduct,
+  deleteProduct,
+} from '@/data/Products';
 import { fetchCategories } from '@/data/Categories';
 import type { ProductType } from '@/interfaces/Products.interface';
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
@@ -54,6 +59,10 @@ const ProductDetail = () => {
   // Confirmation Modal State
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [changes, setChanges] = useState<ChangeDetail[]>([]);
+
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -218,6 +227,20 @@ const ProductDetail = () => {
     setSaving(false);
   };
 
+  const handleConfirmDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    const result = await deleteProduct(parseInt(id));
+    if (result && !result.error) {
+      toast.success('Product deleted successfully');
+      navigate('/products');
+    } else {
+      toast.error(result?.error || 'Failed to delete product');
+      setShowDeleteModal(false);
+    }
+    setDeleting(false);
+  };
+
   if (loading) {
     return (
       <div className='flex items-center justify-center h-96'>
@@ -244,13 +267,21 @@ const ProductDetail = () => {
             Update product information and settings
           </p>
         </div>
-        <div className='ml-auto'>
+        <div className='ml-auto flex items-center gap-3'>
           {product?.vendorName && (
             <div className='flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full'>
               <Store className='w-4 h-4' />
               <span>{product.vendorName}</span>
             </div>
           )}
+          <Button
+            variant='destructive'
+            size='sm'
+            onClick={() => setShowDeleteModal(true)}
+          >
+            <Trash2 className='w-4 h-4 mr-2' />
+            Delete Product
+          </Button>
         </div>
       </div>
 
@@ -455,6 +486,16 @@ const ProductDetail = () => {
         confirmLabel='Update'
         confirmType='success'
         changes={changes}
+      />
+
+      <ConfirmModal
+        open={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title='Delete Product'
+        description='Are you sure you want to delete this product? This action cannot be undone.'
+        confirmLabel={deleting ? 'Deleting...' : 'Delete'}
+        confirmType='danger'
       />
     </div>
   );

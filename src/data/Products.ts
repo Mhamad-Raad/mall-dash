@@ -60,9 +60,13 @@ export const updateProduct = async (id: number, productData: FormData) => {
 
 export const deleteProduct = async (id: number) => {
   try {
-    const response = await axiosInstance.delete(`/Product/${id}`, {
+    const response = await axiosInstance.delete(`/Product/admin/${id}`, {
       headers: { key: API_KEY, value: API_VALUE },
     });
+    // If status is 204 No Content, return success
+    if (response.status === 204 || !response.data) {
+      return { error: null };
+    }
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
