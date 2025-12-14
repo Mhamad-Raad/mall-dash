@@ -1,6 +1,7 @@
 export interface ProductType {
   id: number;
   name: string;
+  description?: string;
   price: number;
   discountPrice: number | null;
   inStock: boolean;

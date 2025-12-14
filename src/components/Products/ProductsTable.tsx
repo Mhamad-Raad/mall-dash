@@ -53,7 +53,7 @@ const ProductsTable = () => {
 
   const handleEdit = (e: React.MouseEvent, productId: number) => {
     e.stopPropagation();
-    navigate(`/products/edit/${productId}`);
+    navigate(`/products/${productId}`);
   };
 
   const handleDeleteClick = (e: React.MouseEvent, productId: number) => {

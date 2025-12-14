@@ -13,9 +13,9 @@ export const fetchProducts = async (params?: ProductFilters) => {
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
-    return { 
+    return {
       error: errorData?.error || errorData?.message || error.message,
-      errors: errorData?.errors || []
+      errors: errorData?.errors || [],
     };
   }
 };
@@ -28,28 +28,32 @@ export const fetchProductById = async (id: number) => {
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
-    return { 
+    return {
       error: errorData?.error || errorData?.message || error.message,
-      errors: errorData?.errors || []
+      errors: errorData?.errors || [],
     };
   }
 };
 
 export const updateProduct = async (id: number, productData: FormData) => {
   try {
-    const response = await axiosInstance.put(`/Product/${id}`, productData, {
-      headers: {
-        key: API_KEY,
-        value: API_VALUE,
-      },
-      transformRequest: [(data) => data],
-    });
+    const response = await axiosInstance.put(
+      `/Product/admin/${id}`,
+      productData,
+      {
+        headers: {
+          key: API_KEY,
+          value: API_VALUE,
+        },
+        transformRequest: [(data) => data],
+      }
+    );
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
-    return { 
+    return {
       error: errorData?.error || errorData?.message || error.message,
-      errors: errorData?.errors || []
+      errors: errorData?.errors || [],
     };
   }
 };
@@ -62,9 +66,9 @@ export const deleteProduct = async (id: number) => {
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
-    return { 
+    return {
       error: errorData?.error || errorData?.message || error.message,
-      errors: errorData?.errors || []
+      errors: errorData?.errors || [],
     };
   }
 };
@@ -81,9 +85,10 @@ export const createProduct = async (productData: FormData) => {
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
-    return { 
+    return {
       error: errorData?.error || errorData?.message || error.message,
-      errors: errorData?.errors || []
+      errors: errorData?.errors || [],
     };
   }
 };
+
