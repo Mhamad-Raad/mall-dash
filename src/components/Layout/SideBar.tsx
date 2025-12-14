@@ -73,7 +73,7 @@ const mainNavItems = [
   },
   {
     titleKey: 'products',
-    url: '#',
+    url: '/products',
     icon: Package,
   },
   {

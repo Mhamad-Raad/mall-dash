@@ -142,7 +142,7 @@ export function ObjectAutoComplete<T>({
       )}
 
       {showOptions && (options.length > 0 || error) && (
-        <Card className='absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-auto border shadow-lg'>
+        <Card className='absolute z-[100] left-0 right-0 mt-1 max-h-60 overflow-auto border shadow-lg'>
           {error ? (
             <div className='text-sm text-destructive p-2'>{error}</div>
           ) : (
