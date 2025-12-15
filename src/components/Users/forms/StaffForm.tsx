@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { PasswordStrengthIndicator } from '@/components/ui/PasswordStrengthIndicator';
 import {
   Select,
   SelectContent,
@@ -12,6 +13,15 @@ import {
 } from '@/components/ui/select';
 import { Mail, Lock, Image as ImageIcon, X } from 'lucide-react';
 import roles from '@/constants/roles';
+
+type FieldErrors = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  phoneNumber?: string;
+};
 
 type StaffFormProps = {
   formData: {
@@ -25,9 +35,15 @@ type StaffFormProps = {
     photo?: File | null;
   };
   onInputChange: (field: string, value: unknown) => void;
+  errors?: FieldErrors;
 };
 
-export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
+const FieldError = ({ message }: { message?: string }) => {
+  if (!message) return null;
+  return <p className='text-sm text-destructive mt-1'>{message}</p>;
+};
+
+export default function StaffForm({ formData, onInputChange, errors = {} }: StaffFormProps) {
   const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
 
@@ -108,7 +124,9 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               value={formData.firstName}
               onChange={(e) => onInputChange('firstName', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.firstName}
             />
+            <FieldError message={errors.firstName} />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='admin-lastname' className='text-sm font-medium'>
@@ -120,7 +138,9 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               value={formData.lastName}
               onChange={(e) => onInputChange('lastName', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.lastName}
             />
+            <FieldError message={errors.lastName} />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='staff-role' className='text-sm font-medium'>
@@ -170,7 +190,9 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               value={formData.email}
               onChange={(e) => onInputChange('email', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.email}
             />
+            <FieldError message={errors.email} />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='admin-phone' className='text-sm font-medium'>
@@ -183,7 +205,9 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               value={formData.phoneNumber}
               onChange={(e) => onInputChange('phoneNumber', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.phoneNumber}
             />
+            <FieldError message={errors.phoneNumber} />
           </div>
         </div>
       </div>
@@ -196,7 +220,7 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
           <Lock className='size-5 text-primary' />
           <h3 className='text-base font-semibold'>{t('forms.security')}</h3>
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div className='space-y-2'>
             <Label htmlFor='admin-password' className='text-sm font-medium'>
               {t('forms.password')} <span className='text-destructive'>*</span>
@@ -208,7 +232,9 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               value={formData.password}
               onChange={(e) => onInputChange('password', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.password}
             />
+            <FieldError message={errors.password} />
           </div>
           <div className='space-y-2'>
             <Label
@@ -224,12 +250,17 @@ export default function StaffForm({ formData, onInputChange }: StaffFormProps) {
               value={formData.confirmPassword}
               onChange={(e) => onInputChange('confirmPassword', e.target.value)}
               className='h-11'
+              aria-invalid={!!errors.confirmPassword}
             />
+            <FieldError message={errors.confirmPassword} />
           </div>
         </div>
-        <p className='text-xs text-muted-foreground'>
-          {t('forms.passwordRequirement')}
-        </p>
+        
+        {/* Password Strength Indicator */}
+        <PasswordStrengthIndicator 
+          password={formData.password}
+          className='mt-4'
+        />
       </div>
     </div>
   );

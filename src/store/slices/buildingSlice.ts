@@ -15,19 +15,21 @@ interface BuildingState {
   building: Building | null;
   loading: boolean;
   error: string | null;
+  errors: string[];
 }
 
 const initialState: BuildingState = {
   building: null,
   loading: false,
   error: null,
+  errors: [],
 };
 
 export const getBuildingById = createAsyncThunk(
   'building/getById',
   async (id: number, { rejectWithValue }) => {
     const result = await fetchBuildingById(id);
-    if (result.error) return rejectWithValue(result.error);
+    if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
     return result;
   }
 );
@@ -36,7 +38,7 @@ export const putBuildingName = createAsyncThunk(
   'building/updateName',
   async (params: { id: number; name: string }, { rejectWithValue }) => {
     const result = await updateBuildingName(params.id, params.name);
-    if (result.error) return rejectWithValue(result.error);
+    if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
     return { ...result, name: params.name, id: params.id };
   }
 );
@@ -56,7 +58,7 @@ export const updateApartmentThunk = createAsyncThunk(
       params.apartmentName,
       params.userId
     );
-    if (result.error) return rejectWithValue(result.error);
+    if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
 
     return { ...params, updatedApartment: result };
   }
@@ -66,7 +68,7 @@ export const postBuildingFloor = createAsyncThunk(
   'building/addFloor',
   async (buildingId: number, { rejectWithValue }) => {
     const result = await addBuildingFloor(buildingId);
-    if (result.error) return rejectWithValue(result.error);
+    if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
     return result;
   }
 );
@@ -78,6 +80,7 @@ export const removeBuildingFloor = createAsyncThunk(
     if (result?.error || result?.statusCode >= 400) {
       return rejectWithValue({
         error: result?.error,
+        errors: result?.errors || [],
         status: result?.statusCode,
         floorId,
       });
@@ -96,7 +99,7 @@ export const addApartmentToFloorThunk = createAsyncThunk(
       params.floorId,
       params.apartmentName
     );
-    if (result.error) return rejectWithValue(result.error);
+    if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
     // Only a message is returned, so just return params (refetch is recommended after this)
     return params;
   }
@@ -106,7 +109,7 @@ export const deleteApartmentThunk = createAsyncThunk(
   'building/deleteApartment',
   async (apartmentId: number, { rejectWithValue }) => {
     const result = await deleteApartment(apartmentId);
-    if (result.error) return rejectWithValue(result.error);
+    if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
     // Only returns message, so pass back id for local state handling
     return { id: apartmentId };
   }
@@ -116,7 +119,7 @@ export const deleteBuildingThunk = createAsyncThunk(
   'building/deleteBuilding',
   async (id: number, { rejectWithValue }) => {
     const result = await deleteBuilding(id);
-    if (result?.error) return rejectWithValue(result.error);
+    if (result?.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
     // Only returns message, so just return id for redirect/state update
     return { id };
   }
@@ -130,6 +133,7 @@ const buildingSlice = createSlice({
       state.building = null;
       state.loading = false;
       state.error = null;
+      state.errors = [];
     },
   },
   extraReducers: (builder) => {
@@ -137,19 +141,24 @@ const buildingSlice = createSlice({
       .addCase(getBuildingById.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(getBuildingById.fulfilled, (state, action) => {
         state.loading = false;
         state.building = action.payload;
         state.error = null;
+        state.errors = [];
       })
       .addCase(getBuildingById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       .addCase(putBuildingName.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(putBuildingName.fulfilled, (state, action) => {
         state.loading = false;
@@ -157,14 +166,18 @@ const buildingSlice = createSlice({
           state.building.name = action.payload.name;
         }
         state.error = null;
+        state.errors = [];
       })
       .addCase(putBuildingName.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       .addCase(updateApartmentThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(updateApartmentThunk.fulfilled, (state, action) => {
         state.loading = false;
@@ -184,26 +197,34 @@ const buildingSlice = createSlice({
           }));
         }
         state.error = null;
+        state.errors = [];
       })
       .addCase(updateApartmentThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       .addCase(postBuildingFloor.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(postBuildingFloor.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
+        state.errors = [];
       })
       .addCase(postBuildingFloor.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       .addCase(removeBuildingFloor.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(removeBuildingFloor.fulfilled, (state, action) => {
         state.loading = false;
@@ -213,28 +234,34 @@ const buildingSlice = createSlice({
           );
         }
         state.error = null;
+        state.errors = [];
       })
       .addCase(removeBuildingFloor.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          (action.payload as { error?: string; status?: number })?.error ||
-          'Unknown error';
+        const payload = action.payload as { error?: string; errors?: string[]; status?: number } | undefined;
+        state.error = payload?.error || 'Unknown error';
+        state.errors = payload?.errors || [];
       })
       .addCase(addApartmentToFloorThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(addApartmentToFloorThunk.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
+        state.errors = [];
       })
       .addCase(addApartmentToFloorThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       .addCase(deleteApartmentThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(deleteApartmentThunk.fulfilled, (state, action) => {
         state.loading = false;
@@ -249,23 +276,30 @@ const buildingSlice = createSlice({
           }));
         }
         state.error = null;
+        state.errors = [];
       })
       .addCase(deleteApartmentThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       })
       .addCase(deleteBuildingThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(deleteBuildingThunk.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
+        state.errors = [];
         state.building = null;
       })
       .addCase(deleteBuildingThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       });
   },
 });

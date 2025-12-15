@@ -19,6 +19,7 @@ import {
   deleteUser,
 } from '@/store/slices/userSlice';
 import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import { initialUser } from '@/constants/Users';
 import roles from '@/constants/roles';
 
@@ -40,8 +41,10 @@ const UserDetail = () => {
     euser: error,
     updating,
     updatingError,
+    updatingErrors,
     deleting,
     deletingError,
+    deletingErrors,
   } = useSelector((state: RootState) => state.user);
 
   const [formData, setFormData] = useState<UserFormData>({
@@ -175,7 +178,11 @@ const UserDetail = () => {
 
   useEffect(() => {
     if (updatingError) {
-      toast.error(updatingError);
+      showValidationErrors(
+        'Failed to update user',
+        updatingErrors?.length > 0 ? updatingErrors : updatingError,
+        'An error occurred while updating the user'
+      );
       setShowUpdateModal(false);
     }
     if (!updating && showUpdateModal && !updatingError) {
@@ -185,18 +192,22 @@ const UserDetail = () => {
       setPassword('');
       setConfirmPassword('');
     }
-  }, [updating, updatingError]);
+  }, [updating, updatingError, updatingErrors]);
 
   useEffect(() => {
     if (deletingError) {
-      toast.error(deletingError);
+      showValidationErrors(
+        'Failed to delete user',
+        deletingErrors?.length > 0 ? deletingErrors : deletingError,
+        'An error occurred while deleting the user'
+      );
     }
     if (!deleting && showDeleteModal && !deletingError) {
       setShowDeleteModal(false);
       toast.success('User deleted!');
       navigate('/users');
     }
-  }, [deleting, deletingError, navigate]);
+  }, [deleting, deletingError, deletingErrors, navigate]);
 
   const handletoggleUpdateModal = () => {
     if (!hasChanges) return;

@@ -20,10 +20,10 @@ const cardIcons = {
 };
 
 const cardIconColors = {
-  Orders: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
-  Users: 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400',
-  Vendors: 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400',
-  Requests: 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400',
+  Orders: 'bg-chart-1/10 text-chart-1 dark:bg-chart-1/20',
+  Users: 'bg-chart-2/10 text-chart-2 dark:bg-chart-2/20',
+  Vendors: 'bg-chart-3/10 text-chart-3 dark:bg-chart-3/20',
+  Requests: 'bg-chart-4/10 text-chart-4 dark:bg-chart-4/20',
 };
 
 const HomeCards = ({ cards }: HomeCardsProps) => {
@@ -53,10 +53,10 @@ const HomeCards = ({ cards }: HomeCardsProps) => {
                 variant='outline' 
                 className={`gap-1 w-fit mt-2 ${
                   card.badge.trendingUp === true 
-                    ? 'border-green-500/50 text-green-700 dark:text-green-400' 
+                    ? 'border-primary/30 text-primary' 
                     : card.badge.trendingUp === false 
-                    ? 'border-red-500/50 text-red-700 dark:text-red-400' 
-                    : 'border-blue-500/50 text-blue-700 dark:text-blue-400'
+                    ? 'border-destructive/30 text-destructive' 
+                    : 'border-muted-foreground/30 text-muted-foreground'
                 }`}
               >
                 {card.badge.text}
@@ -67,10 +67,10 @@ const HomeCards = ({ cards }: HomeCardsProps) => {
             <CardFooter className='pt-0 pb-4'>
               <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
                 {card.badge.trendingUp === true && (
-                  <TrendingUpIcon className='size-3.5 text-green-600 dark:text-green-400' />
+                  <TrendingUpIcon className='size-3.5 text-primary' />
                 )}
                 {card.badge.trendingUp === false && (
-                  <TrendingDownIcon className='size-3.5 text-red-600 dark:text-red-400' />
+                  <TrendingDownIcon className='size-3.5 text-destructive' />
                 )}
                 <span className='line-clamp-1'>{card.footer}</span>
               </div>

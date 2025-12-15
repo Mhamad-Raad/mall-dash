@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import type { AppDispatch, RootState } from '@/store/store';
 import { fetchVendorById,  updateVendor,  clearVendor,  deleteVendor } from '@/store/slices/vendorSlice';
 import { vendorTypes } from '@/constants/vendorTypes';
@@ -24,7 +25,7 @@ const VendorDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation('vendors');
 
-  const { vendor, loading, error, updating, updateError } = useSelector(
+  const { vendor, loading, error, errors, updating, updateError, updateErrors } = useSelector(
     (state: RootState) => state.vendor
   );
 
@@ -104,20 +105,24 @@ const VendorDetail = () => {
   // Show error toast
   useEffect(() => {
     if (error) {
-      toast.error('Failed to Load Vendor', {
-        description: error,
-      });
+      showValidationErrors(
+        'Failed to Load Vendor',
+        errors?.length > 0 ? errors : error,
+        'An error occurred while loading the vendor'
+      );
     }
-  }, [error]);
+  }, [error, errors]);
 
   // Show update error toast
   useEffect(() => {
     if (updateError) {
-      toast.error('Failed to Update Vendor', {
-        description: updateError,
-      });
+      showValidationErrors(
+        'Failed to Update Vendor',
+        updateErrors?.length > 0 ? updateErrors : updateError,
+        'An error occurred while updating the vendor'
+      );
     }
-  }, [updateError]);
+  }, [updateError, updateErrors]);
 
   // Handle photo preview
   useEffect(() => {
@@ -257,12 +262,21 @@ const VendorDetail = () => {
 
   const confirmDelete = async () => {
     setShowDeleteModal(false);
-    navigate('/vendors');
     if (id) {
-      await dispatch(deleteVendor(id));
-      toast.success(t('vendorDetail.success.deleted'), {
-        description: t('vendorDetail.success.deletedDescription'),
-      });
+      const result = await dispatch(deleteVendor(id));
+      if (deleteVendor.rejected.match(result)) {
+        const payload = result.payload as { error: string; errors: string[] } | undefined;
+        showValidationErrors(
+          t('vendorDetail.error.deleteFailed') || 'Failed to delete vendor',
+          payload?.errors?.length ? payload.errors : payload?.error,
+          'An error occurred while deleting the vendor'
+        );
+      } else {
+        toast.success(t('vendorDetail.success.deleted'), {
+          description: t('vendorDetail.success.deletedDescription'),
+        });
+        navigate('/vendors');
+      }
     }
   };
 

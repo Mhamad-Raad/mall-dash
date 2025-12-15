@@ -18,7 +18,11 @@ export const fetchUsers = async (params?: {
 
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -29,7 +33,11 @@ export const fetchUserById = async (id: string) => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -70,7 +78,11 @@ export const updateUser = async (
     return response.data;
   } catch (error: any) {
     console.error('Update failed:', error.response?.data || error.message);
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -82,7 +94,11 @@ export const deleteUser = async (id: string) => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -120,6 +136,10 @@ export const createUser = async (userData: {
     return response.data;
   } catch (error: any) {
     console.error('Create user failed:', error.response?.data || error.message);
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };

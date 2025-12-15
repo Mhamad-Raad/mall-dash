@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Store, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 import TimelineSlider from '@/components/Vendors/TimelineSlider';
 import VendorPhotoUpload from '@/components/Vendors/VendorPhotoUpload';
 import VendorBasicInfo from '@/components/Vendors/VendorBasicInfo';
@@ -142,10 +143,12 @@ const CreateVendor = () => {
       const res = await createVendor(vendorData);
       console.log('Response:', res);
 
-      if (res.error) {
-        toast.error(t('createVendor.error.title'), {
-          description: res.error || t('createVendor.error.description'),
-        });
+      if (res.error || res.errors?.length > 0) {
+        showValidationErrors(
+          t('createVendor.error.title'),
+          res.errors?.length > 0 ? res.errors : res.error,
+          t('createVendor.error.description')
+        );
       } else {
         toast.success(t('createVendor.success.title'), {
           description: t('createVendor.success.description', { name: formData.name }),

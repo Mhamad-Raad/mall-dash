@@ -15,6 +15,10 @@ import VendorDetail from './pages/vendors/VendorDetail';
 import CreateVendor from './pages/vendors/CreateVendor';
 import Profile from './pages/Profile';
 import Reports from './pages/Reports';
+import Themes from './pages/settings/Themes';
+import Products from './pages/products/Products';
+import CreateProduct from './pages/products/CreateProduct';
+import ProductDetail from './pages/products/ProductDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -75,6 +79,22 @@ const router = createBrowserRouter([
       {
         path: '/reports',
         element: <Reports />,
+      },
+      {
+        path: '/settings/themes',
+        element: <Themes />,
+      },
+      {
+        path: '/products',
+        element: <Products />,
+      },
+      {
+        path: '/products/create',
+        element: <CreateProduct />,
+      },
+      {
+        path: '/products/:id',
+        element: <ProductDetail />,
       },
       {
         path: '*',

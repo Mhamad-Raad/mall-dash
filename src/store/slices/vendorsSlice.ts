@@ -8,6 +8,7 @@ interface VendorsState {
   vendors: VendorType[];
   lvendors: boolean;
   evendors: string | null;
+  errorsVendors: string[];
   limit: number;
   page: number;
   total: number;
@@ -17,6 +18,7 @@ const initialState: VendorsState = {
   vendors: [],
   lvendors: false,
   evendors: null,
+  errorsVendors: [],
   limit: 10,
   page: 1,
   total: 10,
@@ -37,12 +39,12 @@ export const fetchVendors = createAsyncThunk(
       const data = await fetchVendorsAPI(params);
 
       if (data.error) {
-        return rejectWithValue(data.error);
+        return rejectWithValue({ error: data.error, errors: data.errors || [] });
       }
 
       return data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch vendors');
+      return rejectWithValue({ error: 'Failed to fetch vendors', errors: [] });
     }
   }
 );
@@ -53,6 +55,7 @@ const vendorsSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.evendors = null;
+      state.errorsVendors = [];
     },
   },
   extraReducers: (builder) => {
@@ -60,6 +63,7 @@ const vendorsSlice = createSlice({
       .addCase(fetchVendors.pending, (state) => {
         state.lvendors = true;
         state.evendors = null;
+        state.errorsVendors = [];
       })
       .addCase(
         fetchVendors.fulfilled,
@@ -79,11 +83,14 @@ const vendorsSlice = createSlice({
           state.page = action.payload.page;
           state.total = action.payload.total;
           state.evendors = null;
+          state.errorsVendors = [];
         }
       )
       .addCase(fetchVendors.rejected, (state, action) => {
         state.lvendors = false;
-        state.evendors = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.evendors = payload?.error || 'An error occurred';
+        state.errorsVendors = payload?.errors || [];
       });
   },
 });

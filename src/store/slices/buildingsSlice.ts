@@ -7,6 +7,7 @@ interface BuildingsState {
   buildings: BuildingType[];
   loading: boolean;
   error: string | null;
+  errors: string[];
   page: number;
   limit: number;
   total: number;
@@ -16,6 +17,7 @@ const initialState: BuildingsState = {
   buildings: [],
   loading: false,
   error: null,
+  errors: [],
   page: 1,
   limit: 10,
   total: 0,
@@ -30,11 +32,11 @@ export const fetchBuildings = createAsyncThunk(
     try {
       const data = await fetchBuildingsAPI(params);
       if (data.error) {
-        return rejectWithValue(data.error);
+        return rejectWithValue({ error: data.error, errors: data.errors || [] });
       }
       return data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch buildings');
+      return rejectWithValue({ error: 'Failed to fetch buildings', errors: [] });
     }
   }
 );
@@ -45,6 +47,7 @@ const buildingsSlice = createSlice({
   reducers: {
     clearBuildingsError(state) {
       state.error = null;
+      state.errors = [];
     },
   },
   extraReducers: (builder) => {
@@ -52,6 +55,7 @@ const buildingsSlice = createSlice({
       .addCase(fetchBuildings.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.errors = [];
       })
       .addCase(
         fetchBuildings.fulfilled,
@@ -70,11 +74,14 @@ const buildingsSlice = createSlice({
           state.limit = action.payload.limit;
           state.total = action.payload.total;
           state.error = null;
+          state.errors = [];
         }
       )
       .addCase(fetchBuildings.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.error = payload?.error || 'An error occurred';
+        state.errors = payload?.errors || [];
       });
   },
 });

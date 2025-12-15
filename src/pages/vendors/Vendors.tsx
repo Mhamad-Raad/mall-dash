@@ -6,6 +6,7 @@ import type { AppDispatch, RootState } from '@/store/store';
 
 import VendorsFilters from '@/components/Vendors/VendorsFilters';
 import VendorsTable from '@/components/Vendors/VendorsTable';
+import EmptyState from '@/components/Vendors/EmptyState';
 
 import { fetchVendors } from '@/store/slices/vendorsSlice';
 
@@ -15,6 +16,7 @@ const Vendors = () => {
   const {
     vendors,
     lvendors: loading,
+    evendors: error,
     total,
   } = useSelector((state: RootState) => state.vendors);
 
@@ -41,14 +43,16 @@ const Vendors = () => {
     dispatch(fetchVendors(params));
   }, [dispatch, limit, page, search, type]);
 
+  const hasNoVendors = !loading && vendors.length === 0 && !error;
+
   return (
     <section className='w-full h-full flex flex-col gap-6 overflow-hidden'>
       {/* Filters Section */}
       <VendorsFilters />
 
-      {/* Vendors Table */}
+      {/* Vendors Table or Empty State */}
       <div className='flex-1 min-h-0'>
-        <VendorsTable vendors={vendors} total={total} loading={loading} />
+        {hasNoVendors ? <EmptyState /> : <VendorsTable vendors={vendors} total={total} loading={loading} />}
       </div>
     </section>
   );

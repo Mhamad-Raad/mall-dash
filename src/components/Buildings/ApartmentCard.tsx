@@ -20,25 +20,25 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
   return (
     <Card
       className={`relative border-2 transition-all duration-300 cursor-pointer group overflow-hidden ${
-        hasOccupant ? 'hover:border-green-500 hover:shadow-green-500/20' : 'hover:border-primary/60'
+        hasOccupant ? 'hover:border-primary hover:shadow-primary/20' : 'hover:border-primary/60'
       } hover:shadow-xl hover:-translate-y-1`}
       onClick={() => onEdit(apartment)}
     >
       {/* Status indicator bar */}
-      <div className={`absolute top-0 left-0 right-0 h-1.5 ${hasOccupant ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 'bg-gradient-to-r from-muted to-muted-foreground/20'}`} />
+      <div className={`absolute top-0 left-0 right-0 h-1.5 ${hasOccupant ? 'bg-gradient-to-r from-primary to-primary/70' : 'bg-gradient-to-r from-muted to-muted-foreground/20'}`} />
       
       <CardContent className='p-4'>
         <div className='flex flex-col gap-3'>
           {/* Header */}
           <div className='flex items-start justify-between gap-2'>
             <div className='flex items-center gap-2.5 flex-1 min-w-0'>
-              <div className={`p-2 rounded-lg border-2 shadow-sm ${hasOccupant ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 dark:from-green-950/30 dark:to-emerald-950/30 dark:border-green-800' : 'bg-gradient-to-br from-muted to-muted/50 border-muted-foreground/20'} transition-all duration-300 group-hover:scale-110`}>
-                <Home className={`h-4 w-4 ${hasOccupant ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} />
+              <div className={`p-2 rounded-lg border-2 shadow-sm ${hasOccupant ? 'bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 dark:from-primary/20 dark:to-primary/10 dark:border-primary/40' : 'bg-gradient-to-br from-muted to-muted/50 border-muted-foreground/20'} transition-all duration-300 group-hover:scale-110`}>
+                <Home className={`h-4 w-4 ${hasOccupant ? 'text-primary' : 'text-muted-foreground'}`} />
               </div>
               <div className='min-w-0 flex-1'>
                 <p className='font-bold text-base truncate group-hover:text-primary transition-colors'>{apartment.apartmentName}</p>
                 <div className='flex items-center gap-1.5 mt-0.5'>
-                  <div className={`w-1.5 h-1.5 rounded-full ${hasOccupant ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${hasOccupant ? 'bg-primary animate-pulse' : 'bg-muted-foreground/40'}`} />
                   <p className='text-xs font-medium text-muted-foreground'>
                     {hasOccupant ? t('detail.apartment.occupied') : t('detail.apartment.vacant')}
                   </p>
@@ -52,7 +52,7 @@ const ApartmentCard = ({ apartment, onEdit }: ApartmentCardProps) => {
 
           {/* Occupant Info */}
           {hasOccupant ? (
-            <div className='rounded-lg bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200/60 dark:border-green-800/60 p-3 shadow-sm'>
+            <div className='rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border border-primary/30 dark:border-primary/40 p-3 shadow-sm'>
               <div className='flex items-center gap-2'>
                 <div className='p-1.5 rounded-full bg-primary/10 border border-primary/20'>
                   <User className='h-3.5 w-3.5 text-primary' />

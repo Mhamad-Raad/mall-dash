@@ -1,25 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'sonner';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { RootState, AppDispatch } from '@/store/store';
 import { updateUser } from '@/data/Users';
 import { fetchMe } from '@/store/slices/meSlice';
+import ProfileOverviewCard from '@/components/Profile/ProfileOverviewCard';
+import EditProfileCard from '@/components/Profile/EditProfileCard';
 
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user: me } = useSelector((state: RootState) => state.me);
+  const { user: me, loading: meLoading } = useSelector(
+    (state: RootState) => state.me
+  );
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -61,6 +54,14 @@ const Profile = () => {
     }
   };
 
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(me?.profileImageUrl || null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!me) return;
     setLoading(true);
@@ -81,7 +82,6 @@ const Profile = () => {
       return;
     }
 
-    // Assuming role is required by updateUser, we pass existing role
     const response = await updateUser(userId, updateData);
 
     setLoading(false);
@@ -90,129 +90,77 @@ const Profile = () => {
     } else {
       toast.success('Profile updated successfully');
       dispatch(fetchMe());
+      setImageFile(null);
     }
   };
 
-  if (!me) return <div>Loading...</div>;
+  const handleCancel = () => {
+    if (me) {
+      setFormData({
+        firstName: me.firstName || '',
+        lastName: me.lastName || '',
+        email: me.email || '',
+        phoneNumber: me.phoneNumber || '',
+      });
+      setImagePreview(me.profileImageUrl || null);
+      setImageFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const hasChanges =
+    me &&
+    (formData.firstName !== me.firstName ||
+      formData.lastName !== me.lastName ||
+      formData.phoneNumber !== me.phoneNumber ||
+      imageFile !== null);
+
+  if (meLoading || !me) {
+    return (
+      <div className='flex items-center justify-center h-full'>
+        <div className='flex flex-col items-center gap-4'>
+          <Loader2 className='h-8 w-8 animate-spin text-primary' />
+          <p className='text-muted-foreground'>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className='w-full h-full p-6 overflow-y-auto'>
-      <div className='max-w-4xl mx-auto'>
-        {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Update your account profile information and email address
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-6'>
-            {/* Profile Picture */}
-            <div className='flex items-center gap-6'>
-              <Avatar className='h-24 w-24'>
-                <AvatarImage
-                  src={imagePreview || 'https://github.com/shadcn.png'}
-                  alt='Profile'
-                />
-                <AvatarFallback className='text-2xl'>
-                  {me.firstName?.[0]?.toUpperCase()}
-                  {me.lastName?.[0]?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className='space-y-2'>
-                <input
-                  type='file'
-                  ref={fileInputRef}
-                  className='hidden'
-                  accept='image/*'
-                  onChange={handleImageChange}
-                />
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Camera className='h-4 w-4 mr-2' />
-                  Change Photo
-                </Button>
-                <p className='text-sm text-muted-foreground'>
-                  JPG, PNG or GIF. Max size 2MB
-                </p>
-              </div>
-            </div>
-
-            {/* Name Fields */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='firstName'>First Name</Label>
-                <Input
-                  id='firstName'
-                  placeholder='John'
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className='space-y-2'>
-                <Label htmlFor='lastName'>Last Name</Label>
-                <Input
-                  id='lastName'
-                  placeholder='Doe'
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                id='email'
-                type='email'
-                placeholder='john.doe@example.com'
-                value={formData.email}
-                onChange={handleChange}
-                disabled // Usually email is not editable or requires verification
-              />
-            </div>
-
-            {/* Phone */}
-            <div className='space-y-2'>
-              <Label htmlFor='phoneNumber'>Phone Number</Label>
-              <Input
-                id='phoneNumber'
-                type='tel'
-                placeholder='+1 (555) 000-0000'
-                value={formData.phoneNumber}
-                onChange={handleChange}
-              />
-            </div>
-
-            {/* Save Button */}
-            <div className='flex justify-end gap-3'>
-              <Button
-                variant='outline'
-                onClick={() =>
-                  setFormData({
-                    firstName: me.firstName || '',
-                    lastName: me.lastName || '',
-                    email: me.email || '',
-                    phoneNumber: me.phoneNumber || '',
-                  })
-                }
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={loading}>
-                {loading ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+    <div className='w-full h-[calc(100vh-10rem)] flex flex-col gap-4'>
+      {/* Header Section */}
+      <div className='flex flex-col gap-1 shrink-0'>
+        <h1 className='text-2xl md:text-3xl font-bold tracking-tight'>
+          My Profile
+        </h1>
+        <p className='text-muted-foreground'>
+          Manage your account settings and personal information
+        </p>
       </div>
-    </div>
+
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0'>
+          <ProfileOverviewCard
+            user={me}
+            imagePreview={imagePreview}
+            imageFile={imageFile}
+            fileInputRef={fileInputRef}
+            onImageChange={handleImageChange}
+            onRemoveImage={handleRemoveImage}
+          />
+
+          <EditProfileCard
+            formData={formData}
+            loading={loading}
+            hasChanges={!!hasChanges}
+            onChange={handleChange}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </div>
+      </div>
   );
 };
 
 export default Profile;
-

@@ -12,27 +12,33 @@ interface UserState {
   user: UserType;
   luser: boolean;
   euser: string | null;
+  euserErrors: string[];
   updating: boolean;
   updatingError: string | null;
+  updatingErrors: string[];
   deleting: boolean;
   deletingError: string | null;
+  deletingErrors: string[];
 }
 
 const initialState: UserState = {
   user: initialUser,
   luser: false,
   euser: null,
+  euserErrors: [],
   updating: false,
   updatingError: null,
+  updatingErrors: [],
   deleting: false,
   deletingError: null,
+  deletingErrors: [],
 };
 
 export const fetchUserById = createAsyncThunk(
   'user/fetchUserById',
   async (userId: string, { rejectWithValue }) => {
     const data = await fetchUserByIdAPI(userId);
-    if (data.error) return rejectWithValue(data.error);
+    if (data.error) return rejectWithValue({ error: data.error, errors: data.errors || [] });
     return data;
   }
 );
@@ -72,7 +78,7 @@ export const updateUser = createAsyncThunk(
     }
 
     const data = await updateUserAPI(id, apiPayload);
-    if (data.error) return rejectWithValue(data.error);
+    if (data.error) return rejectWithValue({ error: data.error, errors: data.errors || [] });
     return data;
   }
 );
@@ -81,7 +87,7 @@ export const deleteUser = createAsyncThunk(
   'user/deleteUser',
   async (id: string, { rejectWithValue }) => {
     const data = await deleteUserAPI(id);
-    if (data.error) return rejectWithValue(data.error);
+    if (data.error) return rejectWithValue({ error: data.error, errors: data.errors || [] });
     return data;
   }
 );
@@ -93,15 +99,21 @@ const userSlice = createSlice({
     clearUser: (state) => {
       state.user = initialUser;
       state.euser = null;
+      state.euserErrors = [];
       state.updating = false;
       state.updatingError = null;
+      state.updatingErrors = [];
       state.deleting = false;
       state.deletingError = null;
+      state.deletingErrors = [];
     },
     clearError: (state) => {
       state.euser = null;
+      state.euserErrors = [];
       state.updatingError = null;
+      state.updatingErrors = [];
       state.deletingError = null;
+      state.deletingErrors = [];
     },
   },
   extraReducers: (builder) => {
@@ -110,6 +122,7 @@ const userSlice = createSlice({
       .addCase(fetchUserById.pending, (state) => {
         state.luser = true;
         state.euser = null;
+        state.euserErrors = [];
       })
       .addCase(
         fetchUserById.fulfilled,
@@ -117,11 +130,14 @@ const userSlice = createSlice({
           state.luser = false;
           state.user = action.payload;
           state.euser = null;
+          state.euserErrors = [];
         }
       )
       .addCase(fetchUserById.rejected, (state, action) => {
         state.luser = false;
-        state.euser = (action.payload as string) || 'An error occurred';
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.euser = payload?.error || 'An error occurred';
+        state.euserErrors = payload?.errors || [];
       });
 
     // Update user
@@ -129,6 +145,7 @@ const userSlice = createSlice({
       .addCase(updateUser.pending, (state) => {
         state.updating = true;
         state.updatingError = null;
+        state.updatingErrors = [];
       })
       .addCase(
         updateUser.fulfilled,
@@ -136,11 +153,14 @@ const userSlice = createSlice({
           state.updating = false;
           state.user = action.payload;
           state.updatingError = null;
+          state.updatingErrors = [];
         }
       )
       .addCase(updateUser.rejected, (state, action) => {
         state.updating = false;
-        state.updatingError = (action.payload as string) || 'An error occurred';
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.updatingError = payload?.error || 'An error occurred';
+        state.updatingErrors = payload?.errors || [];
       });
 
     // Delete user
@@ -148,15 +168,19 @@ const userSlice = createSlice({
       .addCase(deleteUser.pending, (state) => {
         state.deleting = true;
         state.deletingError = null;
+        state.deletingErrors = [];
       })
       .addCase(deleteUser.fulfilled, (state) => {
         state.deleting = false;
         state.user = initialUser; // Clear user after deletion
         state.deletingError = null;
+        state.deletingErrors = [];
       })
       .addCase(deleteUser.rejected, (state, action) => {
         state.deleting = false;
-        state.deletingError = (action.payload as string) || 'An error occurred';
+        const payload = action.payload as { error: string; errors: string[] } | undefined;
+        state.deletingError = payload?.error || 'An error occurred';
+        state.deletingErrors = payload?.errors || [];
       });
   },
 });

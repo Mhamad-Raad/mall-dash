@@ -6,12 +6,19 @@ import {
   Bell,
   Check,
   X,
-  Archive,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  Settings,
+  BellOff,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
   markAsRead as markAsReadAction,
   markAllAsRead as markAllAsReadAction,
@@ -27,20 +34,61 @@ import {
 import type { RootState } from '@/store/store';
 import type { NotificationType } from '@/interfaces/Notification.interface';
 
-const getNotificationColor = (type: NotificationType) => {
+const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
     case 'success':
-      return 'text-green-600 dark:text-green-400';
+      return CheckCircle2;
     case 'error':
-      return 'text-red-600 dark:text-red-400';
+      return AlertCircle;
     case 'warning':
-      return 'text-yellow-600 dark:text-yellow-400';
+      return AlertTriangle;
     case 'info':
-      return 'text-blue-600 dark:text-blue-400';
+      return Info;
     case 'system':
-      return 'text-purple-600 dark:text-purple-400';
+      return Settings;
     default:
-      return 'text-foreground';
+      return Bell;
+  }
+};
+
+const getNotificationStyles = (type: NotificationType) => {
+  switch (type) {
+    case 'success':
+      return {
+        iconBg: 'bg-primary/15 text-primary ring-primary/20',
+        accent: 'bg-gradient-to-r from-primary/20 to-transparent',
+        dot: 'bg-primary',
+      };
+    case 'error':
+      return {
+        iconBg: 'bg-destructive/15 text-destructive ring-destructive/20',
+        accent: 'bg-gradient-to-r from-destructive/20 to-transparent',
+        dot: 'bg-destructive',
+      };
+    case 'warning':
+      return {
+        iconBg: 'bg-chart-4/15 text-chart-4 ring-chart-4/20',
+        accent: 'bg-gradient-to-r from-chart-4/20 to-transparent',
+        dot: 'bg-chart-4',
+      };
+    case 'info':
+      return {
+        iconBg: 'bg-chart-1/15 text-chart-1 ring-chart-1/20',
+        accent: 'bg-gradient-to-r from-chart-1/20 to-transparent',
+        dot: 'bg-chart-1',
+      };
+    case 'system':
+      return {
+        iconBg: 'bg-chart-2/15 text-chart-2 ring-chart-2/20',
+        accent: 'bg-gradient-to-r from-chart-2/20 to-transparent',
+        dot: 'bg-chart-2',
+      };
+    default:
+      return {
+        iconBg: 'bg-muted text-muted-foreground ring-border',
+        accent: 'bg-gradient-to-r from-muted to-transparent',
+        dot: 'bg-muted-foreground',
+      };
   }
 };
 
@@ -127,12 +175,14 @@ export default function NotificationPopover() {
         <Button
           variant='ghost'
           size='icon'
-          className='relative hover:bg-accent transition-colors'
+          className='relative hover:bg-accent/50 transition-all duration-200 rounded-lg group'
           aria-label='Notifications'
         >
-          <Bell className='size-4' />
+          <Bell className='size-[1.1rem] transition-transform group-hover:scale-110 group-hover:rotate-12' />
           {unreadCount > 0 && (
-            <span className='absolute top-1 right-1 size-2 bg-blue-500 rounded-full' />
+            <span className='absolute -top-0.5 -right-0.5 flex items-center justify-center w-[18px] h-[18px] text-[10px] font-bold text-primary-foreground bg-primary rounded-full border-2 border-background shadow-lg leading-[18px]'>
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
           )}
         </Button>
       </PopoverTrigger>
@@ -164,7 +214,7 @@ export default function NotificationPopover() {
               onClick={() => setActiveTab('all')}
               className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'all'
-                  ? 'border-foreground text-foreground'
+                  ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -179,13 +229,13 @@ export default function NotificationPopover() {
               onClick={() => setActiveTab('unread')}
               className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'unread'
-                  ? 'border-foreground text-foreground'
+                  ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               Unread
               {unreadCount > 0 && (
-                <span className='ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500 text-white'>
+                <span className='ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground'>
                   {unreadCount}
                 </span>
               )}
@@ -194,7 +244,7 @@ export default function NotificationPopover() {
               onClick={() => setActiveTab('mentions')}
               className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'mentions'
-                  ? 'border-foreground text-foreground'
+                  ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -209,7 +259,7 @@ export default function NotificationPopover() {
               onClick={() => setActiveTab('system')}
               className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
                 activeTab === 'system'
-                  ? 'border-foreground text-foreground'
+                  ? 'border-primary text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -225,87 +275,117 @@ export default function NotificationPopover() {
 
         {/* Notifications List */}
         {filteredNotifications.length === 0 ? (
-          <div className='flex flex-col items-center justify-center py-12 px-4'>
-            <Bell className='size-8 text-muted-foreground/40 mb-3' />
-            <p className='text-sm text-muted-foreground'>
-              {activeTab === 'unread' ? 'No unread notifications' : 
-               activeTab === 'mentions' ? 'No important notifications' :
-               activeTab === 'system' ? 'No system notifications' : 
-               'No notifications'}
+          <div className='flex flex-col items-center justify-center py-16 px-4'>
+            <div className='p-4 rounded-full bg-muted/50 mb-4'>
+              <BellOff className='size-8 text-muted-foreground/50' />
+            </div>
+            <p className='text-sm font-medium text-foreground mb-1'>
+              {activeTab === 'unread' ? 'All caught up!' : 
+               activeTab === 'mentions' ? 'No important alerts' :
+               activeTab === 'system' ? 'No system updates' : 
+               'No notifications yet'}
+            </p>
+            <p className='text-xs text-muted-foreground text-center'>
+              {activeTab === 'unread' ? 'You have no unread notifications' : 
+               activeTab === 'mentions' ? 'Important notifications will appear here' :
+               activeTab === 'system' ? 'System notifications will appear here' : 
+               'Notifications will appear here when you receive them'}
             </p>
           </div>
         ) : (
           <>
-            <ScrollArea className='h-[420px]'>
-              {filteredNotifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`group relative px-4 py-3 border-b last:border-b-0 transition-colors cursor-pointer ${
-                    !notification.isRead ? 'bg-accent/30 hover:bg-accent/50' : 'hover:bg-accent/30'
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className='flex gap-3'>
-                        {/* Unread Indicator */}
-                        <div className='flex-shrink-0 pt-1.5'>
-                          {!notification.isRead ? (
-                            <div className='size-2 bg-blue-500 rounded-full' />
-                          ) : (
-                            <div className='size-2' />
-                          )}
+            <div className='h-[380px] overflow-y-auto'>
+              <div className='p-2 space-y-1'>
+                {filteredNotifications.map((notification) => {
+                  const Icon = getNotificationIcon(notification.type);
+                  const styles = getNotificationStyles(notification.type);
+                  
+                  return (
+                    <div
+                      key={notification.id}
+                      className={cn(
+                        'group relative overflow-hidden rounded-xl transition-all duration-200 cursor-pointer border',
+                        !notification.isRead 
+                          ? 'bg-card border-border/80 shadow-sm hover:shadow-md hover:border-primary/30' 
+                          : 'bg-card/50 border-transparent hover:bg-card hover:border-border/50'
+                      )}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      {/* Gradient accent bar for unread */}
+                      {!notification.isRead && (
+                        <div className={cn('absolute inset-y-0 left-0 w-1', styles.dot)} />
+                      )}
+                      
+                      <div className={cn(
+                        'flex gap-3 p-3',
+                        !notification.isRead && 'pl-4'
+                      )}>
+                        {/* Icon with colored background */}
+                        <div className={cn(
+                          'flex-shrink-0 size-10 rounded-xl ring-1 flex items-center justify-center shadow-sm',
+                          styles.iconBg
+                        )}>
+                          <Icon className='size-4' strokeWidth={2.5} />
                         </div>
 
                         {/* Content */}
-                        <div className='flex-1 min-w-0'>
-                          <div className='flex items-start justify-between gap-2 mb-1'>
-                            <p className={`text-sm leading-tight ${
-                              !notification.isRead ? 'font-medium' : 'font-normal'
-                            } ${getNotificationColor(notification.type)}`}>
-                              {notification.title}
-                            </p>
-                            <span className='text-xs text-muted-foreground whitespace-nowrap flex-shrink-0'>
+                        <div className='flex-1 min-w-0 space-y-1'>
+                          <div className='flex items-start justify-between gap-2'>
+                            <div className='flex items-center gap-2 min-w-0'>
+                              <p className={cn(
+                                'text-[13px] leading-tight truncate',
+                                !notification.isRead 
+                                  ? 'font-semibold text-foreground' 
+                                  : 'font-medium text-foreground/80'
+                              )}>
+                                {notification.title}
+                              </p>
+                              {!notification.isRead && (
+                                <span className={cn(
+                                  'flex-shrink-0 size-2 rounded-full shadow-sm',
+                                  styles.dot
+                                )} />
+                              )}
+                            </div>
+                            <span className='text-[10px] text-muted-foreground whitespace-nowrap font-medium pt-0.5'>
                               {formatTimestamp(notification.createdAt)}
                             </span>
                           </div>
-                          <p className='text-xs text-muted-foreground leading-relaxed mb-2'>
+                          
+                          <p className='text-xs text-muted-foreground leading-relaxed'>
                             {notification.message}
                           </p>
-                          {notification.actionUrl && (
-                            <button className='text-xs text-foreground hover:underline font-medium'>
-                              View Details →
-                            </button>
-                          )}
                         </div>
 
-                        {/* Actions */}
-                        <div className='flex-shrink-0 flex items-start gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
-                          <Button
-                            variant='ghost'
-                            size='icon'
-                            className='h-6 w-6 hover:bg-accent'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(notification.id);
-                            }}
-                          >
-                            <X className='size-3' />
-                          </Button>
-                        </div>
+                        {/* Delete button - always visible */}
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='flex-shrink-0 h-7 w-7 hover:bg-destructive/10 hover:text-destructive text-muted-foreground'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(notification.id);
+                          }}
+                        >
+                          <X className='size-3.5' />
+                        </Button>
                       </div>
                     </div>
-                  ))}
-            </ScrollArea>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Footer */}
-            <div className='border-t p-2'>
+            <div className='border-t p-2 bg-muted/30'>
               <Button
                 variant='ghost'
                 size='sm'
                 onClick={handleClearAll}
-                className='w-full justify-center text-xs text-muted-foreground hover:bg-accent hover:text-foreground'
+                className='w-full justify-center text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
               >
-                <Archive className='size-3 mr-1.5' />
-                Archive all
+                <Trash2 className='size-3.5 mr-1.5' />
+                Clear all notifications
               </Button>
             </div>
           </>

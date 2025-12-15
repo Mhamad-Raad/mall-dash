@@ -57,7 +57,11 @@ export const createVendor = async (params: {
       return response.data;
     }
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -74,7 +78,11 @@ export const fetchVendors = async (params?: {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -87,7 +95,11 @@ export const fetchVendorById = async (id: string) => {
 
     return response.data;
   } catch (error: any) {
-    return { error: error.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -130,7 +142,11 @@ export const updateVendor = async (
     return response.data;
   } catch (error: any) {
     console.error('Update failed:', error.response?.data || error.message);
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
@@ -144,7 +160,11 @@ export const deleteVendor = async (id: string) => {
     });
     return response.data;
   } catch (error: any) {
-    return { error: error?.response?.data?.message || error.message };
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
   }
 };
 
