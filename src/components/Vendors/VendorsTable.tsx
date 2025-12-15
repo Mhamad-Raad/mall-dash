@@ -4,7 +4,6 @@ import {
   Mail,
   Phone,
   Clock,
-  Store as StoreIcon,
   ChevronRight,
 } from 'lucide-react';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
@@ -114,17 +113,11 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {vendors.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className='h-32 text-center'>
-                  <div className='flex flex-col items-center justify-center gap-2 text-muted-foreground'>
-                    <StoreIcon className='h-8 w-8' />
-                    <p>{t('emptyState.title')}</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              vendors.map((vendor) => (
+            {loading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <VendorsTableSkeleton key={`skeleton-${index}`} />
+                ))
+              : vendors.map((vendor) => (
                 <TableRow
                   key={vendor._id}
                   className='group hover:bg-muted/50 transition-all cursor-pointer border-b last:border-0'
@@ -209,8 +202,7 @@ const VendorsTable = ({ vendors, total, loading }: VendorsTableProps) => {
                     <ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors' />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
+              ))}
           </TableBody>
         </Table>
         <ScrollBar orientation='horizontal' />
