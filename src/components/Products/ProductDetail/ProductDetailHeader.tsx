@@ -28,7 +28,7 @@ const ProductDetailHeader = ({
           <p className='text-xs sm:text-sm text-muted-foreground'>
             View and edit product information
             {hasChanges && (
-              <span className='text-amber-500 ml-2'>• Unsaved changes</span>
+              <span className='text-primary font-medium ml-2'>• Unsaved changes</span>
             )}
           </p>
         </div>
