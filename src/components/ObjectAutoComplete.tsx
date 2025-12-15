@@ -33,11 +33,9 @@ export function ObjectAutoComplete<T>({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<any>(null);
 
-  // Update input when initialValue changes
+  // Update input when initialValue changes (including when cleared)
   useEffect(() => {
-    if (initialValue) {
-      setInput(initialValue);
-    }
+    setInput(initialValue || '');
   }, [initialValue]);
 
   useEffect(() => {
