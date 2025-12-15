@@ -209,7 +209,7 @@ const ProductDetail = () => {
     formData.append('Name', name);
     formData.append('Description', description);
     formData.append('Price', price);
-    if (discountPrice) formData.append('DiscountPrice', discountPrice);
+    formData.append('DiscountPrice', discountPrice || '0');
     formData.append('CategoryId', categoryId!.toString());
     formData.append('InStock', String(inStock));
     formData.append('IsWeightable', String(isWeightable));
