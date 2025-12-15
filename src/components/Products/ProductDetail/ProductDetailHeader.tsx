@@ -1,26 +1,28 @@
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ProductDetailHeaderProps {
   onBack: () => void;
   hasChanges: boolean;
+  onDelete: () => void;
 }
 
 const ProductDetailHeader = ({
   onBack,
   hasChanges,
+  onDelete,
 }: ProductDetailHeaderProps) => {
   return (
-    <div className='flex items-center gap-3 sm:gap-4'>
-      <Button
-        variant='outline'
-        size='icon'
-        onClick={onBack}
-        className='h-10 w-10 shrink-0'
-      >
-        <ArrowLeft className='size-4' />
-      </Button>
-      <div className='flex items-center gap-2 sm:gap-3'>
+    <div className='flex items-center justify-between gap-3 sm:gap-4'>
+      <div className='flex items-center gap-3 sm:gap-4'>
+        <Button
+          variant='outline'
+          size='icon'
+          onClick={onBack}
+          className='h-10 w-10 shrink-0'
+        >
+          <ArrowLeft className='size-4' />
+        </Button>
         <div className='min-w-0'>
           <h1 className='text-xl sm:text-2xl font-bold tracking-tight'>
             Product Details
@@ -33,6 +35,15 @@ const ProductDetailHeader = ({
           </p>
         </div>
       </div>
+      <Button
+        variant='destructive'
+        size='sm'
+        onClick={onDelete}
+        className='gap-2'
+      >
+        <Trash2 className='size-4' />
+        Delete
+      </Button>
     </div>
   );
 };

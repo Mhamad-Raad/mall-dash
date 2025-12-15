@@ -254,6 +254,7 @@ const ProductDetail = () => {
         <ProductDetailHeader
           onBack={() => navigate('/products')}
           hasChanges={hasChanges}
+          onDelete={handleToggleDeleteModal}
         />
 
         <ProductImageCard
@@ -297,10 +298,10 @@ const ProductDetail = () => {
       <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
         <div className='flex gap-2 justify-end'>
           <button
-            onClick={handleToggleDeleteModal}
-            className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
+            onClick={() => navigate('/products')}
+            className='px-4 py-2 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors'
           >
-            Delete Product
+            Cancel
           </button>
           <button
             onClick={handleToggleUpdateModal}
