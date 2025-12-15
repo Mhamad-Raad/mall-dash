@@ -1,44 +1,30 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import {
-  ArrowLeft,
-  Save,
-  Loader2,
-  Upload,
-  Image as ImageIcon,
-  Check,
-  X,
-  Store,
-  Trash2,
-} from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import ProductDetailHeader from '@/components/Products/ProductDetail/ProductDetailHeader';
+import ProductImageCard from '@/components/Products/ProductDetail/ProductImageCard';
+import ProductPricingCard from '@/components/Products/ProductDetail/ProductPricingCard';
+import ProductStatusCard from '@/components/Products/ProductDetail/ProductStatusCard';
+import ProductDetailSkeleton from '@/components/Products/ProductDetail/ProductDetailSkeleton';
+import ProductErrorCard from '@/components/Products/ProductDetail/ProductErrorCard';
+import ConfirmModal, {
+  type ChangeDetail,
+} from '@/components/ui/Modals/ConfirmModal';
 
-import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import {
   fetchProductById,
   updateProduct,
   deleteProduct,
 } from '@/data/Products';
-import { fetchCategories } from '@/data/Categories';
 import type { ProductType } from '@/interfaces/Products.interface';
-import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
-import type { ChangeDetail } from '@/components/ui/Modals/ConfirmModal';
+
 const ProductDetail = () => {
-  const { t } = useTranslation('products');
   const { id } = useParams();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [product, setProduct] = useState<ProductType | null>(null);
 
@@ -50,19 +36,127 @@ const ProductDetail = () => {
   const [inStock, setInStock] = useState(false);
   const [isWeightable, setIsWeightable] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [categoryName, setCategoryName] = useState(''); // For initial display
+  const [categoryName, setCategoryName] = useState('');
 
   // Image State
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
-  // Confirmation Modal State
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [changes, setChanges] = useState<ChangeDetail[]>([]);
-
-  // Delete Modal State
+  // Modal State
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+
+  // Track if any changes have been made
+  const hasChanges = useMemo(() => {
+    if (!product) return false;
+    return (
+      name !== product.name ||
+      description !== (product.description || '') ||
+      price !== product.price?.toString() ||
+      discountPrice !== (product.discountPrice?.toString() || '') ||
+      inStock !== product.inStock ||
+      isWeightable !== product.isWeightable ||
+      categoryId !== product.categoryId ||
+      imageFile !== null
+    );
+  }, [
+    product,
+    name,
+    description,
+    price,
+    discountPrice,
+    inStock,
+    isWeightable,
+    categoryId,
+    imageFile,
+  ]);
+
+  // Build changes list for confirmation modal
+  const changes = useMemo((): ChangeDetail[] => {
+    if (!product) return [];
+    const changesList: ChangeDetail[] = [];
+
+    if (name !== product.name) {
+      changesList.push({
+        field: 'Name',
+        oldValue: product.name,
+        newValue: name,
+      });
+    }
+
+    if (description !== (product.description || '')) {
+      changesList.push({
+        field: 'Description',
+        oldValue: product.description || '(empty)',
+        newValue: description || '(empty)',
+      });
+    }
+
+    const currentPrice = parseFloat(price);
+    if (!isNaN(currentPrice) && currentPrice !== product.price) {
+      changesList.push({
+        field: 'Price',
+        oldValue: `$${product.price.toFixed(2)}`,
+        newValue: `$${currentPrice.toFixed(2)}`,
+      });
+    }
+
+    const currentDiscount = discountPrice ? parseFloat(discountPrice) : null;
+    if (currentDiscount !== product.discountPrice) {
+      changesList.push({
+        field: 'Discount Price',
+        oldValue: product.discountPrice
+          ? `$${product.discountPrice.toFixed(2)}`
+          : 'None',
+        newValue: currentDiscount ? `$${currentDiscount.toFixed(2)}` : 'None',
+      });
+    }
+
+    if (inStock !== product.inStock) {
+      changesList.push({
+        field: 'In Stock',
+        oldValue: product.inStock ? 'Yes' : 'No',
+        newValue: inStock ? 'Yes' : 'No',
+      });
+    }
+
+    if (isWeightable !== product.isWeightable) {
+      changesList.push({
+        field: 'Weightable',
+        oldValue: product.isWeightable ? 'Yes' : 'No',
+        newValue: isWeightable ? 'Yes' : 'No',
+      });
+    }
+
+    if (categoryId !== product.categoryId) {
+      changesList.push({
+        field: 'Category',
+        oldValue: product.categoryName,
+        newValue: categoryName,
+      });
+    }
+
+    if (imageFile) {
+      changesList.push({
+        field: 'Image',
+        oldValue: 'Current Image',
+        newValue: imageFile.name,
+      });
+    }
+
+    return changesList;
+  }, [
+    product,
+    name,
+    description,
+    price,
+    discountPrice,
+    inStock,
+    isWeightable,
+    categoryId,
+    categoryName,
+    imageFile,
+  ]);
 
   useEffect(() => {
     if (id) {
@@ -72,6 +166,7 @@ const ProductDetail = () => {
 
   const loadProduct = async (productId: number) => {
     setLoading(true);
+    setError(null);
     const data = await fetchProductById(productId);
     if (data && !data.error) {
       setProduct(data);
@@ -85,117 +180,28 @@ const ProductDetail = () => {
       setCategoryName(data.categoryName);
       setImagePreview(data.productImageUrl || '');
     } else {
-      toast.error('Failed to load product details');
-      navigate('/products');
+      setError(data?.error || 'Failed to load product details');
     }
     setLoading(false);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleToggleUpdateModal = () => {
+    if (!hasChanges) return;
+    setShowUpdateModal((v) => !v);
   };
 
-  const loadCategories = async (query: string) => {
-    const res = await fetchCategories({ searchName: query, limit: 10 });
-    const data = Array.isArray(res) ? res : res?.data;
-    if (Array.isArray(data)) {
-      return data.map((c: any) => ({ id: c.id, name: c.name }));
-    }
-    return [];
-  };
+  const handleToggleDeleteModal = () => setShowDeleteModal((v) => !v);
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!id || !product) return;
+  const handleUpdateProduct = async () => {
+    if (!id) return;
 
     if (!name || !price || !categoryId) {
       toast.error('Please fill in all required fields');
+      setShowUpdateModal(false);
       return;
     }
 
-    const newChanges: ChangeDetail[] = [];
-
-    if (name !== product.name) {
-      newChanges.push({
-        field: 'Name',
-        oldValue: product.name,
-        newValue: name,
-      });
-    }
-
-    if (description !== (product.description || '')) {
-      newChanges.push({
-        field: 'Description',
-        oldValue: product.description || '',
-        newValue: description,
-      });
-    }
-
-    const currentPrice = parseFloat(price);
-    if (!isNaN(currentPrice) && currentPrice !== product.price) {
-      newChanges.push({
-        field: 'Price',
-        oldValue: product.price,
-        newValue: currentPrice,
-      });
-    }
-
-    const currentDiscount = discountPrice ? parseFloat(discountPrice) : null;
-    if (currentDiscount !== product.discountPrice) {
-      newChanges.push({
-        field: 'Discount Price',
-        oldValue: product.discountPrice ?? 'None',
-        newValue: currentDiscount ?? 'None',
-      });
-    }
-
-    if (inStock !== product.inStock) {
-      newChanges.push({
-        field: 'In Stock',
-        oldValue: product.inStock ? 'Yes' : 'No',
-        newValue: inStock ? 'Yes' : 'No',
-      });
-    }
-
-    if (isWeightable !== product.isWeightable) {
-      newChanges.push({
-        field: 'Weightable',
-        oldValue: product.isWeightable ? 'Yes' : 'No',
-        newValue: isWeightable ? 'Yes' : 'No',
-      });
-    }
-
-    if (categoryId !== product.categoryId) {
-      newChanges.push({
-        field: 'Category',
-        oldValue: product.categoryName,
-        newValue: categoryName,
-      });
-    }
-
-    if (imageFile) {
-      newChanges.push({
-        field: 'Image',
-        oldValue: 'Current Image',
-        newValue: 'New Image Selected',
-      });
-    }
-
-    setChanges(newChanges);
-    setShowConfirmModal(true);
-  };
-
-  const handleConfirmUpdate = async () => {
-    if (!id) return;
-    setShowConfirmModal(false);
+    setShowUpdateModal(false);
     setSaving(true);
 
     const formData = new FormData();
@@ -210,10 +216,8 @@ const ProductDetail = () => {
 
     if (imageFile) {
       formData.append('ProductImageUrl', imageFile);
-    } else {
-      if (product?.productImageUrl) {
-        formData.append('ProductImageUrl', product.productImageUrl);
-      }
+    } else if (product?.productImageUrl) {
+      formData.append('ProductImageUrl', product.productImageUrl);
     }
 
     const result = await updateProduct(parseInt(id), formData);
@@ -227,279 +231,112 @@ const ProductDetail = () => {
     setSaving(false);
   };
 
-  const handleConfirmDelete = async () => {
+  const handleDeleteProduct = async () => {
     if (!id) return;
-    setDeleting(true);
     const result = await deleteProduct(parseInt(id));
     if (result && !result.error) {
       toast.success('Product deleted successfully');
+      setShowDeleteModal(false);
       navigate('/products');
     } else {
       toast.error(result?.error || 'Failed to delete product');
       setShowDeleteModal(false);
     }
-    setDeleting(false);
   };
 
-  if (loading) {
-    return (
-      <div className='flex items-center justify-center h-96'>
-        <Loader2 className='w-8 h-8 animate-spin text-primary' />
-      </div>
-    );
-  }
+  if (error) return <ProductErrorCard error={error} />;
+  if (loading) return <ProductDetailSkeleton />;
 
   return (
-    <div className='max-w-4xl mx-auto space-y-6 pb-10'>
-      {/* Header */}
-      <div className='flex items-center gap-4'>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={() => navigate('/products')}
-          className='rounded-full'
-        >
-          <ArrowLeft className='w-5 h-5' />
-        </Button>
-        <div>
-          <h1 className='text-2xl font-bold tracking-tight'>Edit Product</h1>
-          <p className='text-muted-foreground'>
-            Update product information and settings
-          </p>
-        </div>
-        <div className='ml-auto flex items-center gap-3'>
-          {product?.vendorName && (
-            <div className='flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full'>
-              <Store className='w-4 h-4' />
-              <span>{product.vendorName}</span>
-            </div>
-          )}
-          <Button
-            variant='destructive'
-            size='sm'
-            onClick={() => setShowDeleteModal(true)}
-          >
-            <Trash2 className='w-4 h-4 mr-2' />
-            Delete Product
-          </Button>
+    <div className='w-[calc(100%+2rem)] md:w-[calc(100%+3rem)] h-full flex flex-col -m-4 md:-m-6'>
+      {/* Scrollable Content */}
+      <div className='flex-1 overflow-y-auto p-4 md:p-6 space-y-6 pb-24'>
+        <ProductDetailHeader
+          onBack={() => navigate('/products')}
+          hasChanges={hasChanges}
+        />
+
+        <ProductImageCard
+          name={name}
+          vendorName={product?.vendorName}
+          productId={id}
+          price={price}
+          discountPrice={discountPrice}
+          imageFile={imageFile}
+          imagePreview={imagePreview}
+          description={description}
+          categoryName={categoryName}
+          onNameChange={setName}
+          onImageChange={setImageFile}
+          onImagePreviewChange={setImagePreview}
+          onDescriptionChange={setDescription}
+          onCategoryChange={(catId, catName) => {
+            setCategoryId(catId);
+            setCategoryName(catName);
+          }}
+          originalImageUrl={product?.productImageUrl}
+        />
+
+        <div className='grid gap-6 lg:grid-cols-2'>
+          <ProductPricingCard
+            price={price}
+            discountPrice={discountPrice}
+            onPriceChange={setPrice}
+            onDiscountPriceChange={setDiscountPrice}
+          />
+          <ProductStatusCard
+            inStock={inStock}
+            isWeightable={isWeightable}
+            onInStockChange={setInStock}
+            onWeightableChange={setIsWeightable}
+          />
         </div>
       </div>
 
-      <form
-        onSubmit={handleFormSubmit}
-        className='grid grid-cols-1 lg:grid-cols-3 gap-6'
-      >
-        {/* Left Column - Main Info */}
-        <div className='lg:col-span-2 space-y-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Information</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='name'>Product Name *</Label>
-                <Input
-                  id='name'
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder='e.g. Fresh Tomatoes'
-                  required
-                />
-              </div>
-
-              <div className='space-y-2'>
-                <Label htmlFor='description'>Description</Label>
-                <Textarea
-                  id='description'
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder='Product description...'
-                  rows={4}
-                />
-              </div>
-
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='price'>Price *</Label>
-                  <div className='relative'>
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
-                      $
-                    </span>
-                    <Input
-                      id='price'
-                      type='number'
-                      step='0.01'
-                      min='0'
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      className='pl-7'
-                      required
-                    />
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='discountPrice'>Discount Price</Label>
-                  <div className='relative'>
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
-                      $
-                    </span>
-                    <Input
-                      id='discountPrice'
-                      type='number'
-                      step='0.01'
-                      min='0'
-                      value={discountPrice}
-                      onChange={(e) => setDiscountPrice(e.target.value)}
-                      className='pl-7'
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Organization</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='space-y-2 relative z-20'>
-                <Label>Category *</Label>
-                <ObjectAutoComplete
-                  fetchOptions={loadCategories}
-                  onSelectOption={(option) => {
-                    setCategoryId(option.id);
-                    setCategoryName(option.name);
-                  }}
-                  getOptionLabel={(c) => c.name}
-                  placeholder='Select Category'
-                  initialValue={categoryName}
-                />
-              </div>
-            </CardContent>
-          </Card>
+      {/* Sticky Footer with Action Buttons */}
+      <div className='sticky bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-3 px-4 md:px-6'>
+        <div className='flex gap-2 justify-end'>
+          <button
+            onClick={handleToggleDeleteModal}
+            className='px-4 py-2 rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors'
+          >
+            Delete Product
+          </button>
+          <button
+            onClick={handleToggleUpdateModal}
+            disabled={!hasChanges || saving}
+            className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
         </div>
-
-        {/* Right Column - Status & Image */}
-        <div className='space-y-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Status</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-6'>
-              <div className='flex items-center justify-between'>
-                <div className='space-y-0.5'>
-                  <Label className='text-base'>In Stock</Label>
-                  <p className='text-sm text-muted-foreground'>
-                    Available for purchase
-                  </p>
-                </div>
-                <Switch checked={inStock} onCheckedChange={setInStock} />
-              </div>
-              <Separator />
-              <div className='flex items-center justify-between'>
-                <div className='space-y-0.5'>
-                  <Label className='text-base'>Weightable</Label>
-                  <p className='text-sm text-muted-foreground'>
-                    Sold by weight
-                  </p>
-                </div>
-                <Switch
-                  checked={isWeightable}
-                  onCheckedChange={setIsWeightable}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Image</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='flex flex-col items-center gap-4'>
-                <div
-                  className='relative w-full aspect-square rounded-xl border-2 border-dashed border-muted-foreground/25 flex items-center justify-center overflow-hidden bg-muted/50 cursor-pointer hover:bg-muted/70 transition-colors'
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt='Preview'
-                      className='w-full h-full object-cover'
-                    />
-                  ) : (
-                    <div className='flex flex-col items-center gap-2 text-muted-foreground'>
-                      <ImageIcon className='w-10 h-10 opacity-50' />
-                      <span className='text-sm'>Click to upload image</span>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type='file'
-                    accept='image/*'
-                    className='hidden'
-                    onChange={handleImageChange}
-                  />
-                </div>
-                {imageFile && (
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    className='w-full text-xs'
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(product?.productImageUrl || '');
-                      if (fileInputRef.current) fileInputRef.current.value = '';
-                    }}
-                  >
-                    Reset Image
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button type='submit' className='w-full' size='lg' disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className='w-4 h-4 mr-2' />
-                Save Changes
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+      </div>
 
       <ConfirmModal
-        open={showConfirmModal}
-        onCancel={() => setShowConfirmModal(false)}
-        onConfirm={handleConfirmUpdate}
+        open={showUpdateModal}
         title='Update Product'
-        description="Are you sure you want to update this product's details? Please review the changes below."
+        description='Are you sure you want to update this product?'
+        confirmType='warning'
         confirmLabel='Update'
-        confirmType='success'
+        cancelLabel='Cancel'
+        onCancel={handleToggleUpdateModal}
+        onConfirm={handleUpdateProduct}
         changes={changes}
       />
 
       <ConfirmModal
         open={showDeleteModal}
-        onCancel={() => setShowDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
         title='Delete Product'
-        description='Are you sure you want to delete this product? This action cannot be undone.'
-        confirmLabel={deleting ? 'Deleting...' : 'Delete'}
+        description='Are you sure you want to delete this product?'
+        warning='WARNING! This action cannot be undone.'
         confirmType='danger'
+        confirmLabel='Delete'
+        cancelLabel='Cancel'
+        onCancel={handleToggleDeleteModal}
+        onConfirm={handleDeleteProduct}
       />
     </div>
   );
 };
 
 export default ProductDetail;
-
