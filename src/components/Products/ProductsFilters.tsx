@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -36,7 +35,6 @@ interface CategoryOption {
 }
 
 const ProductsFilters = () => {
-  const { t } = useTranslation('products');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -168,7 +166,8 @@ const ProductsFilters = () => {
     setSelectedCategory(null);
   };
 
-  const hasActiveFilters = search || inStock !== 'all' || selectedVendor || selectedCategory;
+  const hasActiveFilters =
+    search || inStock !== 'all' || selectedVendor || selectedCategory;
 
   // Wrapper for fetching vendors
   const loadVendors = async (query: string) => {
@@ -295,7 +294,10 @@ const ProductsFilters = () => {
         >
           {hasActiveFilters && (
             <>
-              <Badge variant='secondary' className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'>
+              <Badge
+                variant='secondary'
+                className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'
+              >
                 <span className='size-1.5 rounded-full bg-primary animate-pulse' />
                 <span className='font-medium'>Filtered</span>
               </Badge>
@@ -318,4 +320,3 @@ const ProductsFilters = () => {
 };
 
 export default ProductsFilters;
-
