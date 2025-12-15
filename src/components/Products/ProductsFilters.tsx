@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   Search,
   Plus,
@@ -167,6 +168,8 @@ const ProductsFilters = () => {
     setSelectedCategory(null);
   };
 
+  const hasActiveFilters = search || inStock !== 'all' || selectedVendor || selectedCategory;
+
   // Wrapper for fetching vendors
   const loadVendors = async (query: string) => {
     const res = await fetchVendors({ searchName: query, limit: 10 });
@@ -218,117 +221,97 @@ const ProductsFilters = () => {
       </div>
 
       {/* Filters */}
-      <div className='flex flex-col gap-4 p-4 rounded-2xl border bg-card/50 backdrop-blur-sm shadow-sm relative z-30'>
-        <div className='flex items-center gap-2 text-muted-foreground mb-2'>
-          <SlidersHorizontal className='size-4' />
-          <span className='text-sm font-medium'>Filters</span>
+      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-2xl border bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 relative z-30'>
+        <div className='flex items-center gap-2 text-muted-foreground'>
+          <div className='p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors'>
+            <SlidersHorizontal className='size-4 text-primary' />
+          </div>
+          <span className='text-sm font-medium'>Filter Products</span>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+        <div className='flex flex-col sm:flex-row flex-1 items-start sm:items-center gap-3 w-full transition-all duration-300'>
           {/* Search */}
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+          <div className='relative flex-1 min-w-0 w-full group'>
+            <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
             <Input
               placeholder='Search products...'
               value={typedSearch}
               onChange={(e) => setTypedSearch(e.target.value)}
-              className='pl-9 pr-9'
+              className='pl-10 pr-10 h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:shadow-sm transition-all rounded-xl'
             />
             {typedSearch && (
               <button
                 onClick={clearSearch}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded p-0.5 animate-in fade-in zoom-in duration-200'
+                title='Clear search'
               >
-                <X className='h-4 w-4' />
+                <X className='size-4' />
               </button>
             )}
           </div>
 
           {/* Vendor Filter */}
-          <ObjectAutoComplete
-            fetchOptions={loadVendors}
-            onSelectOption={setSelectedVendor}
-            getOptionLabel={(v) => v.name}
-            placeholder='Select Vendor'
-            initialValue={selectedVendor?.name}
-          />
+          <div className='w-full sm:w-auto sm:min-w-[160px]'>
+            <ObjectAutoComplete
+              fetchOptions={loadVendors}
+              onSelectOption={setSelectedVendor}
+              getOptionLabel={(v) => v.name}
+              placeholder='Select Vendor'
+              initialValue={selectedVendor?.name}
+            />
+          </div>
 
           {/* Category Filter */}
-          <ObjectAutoComplete
-            fetchOptions={loadCategories}
-            onSelectOption={setSelectedCategory}
-            getOptionLabel={(c) => c.name}
-            placeholder='Select Category'
-            initialValue={selectedCategory?.name}
-          />
+          <div className='w-full sm:w-auto sm:min-w-[160px]'>
+            <ObjectAutoComplete
+              fetchOptions={loadCategories}
+              onSelectOption={setSelectedCategory}
+              getOptionLabel={(c) => c.name}
+              placeholder='Select Category'
+              initialValue={selectedCategory?.name}
+            />
+          </div>
 
           {/* Stock Filter */}
-          <Select value={inStock} onValueChange={setInStock}>
-            <SelectTrigger>
-              <SelectValue placeholder='Stock Status' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>All Status</SelectItem>
-              <SelectItem value='true'>In Stock</SelectItem>
-              <SelectItem value='false'>Out of Stock</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className='w-full sm:w-auto sm:min-w-[130px]'>
+            <Select value={inStock} onValueChange={setInStock}>
+              <SelectTrigger className='h-10 bg-background/80 border-border/50 focus:border-primary/50 focus:ring-primary/20 rounded-xl'>
+                <SelectValue placeholder='Stock Status' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Status</SelectItem>
+                <SelectItem value='true'>In Stock</SelectItem>
+                <SelectItem value='false'>Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Active Filters Summary (Optional) */}
-        {(search ||
-          inStock !== 'all' ||
-          selectedVendor ||
-          selectedCategory) && (
-          <div className='flex items-center gap-2 pt-2 border-t'>
-            <span className='text-xs text-muted-foreground font-medium uppercase tracking-wider'>
-              Active Filters:
-            </span>
-            <div className='flex flex-wrap gap-2'>
-              {search && (
-                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
-                  Search: {search}
-                  <X className='w-3 h-3 cursor-pointer' onClick={clearSearch} />
-                </div>
-              )}
-              {selectedVendor && (
-                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
-                  Vendor: {selectedVendor.name}
-                  <X
-                    className='w-3 h-3 cursor-pointer'
-                    onClick={() => setSelectedVendor(null)}
-                  />
-                </div>
-              )}
-              {selectedCategory && (
-                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
-                  Category: {selectedCategory.name}
-                  <X
-                    className='w-3 h-3 cursor-pointer'
-                    onClick={() => setSelectedCategory(null)}
-                  />
-                </div>
-              )}
-              {inStock !== 'all' && (
-                <div className='text-xs bg-primary/10 text-primary px-2 py-1 rounded-md flex items-center gap-1'>
-                  Stock: {inStock === 'true' ? 'In Stock' : 'Out of Stock'}
-                  <X
-                    className='w-3 h-3 cursor-pointer'
-                    onClick={() => setInStock('all')}
-                  />
-                </div>
-              )}
+        {/* Active Filters Badge & Clear Button */}
+        <div
+          className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${
+            hasActiveFilters ? 'w-auto opacity-100' : 'w-0 opacity-0'
+          }`}
+        >
+          {hasActiveFilters && (
+            <>
+              <Badge variant='secondary' className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'>
+                <span className='size-1.5 rounded-full bg-primary animate-pulse' />
+                <span className='font-medium'>Filtered</span>
+              </Badge>
               <Button
+                type='button'
                 variant='ghost'
                 size='sm'
                 onClick={clearAllFilters}
-                className='ml-auto h-6 text-xs hover:bg-destructive/10 hover:text-destructive'
+                className='h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg shrink-0'
+                title='Clear all filters'
               >
-                Clear All
+                <X className='size-4' />
               </Button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
