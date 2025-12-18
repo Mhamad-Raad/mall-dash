@@ -4,18 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { PasswordStrengthIndicator } from '@/components/ui/PasswordStrengthIndicator';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select';
-import { Mail, Lock, Building2, Image as ImageIcon, X } from 'lucide-react';
-
-const buildings = ['Sky Tower', 'Rose Heights', 'Emerald Plaza'];
-const floors = ['1', '2', '3', '4', '5'];
-const apartments = ['101', '202', '303', '404', '505'];
+import { Mail, Lock, Image as ImageIcon, X } from 'lucide-react';
 
 type FieldErrors = {
   firstName?: string;

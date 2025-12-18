@@ -1,7 +1,14 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShoppingBag, Tag, Store, ChevronRight, DollarSign, Package } from 'lucide-react';
+import {
+  ShoppingBag,
+  Tag,
+  Store,
+  ChevronRight,
+  DollarSign,
+  Package,
+} from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -18,16 +25,13 @@ import {
 import ProductsTableSkeleton from './ProductsTableSkeleton';
 import CustomTablePagination from '../CustomTablePagination';
 
-import { fetchProducts } from '@/store/slices/productsSlice';
-
-import type { RootState, AppDispatch } from '@/store/store';
+import type { RootState } from '@/store/store';
 
 const ProductsTable = () => {
   const { t } = useTranslation('products');
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
 
-  const { products, loading, error, total, page, limit } = useSelector(
+  const { products, loading, error, total } = useSelector(
     (state: RootState) => state.products
   );
 
@@ -191,4 +195,3 @@ const ProductsTable = () => {
 };
 
 export default ProductsTable;
-
