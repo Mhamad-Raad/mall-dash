@@ -1,6 +1,9 @@
 import { Building2, SearchX, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const BuildingsEmptyState = () => {
+  const { t } = useTranslation('buildings');
+  
   return (
     <div className='relative flex flex-col items-center justify-center py-20 px-8 overflow-hidden'>
       {/* Background decorative elements */}
@@ -41,25 +44,24 @@ const BuildingsEmptyState = () => {
         {/* Text content */}
         <div className='text-center max-w-md space-y-3'>
           <h3 className='text-2xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent'>
-            No Buildings Found
+            {t('emptyState.title')}
           </h3>
           
           <p className='text-muted-foreground leading-relaxed'>
-            We searched everywhere but couldn't find any buildings matching your criteria. 
-            Try adjusting your filters or search terms.
+            {t('emptyState.description')}
           </p>
         </div>
 
         {/* Decorative suggestion chips */}
         <div className='flex flex-wrap items-center justify-center gap-2 mt-8'>
           <span className='px-3 py-1.5 text-xs font-medium rounded-full bg-muted/80 text-muted-foreground border border-border/50'>
-            Try a different search
+            {t('emptyState.suggestions.differentSearch')}
           </span>
           <span className='px-3 py-1.5 text-xs font-medium rounded-full bg-muted/80 text-muted-foreground border border-border/50'>
-            Clear filters
+            {t('emptyState.suggestions.clearFilters')}
           </span>
           <span className='px-3 py-1.5 text-xs font-medium rounded-full bg-muted/80 text-muted-foreground border border-border/50'>
-            Check spelling
+            {t('emptyState.suggestions.checkSpelling')}
           </span>
         </div>
       </div>

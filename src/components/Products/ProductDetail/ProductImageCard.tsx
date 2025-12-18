@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Image as ImageIcon, X, Store, Tag } from 'lucide-react';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchCategories } from '@/data/Categories';
+import { useTranslation } from 'react-i18next';
 
 interface ProductImageCardProps {
   name: string;
@@ -49,6 +50,7 @@ const ProductImageCard = ({
   onCategoryChange,
   originalImageUrl,
 }: ProductImageCardProps) => {
+  const { t } = useTranslation('products');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string>('');
 
@@ -91,8 +93,8 @@ const ProductImageCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>Product Information</CardTitle>
-        <CardDescription>Basic product details and image</CardDescription>
+        <CardTitle className='text-lg'>{t('productDetail.imageCard.title')}</CardTitle>
+        <CardDescription>{t('productDetail.imageCard.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className='flex flex-col lg:flex-row gap-6'>
@@ -121,7 +123,7 @@ const ProductImageCard = ({
                   <div className='flex flex-col items-center gap-3'>
                     <ImageIcon className='size-16 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
                     <span className='text-sm text-muted-foreground'>
-                      Click to upload
+                      {t('productDetail.imageCard.uploadImage')}
                     </span>
                   </div>
                 )}
@@ -141,7 +143,7 @@ const ProductImageCard = ({
             </div>
             {imageFile && (
               <p className='text-xs text-muted-foreground text-center mt-2'>
-                New: {imageFile.name}
+                {t('productDetail.imageCard.newImage')} {imageFile.name}
               </p>
             )}
           </div>
@@ -151,11 +153,11 @@ const ProductImageCard = ({
             {/* Product Name */}
             <div className='space-y-2'>
               <Label htmlFor='productName' className='text-sm font-medium'>
-                Product Name <span className='text-destructive'>*</span>
+                {t('productDetail.imageCard.productName')} <span className='text-destructive'>{t('productDetail.imageCard.required')}</span>
               </Label>
               <Input
                 id='productName'
-                placeholder='Enter product name'
+                placeholder={t('productDetail.imageCard.productNamePlaceholder')}
                 value={name}
                 onChange={(e) => onNameChange(e.target.value)}
                 className='h-10'
@@ -169,7 +171,7 @@ const ProductImageCard = ({
                 <div className='p-3 rounded-lg border bg-card space-y-1'>
                   <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
                     <Store className='w-3.5 h-3.5' />
-                    <span>Vendor</span>
+                    <span>{t('productDetail.imageCard.vendor')}</span>
                   </div>
                   <div className='font-medium text-sm'>{vendorName}</div>
                 </div>
@@ -178,7 +180,7 @@ const ProductImageCard = ({
               {/* Product ID */}
               {productId && (
                 <div className='p-3 rounded-lg border bg-card space-y-1'>
-                  <div className='text-xs text-muted-foreground'>Product ID</div>
+                  <div className='text-xs text-muted-foreground'>{t('productDetail.imageCard.productId')}</div>
                   <div className='font-mono text-sm font-medium'>#{productId}</div>
                 </div>
               )}
@@ -190,9 +192,9 @@ const ProductImageCard = ({
                 {discountPrice && parseFloat(discountPrice) > 0 ? (
                   <>
                     <div className='flex items-center justify-between mb-2'>
-                      <span className='text-sm text-muted-foreground'>Price</span>
+                      <span className='text-sm text-muted-foreground'>{t('productDetail.imageCard.price')}</span>
                       <Badge variant='destructive' className='text-xs'>
-                        {Math.round((1 - parseFloat(discountPrice) / parseFloat(price)) * 100)}% OFF
+                        {Math.round((1 - parseFloat(discountPrice) / parseFloat(price)) * 100)}% {t('productDetail.imageCard.off')}
                       </Badge>
                     </div>
                     <div className='flex items-baseline gap-3'>
@@ -206,7 +208,7 @@ const ProductImageCard = ({
                   </>
                 ) : (
                   <>
-                    <div className='text-sm text-muted-foreground mb-2'>Price</div>
+                    <div className='text-sm text-muted-foreground mb-2'>{t('productDetail.imageCard.price')}</div>
                     <span className='text-3xl font-bold'>
                       ${parseFloat(price).toFixed(2)}
                     </span>
@@ -219,7 +221,7 @@ const ProductImageCard = ({
             <div className='space-y-2'>
               <Label className='text-sm font-medium flex items-center gap-2'>
                 <Tag className='size-3.5 text-primary' />
-                Category <span className='text-destructive'>*</span>
+                {t('productDetail.imageCard.category')} <span className='text-destructive'>{t('productDetail.imageCard.required')}</span>
               </Label>
               <div className='relative z-20'>
                 <ObjectAutoComplete
@@ -228,7 +230,7 @@ const ProductImageCard = ({
                     onCategoryChange(option.id, option.name);
                   }}
                   getOptionLabel={(c) => c.name}
-                  placeholder='Select a category...'
+                  placeholder={t('productDetail.imageCard.categoryPlaceholder')}
                   initialValue={categoryName}
                 />
               </div>
@@ -237,11 +239,11 @@ const ProductImageCard = ({
             {/* Description */}
             <div className='space-y-2'>
               <Label htmlFor='description' className='text-sm font-medium'>
-                Description
+                {t('productDetail.imageCard.description')}
               </Label>
               <Textarea
                 id='description'
-                placeholder='Product description...'
+                placeholder={t('productDetail.imageCard.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => onDescriptionChange(e.target.value)}
                 rows={3}

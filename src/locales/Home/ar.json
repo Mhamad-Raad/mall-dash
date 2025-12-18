@@ -1,0 +1,30 @@
+{
+  "cards": {
+    "orders": "الطلبات",
+    "users": "المستخدمون",
+    "vendors": "البائعون",
+    "requests": "الطلبات",
+    "downThisMonth": "انخفاض {{percent}} هذا الشهر",
+    "upThisMonth": "ارتفاع {{percent}} هذا الشهر",
+    "applicationWide": "على مستوى التطبيق",
+    "webBasedVendors": "بائعون على الويب",
+    "customerRequests": "طلبات العملاء"
+  },
+  "sections": {
+    "recentOrders": "الطلبات الأخيرة",
+    "topSelling": "الأكثر مبيعاً"
+  },
+  "status": {
+    "onGoing": "جاري التنفيذ",
+    "canceled": "ملغى",
+    "onTheWay": "في الطريق",
+    "delivered": "تم التسليم"
+  },
+  "occupancy": {
+    "title": "إشغال المباني",
+    "occupied": "مشغول",
+    "vacant": "شاغر",
+    "totalApartments": "إجمالي الشقق",
+    "totalBuildings": "إجمالي المباني"
+  }
+}

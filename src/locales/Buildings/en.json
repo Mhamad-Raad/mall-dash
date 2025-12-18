@@ -13,8 +13,13 @@
   },
   "emptyState": {
     "title": "No Buildings Found",
-    "description": "Get started by creating your first building",
-    "createButton": "Create Building"
+    "description": "We searched everywhere but couldn't find any buildings matching your criteria. Try adjusting your filters or search terms.",
+    "createButton": "Create Building",
+    "suggestions": {
+      "differentSearch": "Try a different search",
+      "clearFilters": "Clear filters",
+      "checkSpelling": "Check spelling"
+    }
   },
   "actions": {
     "view": "View",

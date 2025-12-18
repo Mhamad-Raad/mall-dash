@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,8 @@ const ProfileOverviewCard = ({
   onImageChange,
   onRemoveImage,
 }: ProfileOverviewCardProps) => {
+  const { t } = useTranslation('profile');
+  
   const getRoleName = (role: number) => {
     return roles[role] || 'Unknown';
   };
@@ -83,7 +86,7 @@ const ProfileOverviewCard = ({
             <div className='flex items-center gap-2'>
               <Badge variant='secondary' className='gap-1'>
                 <ImageIcon className='h-3 w-3' />
-                New photo selected
+                {t('messages.newPhotoSelected')}
               </Badge>
               <Button
                 variant='ghost'
@@ -122,7 +125,7 @@ const ProfileOverviewCard = ({
                 <Mail className='h-4 w-4 text-muted-foreground' />
               </div>
               <div className='flex-1 text-left'>
-                <p className='text-muted-foreground text-xs'>Email</p>
+                <p className='text-muted-foreground text-xs'>{t('labels.email')}</p>
                 <p className='font-medium truncate'>{user.email}</p>
               </div>
             </div>
@@ -131,9 +134,9 @@ const ProfileOverviewCard = ({
                 <Phone className='h-4 w-4 text-muted-foreground' />
               </div>
               <div className='flex-1 text-left'>
-                <p className='text-muted-foreground text-xs'>Phone</p>
+                <p className='text-muted-foreground text-xs'>{t('labels.phone')}</p>
                 <p className='font-medium'>
-                  {user.phoneNumber || 'Not set'}
+                  {user.phoneNumber || t('messages.notSet')}
                 </p>
               </div>
             </div>

@@ -1,0 +1,30 @@
+{
+  "cards": {
+    "orders": "داواکاریەکان",
+    "users": "بەکارهێنەران",
+    "vendors": "فرۆشیارەکان",
+    "requests": "داواکاریەکان",
+    "downThisMonth": "کەمبوونەوە {{percent}} ئەم مانگە",
+    "upThisMonth": "زیادبوون {{percent}} ئەم مانگە",
+    "applicationWide": "لە سەرانسەری بەرنامە",
+    "webBasedVendors": "فرۆشیارانی ئینتەرنێتی",
+    "customerRequests": "داواکاریەکانی کڕیاران"
+  },
+  "sections": {
+    "recentOrders": "داواکاریە تازەکان",
+    "topSelling": "زۆرترین فرۆشتن"
+  },
+  "status": {
+    "onGoing": "لە جێبەجێکردندایە",
+    "canceled": "هەڵوەشاوەتەوە",
+    "onTheWay": "لە ڕێگادایە",
+    "delivered": "گەیشتووە"
+  },
+  "occupancy": {
+    "title": "قەرەباڵغی بیناکان",
+    "occupied": "داگیرکراو",
+    "vacant": "بەتاڵ",
+    "totalApartments": "کۆی شوقەکان",
+    "totalBuildings": "کۆی بیناکان"
+  }
+}

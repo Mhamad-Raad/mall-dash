@@ -53,19 +53,19 @@ const ProductsTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Product
+                {t('table.product')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Price
+                {t('table.price')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Category
+                {t('table.category')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Vendor
+                {t('table.vendor')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Stock
+                {t('table.stock')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
@@ -98,7 +98,7 @@ const ProductsTable = () => {
                             {product.name}
                           </span>
                           <span className='text-sm text-muted-foreground font-mono leading-tight'>
-                            ID: {product.id}
+                            {t('table.id')}: {product.id}
                           </span>
                         </div>
                       </div>
@@ -164,7 +164,7 @@ const ProductsTable = () => {
                         }`}
                       >
                         <Package className='h-3.5 w-3.5 mr-1.5' />
-                        {product.inStock ? 'In Stock' : 'Out of Stock'}
+                        {product.inStock ? t('table.inStock') : t('table.outOfStock')}
                       </Badge>
                     </TableCell>
 

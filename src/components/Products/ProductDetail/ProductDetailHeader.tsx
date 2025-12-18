@@ -1,5 +1,6 @@
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 interface ProductDetailHeaderProps {
   onBack: () => void;
@@ -12,6 +13,8 @@ const ProductDetailHeader = ({
   hasChanges,
   onDelete,
 }: ProductDetailHeaderProps) => {
+  const { t } = useTranslation('products');
+  
   return (
     <div className='flex items-center justify-between gap-3 sm:gap-4'>
       <div className='flex items-center gap-3 sm:gap-4'>
@@ -25,12 +28,12 @@ const ProductDetailHeader = ({
         </Button>
         <div className='min-w-0'>
           <h1 className='text-xl sm:text-2xl font-bold tracking-tight'>
-            Product Details
+            {t('productDetail.header.title')}
           </h1>
           <p className='text-xs sm:text-sm text-muted-foreground'>
-            View and edit product information
+            {t('productDetail.header.subtitle')}
             {hasChanges && (
-              <span className='text-primary font-medium ml-2'>• Unsaved changes</span>
+              <span className='text-primary font-medium ml-2'>{t('productDetail.header.unsavedChanges')}</span>
             )}
           </p>
         </div>
@@ -42,7 +45,7 @@ const ProductDetailHeader = ({
         className='gap-2'
       >
         <Trash2 className='size-4' />
-        Delete
+        {t('productDetail.header.deleteButton')}
       </Button>
     </div>
   );

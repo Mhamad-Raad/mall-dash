@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,103 +25,104 @@ import {
 } from '@/components/ui/select';
 
 const Reports = () => {
+  const { t } = useTranslation('reports');
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const reportCategories = [
-    { id: 'all', label: 'All Reports', icon: FileText },
-    { id: 'financial', label: 'Financial', icon: DollarSign },
-    { id: 'operations', label: 'Operations', icon: TrendingUp },
-    { id: 'users', label: 'Users & Vendors', icon: Users },
-    { id: 'buildings', label: 'Buildings', icon: Building2 },
+    { id: 'all', label: t('categories.all'), icon: FileText },
+    { id: 'financial', label: t('categories.financial'), icon: DollarSign },
+    { id: 'operations', label: t('categories.operations'), icon: TrendingUp },
+    { id: 'users', label: t('categories.usersVendors'), icon: Users },
+    { id: 'buildings', label: t('categories.buildings'), icon: Building2 },
   ];
 
   const availableReports = [
     {
       id: 1,
-      title: 'Monthly Revenue Report',
-      description: 'Comprehensive breakdown of revenue by vendor, category, and building',
+      title: t('reports.monthlyRevenue.title'),
+      description: t('reports.monthlyRevenue.description'),
       category: 'financial',
       icon: DollarSign,
       lastGenerated: '2 hours ago',
-      frequency: 'Monthly',
+      frequency: t('frequency.monthly'),
       status: 'ready',
       size: '2.4 MB',
     },
     {
       id: 2,
-      title: 'Vendor Performance Report',
-      description: 'Sales performance, ratings, and compliance metrics for all vendors',
+      title: t('reports.vendorPerformance.title'),
+      description: t('reports.vendorPerformance.description'),
       category: 'operations',
       icon: Store,
       lastGenerated: '5 hours ago',
-      frequency: 'Weekly',
+      frequency: t('frequency.weekly'),
       status: 'ready',
       size: '1.8 MB',
     },
     {
       id: 3,
-      title: 'Building Occupancy Report',
-      description: 'Occupancy rates, vacant units, and rental income by building',
+      title: t('reports.buildingOccupancy.title'),
+      description: t('reports.buildingOccupancy.description'),
       category: 'buildings',
       icon: Building2,
       lastGenerated: '1 day ago',
-      frequency: 'Weekly',
+      frequency: t('frequency.weekly'),
       status: 'ready',
       size: '956 KB',
     },
     {
       id: 4,
-      title: 'User Activity Report',
-      description: 'User registrations, active users, and engagement metrics',
+      title: t('reports.userActivity.title'),
+      description: t('reports.userActivity.description'),
       category: 'users',
       icon: Users,
       lastGenerated: '3 hours ago',
-      frequency: 'Daily',
+      frequency: t('frequency.daily'),
       status: 'ready',
       size: '1.2 MB',
     },
     {
       id: 5,
-      title: 'Order Analytics Report',
-      description: 'Order volumes, average order value, and fulfillment metrics',
+      title: t('reports.orderAnalytics.title'),
+      description: t('reports.orderAnalytics.description'),
       category: 'financial',
       icon: ShoppingCart,
       lastGenerated: '6 hours ago',
-      frequency: 'Daily',
+      frequency: t('frequency.daily'),
       status: 'ready',
       size: '3.1 MB',
     },
     {
       id: 6,
-      title: 'Maintenance & Operations Report',
-      description: 'Maintenance requests, response times, and facility status',
+      title: t('reports.maintenance.title'),
+      description: t('reports.maintenance.description'),
       category: 'buildings',
       icon: TrendingUp,
       lastGenerated: '12 hours ago',
-      frequency: 'Weekly',
+      frequency: t('frequency.weekly'),
       status: 'generating',
       size: '-',
     },
     {
       id: 7,
-      title: 'Financial Summary Report',
-      description: 'Income statements, expense tracking, and profit margins',
+      title: t('reports.financialSummary.title'),
+      description: t('reports.financialSummary.description'),
       category: 'financial',
       icon: DollarSign,
       lastGenerated: '1 day ago',
-      frequency: 'Monthly',
+      frequency: t('frequency.monthly'),
       status: 'ready',
       size: '2.8 MB',
     },
     {
       id: 8,
-      title: 'Vendor Compliance Report',
-      description: 'License renewals, health inspections, and regulatory compliance',
+      title: t('reports.vendorCompliance.title'),
+      description: t('reports.vendorCompliance.description'),
       category: 'operations',
       icon: FileText,
       lastGenerated: '2 days ago',
-      frequency: 'Monthly',
+      frequency: t('frequency.monthly'),
       status: 'ready',
       size: '1.5 MB',
     },
@@ -128,28 +130,28 @@ const Reports = () => {
 
   const quickStats = [
     {
-      label: 'Total Reports',
+      label: t('stats.totalReports'),
       value: '48',
       trend: '+12%',
       icon: FileText,
       color: 'text-blue-600',
     },
     {
-      label: 'Generated Today',
+      label: t('stats.generatedToday'),
       value: '8',
       trend: '+25%',
       icon: Clock,
       color: 'text-green-600',
     },
     {
-      label: 'Scheduled',
+      label: t('stats.scheduled'),
       value: '12',
       trend: '—',
       icon: Calendar,
       color: 'text-purple-600',
     },
     {
-      label: 'Total Size',
+      label: t('stats.totalSize'),
       value: '124 MB',
       trend: '+8%',
       icon: Download,
@@ -175,9 +177,9 @@ const Reports = () => {
     <div className='w-full h-full flex flex-col gap-6 p-6 overflow-y-auto'>
       {/* Header */}
       <div className='flex flex-col gap-2'>
-        <h1 className='text-3xl font-bold tracking-tight'>Reports</h1>
+        <h1 className='text-3xl font-bold tracking-tight'>{t('title')}</h1>
         <p className='text-muted-foreground'>
-          Generate and download comprehensive reports for your mall operations
+          {t('description')}
         </p>
       </div>
 
@@ -192,7 +194,7 @@ const Reports = () => {
                   <div className='space-y-1'>
                     <p className='text-sm text-muted-foreground'>{stat.label}</p>
                     <p className='text-2xl font-bold'>{stat.value}</p>
-                    <p className='text-xs text-muted-foreground'>{stat.trend} from last month</p>
+                    <p className='text-xs text-muted-foreground'>{t('trendFromLastMonth', { trend: stat.trend })}</p>
                   </div>
                   <Icon className={`h-8 w-8 ${stat.color}`} />
                 </div>
@@ -227,15 +229,15 @@ const Reports = () => {
               <Filter className='h-4 w-4 text-muted-foreground' />
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
                 <SelectTrigger className='w-[180px]'>
-                  <SelectValue placeholder='Select period' />
+                  <SelectValue placeholder={t('filters.selectPeriod')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='today'>Today</SelectItem>
-                  <SelectItem value='week'>This Week</SelectItem>
-                  <SelectItem value='month'>This Month</SelectItem>
-                  <SelectItem value='quarter'>This Quarter</SelectItem>
-                  <SelectItem value='year'>This Year</SelectItem>
-                  <SelectItem value='custom'>Custom Range</SelectItem>
+                  <SelectItem value='today'>{t('filters.today')}</SelectItem>
+                  <SelectItem value='week'>{t('filters.thisWeek')}</SelectItem>
+                  <SelectItem value='month'>{t('filters.thisMonth')}</SelectItem>
+                  <SelectItem value='quarter'>{t('filters.thisQuarter')}</SelectItem>
+                  <SelectItem value='year'>{t('filters.thisYear')}</SelectItem>
+                  <SelectItem value='custom'>{t('filters.customRange')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -278,7 +280,7 @@ const Reports = () => {
                         : ''
                     }
                   >
-                    {report.status === 'ready' ? 'Ready' : 'Generating...'}
+                    {report.status === 'ready' ? t('status.ready') : t('status.generating')}
                   </Badge>
                   {report.size !== '-' && (
                     <Badge variant='outline' className='gap-1'>
@@ -289,7 +291,7 @@ const Reports = () => {
 
                 <div className='flex items-center justify-between pt-2 border-t'>
                   <p className='text-xs text-muted-foreground'>
-                    Last generated: {report.lastGenerated}
+                    {t('lastGenerated', { time: report.lastGenerated })}
                   </p>
                   <div className='flex gap-2'>
                     <Button
@@ -299,7 +301,7 @@ const Reports = () => {
                       disabled={report.status === 'generating'}
                     >
                       <TrendingUp className='h-4 w-4 mr-2' />
-                      Generate
+                      {t('actions.generate')}
                     </Button>
                     {report.status === 'ready' && (
                       <Button
@@ -307,7 +309,7 @@ const Reports = () => {
                         onClick={() => handleDownloadReport(report.id)}
                       >
                         <Download className='h-4 w-4 mr-2' />
-                        Download
+                        {t('actions.download')}
                       </Button>
                     )}
                   </div>
@@ -323,18 +325,18 @@ const Reports = () => {
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
             <Calendar className='h-5 w-5' />
-            Scheduled Reports
+            {t('scheduled.title')}
           </CardTitle>
           <CardDescription>
-            Automatically generated reports sent to your email
+            {t('scheduled.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='space-y-4'>
             {[
-              { name: 'Weekly Operations Summary', schedule: 'Every Monday at 9:00 AM', active: true },
-              { name: 'Monthly Financial Report', schedule: '1st of every month at 8:00 AM', active: true },
-              { name: 'Daily Sales Report', schedule: 'Every day at 6:00 PM', active: false },
+              { name: t('scheduled.weeklyOperations'), schedule: t('scheduled.everyMonday'), active: true },
+              { name: t('scheduled.monthlyFinancial'), schedule: t('scheduled.firstOfMonth'), active: true },
+              { name: t('scheduled.dailySales'), schedule: t('scheduled.everyDay'), active: false },
             ].map((scheduled, index) => (
               <div
                 key={index}
@@ -345,14 +347,14 @@ const Reports = () => {
                   <p className='text-sm text-muted-foreground'>{scheduled.schedule}</p>
                 </div>
                 <Badge variant={scheduled.active ? 'default' : 'secondary'}>
-                  {scheduled.active ? 'Active' : 'Paused'}
+                  {scheduled.active ? t('status.active') : t('status.paused')}
                 </Badge>
               </div>
             ))}
           </div>
           <Button className='w-full mt-4' variant='outline'>
             <Calendar className='h-4 w-4 mr-2' />
-            Manage Schedule
+            {t('actions.manageSchedule')}
           </Button>
         </CardContent>
       </Card>
