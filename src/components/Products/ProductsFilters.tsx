@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ interface CategoryOption {
 }
 
 const ProductsFilters = () => {
+  const { t } = useTranslation('products');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
