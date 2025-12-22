@@ -13,8 +13,13 @@
   },
   "emptyState": {
     "title": "لم يتم العثور على مباني",
-    "description": "ابدأ بإنشاء مبناك الأول",
-    "createButton": "إنشاء مبنى"
+    "description": "بحثنا في كل مكان ولكن لم نتمكن من العثور على أي مباني تطابق معاييرك. حاول ضبط الفلاتر أو مصطلحات البحث.",
+    "createButton": "إنشاء مبنى",
+    "suggestions": {
+      "differentSearch": "جرب بحثاً مختلفاً",
+      "clearFilters": "مسح الفلاتر",
+      "checkSpelling": "تحقق من الإملاء"
+    }
   },
   "actions": {
     "view": "عرض",

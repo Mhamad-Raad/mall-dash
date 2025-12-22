@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ interface CategoryOption {
 }
 
 const ProductsFilters = () => {
+  const { t } = useTranslation('products');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -204,18 +206,18 @@ const ProductsFilters = () => {
           </div>
           <div>
             <div className='flex items-center gap-2'>
-              <h1 className='text-3xl font-bold tracking-tight'>Products</h1>
+              <h1 className='text-3xl font-bold tracking-tight'>{t('title')}</h1>
               <Sparkles className='size-5 text-amber-500' />
             </div>
             <p className='text-muted-foreground mt-0.5'>
-              Manage your product inventory
+              {t('subtitle')}
             </p>
           </div>
         </div>
 
         <Button onClick={handleOnCreate} className='gap-2'>
           <Plus className='size-4' />
-          Add Product
+          {t('actions.create')}
         </Button>
       </div>
 
@@ -225,7 +227,7 @@ const ProductsFilters = () => {
           <div className='p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors'>
             <SlidersHorizontal className='size-4 text-primary' />
           </div>
-          <span className='text-sm font-medium'>Filter Products</span>
+          <span className='text-sm font-medium'>{t('filters.title')}</span>
         </div>
 
         <div className='flex flex-col sm:flex-row flex-1 items-start sm:items-center gap-3 w-full transition-all duration-300'>
@@ -233,7 +235,7 @@ const ProductsFilters = () => {
           <div className='relative flex-1 min-w-0 w-full group'>
             <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
             <Input
-              placeholder='Search products...'
+              placeholder={t('filters.search')}
               value={typedSearch}
               onChange={(e) => setTypedSearch(e.target.value)}
               className='pl-10 pr-10 h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:shadow-sm transition-all rounded-xl'
@@ -242,7 +244,7 @@ const ProductsFilters = () => {
               <button
                 onClick={clearSearch}
                 className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded p-0.5 animate-in fade-in zoom-in duration-200'
-                title='Clear search'
+                title={t('filters.clearSearch')}
               >
                 <X className='size-4' />
               </button>
@@ -255,7 +257,7 @@ const ProductsFilters = () => {
               fetchOptions={loadVendors}
               onSelectOption={setSelectedVendor}
               getOptionLabel={(v) => v.name}
-              placeholder='Select Vendor'
+              placeholder={t('filters.vendor')}
               initialValue={selectedVendor?.name}
             />
           </div>
@@ -266,7 +268,7 @@ const ProductsFilters = () => {
               fetchOptions={loadCategories}
               onSelectOption={setSelectedCategory}
               getOptionLabel={(c) => c.name}
-              placeholder='Select Category'
+              placeholder={t('filters.category')}
               initialValue={selectedCategory?.name}
             />
           </div>
@@ -275,12 +277,12 @@ const ProductsFilters = () => {
           <div className='w-full sm:w-auto sm:min-w-[130px]'>
             <Select value={inStock} onValueChange={setInStock}>
               <SelectTrigger className='h-10 bg-background/80 border-border/50 focus:border-primary/50 focus:ring-primary/20 rounded-xl'>
-                <SelectValue placeholder='Stock Status' />
+                <SelectValue placeholder={t('filters.stockStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Status</SelectItem>
-                <SelectItem value='true'>In Stock</SelectItem>
-                <SelectItem value='false'>Out of Stock</SelectItem>
+                <SelectItem value='all'>{t('filters.allStatus')}</SelectItem>
+                <SelectItem value='true'>{t('filters.inStock')}</SelectItem>
+                <SelectItem value='false'>{t('filters.outOfStock')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -299,7 +301,7 @@ const ProductsFilters = () => {
                 className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'
               >
                 <span className='size-1.5 rounded-full bg-primary animate-pulse' />
-                <span className='font-medium'>Filtered</span>
+                <span className='font-medium'>{t('filters.filtered')}</span>
               </Badge>
               <Button
                 type='button'
@@ -307,7 +309,7 @@ const ProductsFilters = () => {
                 size='sm'
                 onClick={clearAllFilters}
                 className='h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg shrink-0'
-                title='Clear all filters'
+                title={t('filters.clearAll')}
               >
                 <X className='size-4' />
               </Button>

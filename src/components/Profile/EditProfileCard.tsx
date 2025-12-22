@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { User, Mail, Phone, Loader2, Save, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface FormData {
   firstName: string;
@@ -35,6 +36,8 @@ const EditProfileCard = ({
   onSave,
   onCancel,
 }: EditProfileCardProps) => {
+  const { t } = useTranslation('profile');
+  
   return (
     <Card className='lg:col-span-2 flex flex-col'>
       <CardHeader>
@@ -43,9 +46,9 @@ const EditProfileCard = ({
             <User className='h-5 w-5 text-primary' />
           </div>
           <div>
-            <CardTitle className='text-lg'>Personal Information</CardTitle>
+            <CardTitle className='text-lg'>{t('personalInfo.title')}</CardTitle>
             <CardDescription>
-              Update your personal details here
+              {t('personalInfo.description')}
             </CardDescription>
           </div>
         </div>
@@ -55,11 +58,11 @@ const EditProfileCard = ({
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='firstName' className='text-sm font-medium'>
-              First Name <span className='text-destructive'>*</span>
+              {t('fields.firstName')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='firstName'
-              placeholder='Enter your first name'
+              placeholder={t('placeholders.firstName')}
               value={formData.firstName}
               onChange={onChange}
               className='h-11'
@@ -67,11 +70,11 @@ const EditProfileCard = ({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='lastName' className='text-sm font-medium'>
-              Last Name <span className='text-destructive'>*</span>
+              {t('fields.lastName')} <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='lastName'
-              placeholder='Enter your last name'
+              placeholder={t('placeholders.lastName')}
               value={formData.lastName}
               onChange={onChange}
               className='h-11'
@@ -82,14 +85,14 @@ const EditProfileCard = ({
         {/* Email */}
         <div className='space-y-2'>
           <Label htmlFor='email' className='text-sm font-medium'>
-            Email Address
+            {t('fields.email')}
           </Label>
           <div className='relative'>
             <Mail className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
             <Input
               id='email'
               type='email'
-              placeholder='your.email@example.com'
+              placeholder={t('placeholders.email')}
               value={formData.email}
               onChange={onChange}
               disabled
@@ -97,21 +100,21 @@ const EditProfileCard = ({
             />
           </div>
           <p className='text-xs text-muted-foreground'>
-            Email address cannot be changed
+            {t('messages.emailCannotChange')}
           </p>
         </div>
 
         {/* Phone */}
         <div className='space-y-2'>
           <Label htmlFor='phoneNumber' className='text-sm font-medium'>
-            Phone Number
+            {t('fields.phone')}
           </Label>
           <div className='relative'>
             <Phone className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
             <Input
               id='phoneNumber'
               type='tel'
-              placeholder='+1 (555) 000-0000'
+              placeholder={t('placeholders.phone')}
               value={formData.phoneNumber}
               onChange={onChange}
               className='h-11 pl-10'
@@ -132,7 +135,7 @@ const EditProfileCard = ({
             className='gap-2'
           >
             <X className='h-4 w-4' />
-            Cancel
+            {t('actions.cancel')}
           </Button>
           <Button
             onClick={onSave}
@@ -142,12 +145,12 @@ const EditProfileCard = ({
             {loading ? (
               <>
                 <Loader2 className='h-4 w-4 animate-spin' />
-                Saving...
+                {t('actions.saving')}
               </>
             ) : (
               <>
                 <Save className='h-4 w-4' />
-                Save Changes
+                {t('actions.save')}
               </>
             )}
           </Button>

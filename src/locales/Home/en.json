@@ -1,0 +1,30 @@
+{
+  "cards": {
+    "orders": "Orders",
+    "users": "Users",
+    "vendors": "Vendors",
+    "requests": "Requests",
+    "downThisMonth": "Down {{percent}} this Month",
+    "upThisMonth": "Up {{percent}} this Month",
+    "applicationWide": "Application Wide",
+    "webBasedVendors": "Web Based Vendors",
+    "customerRequests": "Customer Requests"
+  },
+  "sections": {
+    "recentOrders": "Recent Orders",
+    "topSelling": "Top Selling"
+  },
+  "status": {
+    "onGoing": "On Going",
+    "canceled": "Canceled",
+    "onTheWay": "On the Way",
+    "delivered": "Delivered"
+  },
+  "occupancy": {
+    "title": "Building Occupancy",
+    "occupied": "Occupied",
+    "vacant": "Vacant",
+    "totalApartments": "Total Apartments",
+    "totalBuildings": "Total Buildings"
+  }
+}

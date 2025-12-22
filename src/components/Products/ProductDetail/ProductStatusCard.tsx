@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { useTranslation } from 'react-i18next';
 
 interface ProductStatusCardProps {
   inStock: boolean;
@@ -22,12 +23,14 @@ const ProductStatusCard = ({
   onInStockChange,
   onWeightableChange,
 }: ProductStatusCardProps) => {
+  const { t } = useTranslation('products');
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>Product Status</CardTitle>
+        <CardTitle className='text-lg'>{t('productDetail.statusCard.title')}</CardTitle>
         <CardDescription>
-          Manage availability and product settings
+          {t('productDetail.statusCard.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className='space-y-6'>
@@ -44,9 +47,9 @@ const ProductStatusCard = ({
               <XCircle className='w-5 h-5 text-muted-foreground' />
             )}
             <div>
-              <p className='font-medium'>In Stock</p>
+              <p className='font-medium'>{t('productDetail.statusCard.inStock')}</p>
               <p className='text-xs text-muted-foreground'>
-                Available for purchase
+                {t('productDetail.statusCard.inStockDescription')}
               </p>
             </div>
           </div>
@@ -68,9 +71,9 @@ const ProductStatusCard = ({
               }`}
             />
             <div>
-              <p className='font-medium'>Sold by Weight</p>
+              <p className='font-medium'>{t('productDetail.statusCard.soldByWeight')}</p>
               <p className='text-xs text-muted-foreground'>
-                Price per unit weight
+                {t('productDetail.statusCard.soldByWeightDescription')}
               </p>
             </div>
           </div>

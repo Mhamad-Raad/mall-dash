@@ -1,5 +1,6 @@
 import { Building2, Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type ChartConfig, ChartContainer } from '@/components/ui/chart';
 import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts';
@@ -11,6 +12,7 @@ interface OccupancyChartProps {
 }
 
 export default function OccupancyChart({ totalApartments, occupied, totalBuildings }: OccupancyChartProps) {
+  const { t } = useTranslation('home');
   const vacant = totalApartments - occupied;
   const occupancyRate = (occupied / totalApartments) * 100;
 
@@ -30,7 +32,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
 
   const chartConfig = {
     occupied: {
-      label: 'Occupied',
+      label: t('occupancy.occupied'),
       color: 'var(--chart-2)',
     },
   } satisfies ChartConfig;
@@ -40,7 +42,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
       <CardHeader>
         <div className='flex items-center gap-2'>
           <Building2 className='size-5 text-primary' />
-          <CardTitle className='text-lg'>Apartment Occupancy</CardTitle>
+          <CardTitle className='text-lg'>{t('occupancy.title')}</CardTitle>
         </div>
         <CardDescription>Current occupancy status across all buildings</CardDescription>
       </CardHeader>
@@ -82,7 +84,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
                               y={(viewBox.cy || 0) + 24}
                               className='fill-muted-foreground'
                             >
-                              Occupied
+                              {t('occupancy.occupied')}
                             </tspan>
                           </text>
                         );
@@ -101,7 +103,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
               <div className='flex items-center gap-3'>
                 <div className='w-4 h-4 rounded-full bg-chart-2' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Occupied</p>
+                  <p className='text-sm text-muted-foreground'>{t('occupancy.occupied')}</p>
                   <p className='text-2xl font-bold'>{occupied}</p>
                 </div>
               </div>
@@ -117,7 +119,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
               <div className='flex items-center gap-3'>
                 <div className='w-4 h-4 rounded-full bg-muted border-2 border-muted-foreground/20' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Vacant</p>
+                  <p className='text-sm text-muted-foreground'>{t('occupancy.vacant')}</p>
                   <p className='text-2xl font-bold'>{vacant}</p>
                 </div>
               </div>
@@ -136,7 +138,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
               <div className='flex items-center gap-3'>
                 <Home className='size-5 text-primary' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Total Apartments</p>
+                  <p className='text-sm text-muted-foreground'>{t('occupancy.totalApartments')}</p>
                   <p className='text-2xl font-bold text-primary'>{totalApartments}</p>
                 </div>
               </div>
@@ -147,7 +149,7 @@ export default function OccupancyChart({ totalApartments, occupied, totalBuildin
               <div className='flex items-center gap-3'>
                 <Building2 className='size-5 text-muted-foreground' />
                 <div>
-                  <p className='text-sm text-muted-foreground'>Buildings</p>
+                  <p className='text-sm text-muted-foreground'>{t('occupancy.totalBuildings')}</p>
                   <p className='text-xl font-semibold'>{totalBuildings}</p>
                 </div>
               </div>

@@ -20,8 +20,13 @@
     "tenant": "Tenant"
   },
   "emptyState": {
-    "title": "No users found",
-    "description": "Try adjusting your filters or create a new user."
+    "title": "No Users Found",
+    "description": "We searched everywhere but couldn't find any users matching your criteria. Try adjusting your filters or search terms.",
+    "suggestions": {
+      "differentSearch": "Try a different search",
+      "clearFilters": "Clear filters",
+      "checkSpelling": "Check spelling"
+    }
   },
   "error": "Error",
   "createUser": {

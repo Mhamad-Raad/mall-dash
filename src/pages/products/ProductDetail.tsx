@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import ProductDetailHeader from '@/components/Products/ProductDetail/ProductDetailHeader';
 import ProductImageCard from '@/components/Products/ProductDetail/ProductImageCard';
@@ -22,6 +23,7 @@ import type { ProductType } from '@/interfaces/Products.interface';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation('products');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ const ProductDetail = () => {
 
     if (name !== product.name) {
       changesList.push({
-        field: 'Name',
+        field: t('productDetail.changeFields.name'),
         oldValue: product.name,
         newValue: name,
       });
@@ -86,16 +88,16 @@ const ProductDetail = () => {
 
     if (description !== (product.description || '')) {
       changesList.push({
-        field: 'Description',
-        oldValue: product.description || '(empty)',
-        newValue: description || '(empty)',
+        field: t('productDetail.changeFields.description'),
+        oldValue: product.description || t('productDetail.changeFields.empty'),
+        newValue: description || t('productDetail.changeFields.empty'),
       });
     }
 
     const currentPrice = parseFloat(price);
     if (!isNaN(currentPrice) && currentPrice !== product.price) {
       changesList.push({
-        field: 'Price',
+        field: t('productDetail.changeFields.price'),
         oldValue: `$${product.price.toFixed(2)}`,
         newValue: `$${currentPrice.toFixed(2)}`,
       });
@@ -104,33 +106,33 @@ const ProductDetail = () => {
     const currentDiscount = discountPrice ? parseFloat(discountPrice) : null;
     if (currentDiscount !== product.discountPrice) {
       changesList.push({
-        field: 'Discount Price',
+        field: t('productDetail.changeFields.discountPrice'),
         oldValue: product.discountPrice
           ? `$${product.discountPrice.toFixed(2)}`
-          : 'None',
-        newValue: currentDiscount ? `$${currentDiscount.toFixed(2)}` : 'None',
+          : t('productDetail.changeFields.none'),
+        newValue: currentDiscount ? `$${currentDiscount.toFixed(2)}` : t('productDetail.changeFields.none'),
       });
     }
 
     if (inStock !== product.inStock) {
       changesList.push({
-        field: 'In Stock',
-        oldValue: product.inStock ? 'Yes' : 'No',
-        newValue: inStock ? 'Yes' : 'No',
+        field: t('productDetail.changeFields.inStock'),
+        oldValue: product.inStock ? t('productDetail.changeFields.yes') : t('productDetail.changeFields.no'),
+        newValue: inStock ? t('productDetail.changeFields.yes') : t('productDetail.changeFields.no'),
       });
     }
 
     if (isWeightable !== product.isWeightable) {
       changesList.push({
-        field: 'Weightable',
-        oldValue: product.isWeightable ? 'Yes' : 'No',
-        newValue: isWeightable ? 'Yes' : 'No',
+        field: t('productDetail.changeFields.weightable'),
+        oldValue: product.isWeightable ? t('productDetail.changeFields.yes') : t('productDetail.changeFields.no'),
+        newValue: isWeightable ? t('productDetail.changeFields.yes') : t('productDetail.changeFields.no'),
       });
     }
 
     if (categoryId !== product.categoryId) {
       changesList.push({
-        field: 'Category',
+        field: t('productDetail.changeFields.category'),
         oldValue: product.categoryName,
         newValue: categoryName,
       });
@@ -138,8 +140,8 @@ const ProductDetail = () => {
 
     if (imageFile) {
       changesList.push({
-        field: 'Image',
-        oldValue: 'Current Image',
+        field: t('productDetail.changeFields.image'),
+        oldValue: t('productDetail.changeFields.currentImage'),
         newValue: imageFile.name,
       });
     }
@@ -180,7 +182,7 @@ const ProductDetail = () => {
       setCategoryName(data.categoryName);
       setImagePreview(data.productImageUrl || '');
     } else {
-      setError(data?.error || 'Failed to load product details');
+      setError(data?.error || t('productDetail.toasts.loadError'));
     }
     setLoading(false);
   };
@@ -196,7 +198,7 @@ const ProductDetail = () => {
     if (!id) return;
 
     if (!name || !price || !categoryId) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('productDetail.toasts.requiredFields'));
       setShowUpdateModal(false);
       return;
     }
@@ -223,10 +225,10 @@ const ProductDetail = () => {
     const result = await updateProduct(parseInt(id), formData);
 
     if (result && !result.error) {
-      toast.success('Product updated successfully');
+      toast.success(t('productDetail.toasts.updateSuccess'));
       navigate('/products');
     } else {
-      toast.error(result?.error || 'Failed to update product');
+      toast.error(result?.error || t('productDetail.toasts.updateError'));
     }
     setSaving(false);
   };
@@ -235,11 +237,11 @@ const ProductDetail = () => {
     if (!id) return;
     const result = await deleteProduct(parseInt(id));
     if (result && !result.error) {
-      toast.success('Product deleted successfully');
+      toast.success(t('productDetail.toasts.deleteSuccess'));
       setShowDeleteModal(false);
       navigate('/products');
     } else {
-      toast.error(result?.error || 'Failed to delete product');
+      toast.error(result?.error || t('productDetail.toasts.deleteError'));
       setShowDeleteModal(false);
     }
   };
@@ -301,25 +303,25 @@ const ProductDetail = () => {
             onClick={() => navigate('/products')}
             className='px-4 py-2 rounded-md border border-input hover:bg-accent hover:text-accent-foreground transition-colors'
           >
-            Cancel
+            {t('productDetail.footer.cancel')}
           </button>
           <button
             onClick={handleToggleUpdateModal}
             disabled={!hasChanges || saving}
             className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('productDetail.footer.saving') : t('productDetail.footer.saveChanges')}
           </button>
         </div>
       </div>
 
       <ConfirmModal
         open={showUpdateModal}
-        title='Update Product'
-        description='Are you sure you want to update this product?'
+        title={t('productDetail.modals.update.title')}
+        description={t('productDetail.modals.update.description')}
         confirmType='warning'
-        confirmLabel='Update'
-        cancelLabel='Cancel'
+        confirmLabel={t('productDetail.modals.update.confirmLabel')}
+        cancelLabel={t('productDetail.modals.update.cancelLabel')}
         onCancel={handleToggleUpdateModal}
         onConfirm={handleUpdateProduct}
         changes={changes}
@@ -327,12 +329,12 @@ const ProductDetail = () => {
 
       <ConfirmModal
         open={showDeleteModal}
-        title='Delete Product'
-        description='Are you sure you want to delete this product?'
-        warning='WARNING! This action cannot be undone.'
+        title={t('productDetail.modals.delete.title')}
+        description={t('productDetail.modals.delete.description')}
+        warning={t('productDetail.modals.delete.warning')}
         confirmType='danger'
-        confirmLabel='Delete'
-        cancelLabel='Cancel'
+        confirmLabel={t('productDetail.modals.delete.confirmLabel')}
+        cancelLabel={t('productDetail.modals.delete.cancelLabel')}
         onCancel={handleToggleDeleteModal}
         onConfirm={handleDeleteProduct}
       />

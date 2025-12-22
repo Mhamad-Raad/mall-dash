@@ -15,7 +15,13 @@
     "workingHours": "Working Hours"
   },
   "emptyState": {
-    "title": "No vendors found"
+    "title": "No Vendors Found",
+    "description": "We searched everywhere but couldn't find any vendors matching your criteria. Try adjusting your filters or search terms.",
+    "suggestions": {
+      "differentSearch": "Try a different search",
+      "clearFilters": "Clear filters",
+      "checkSpelling": "Check spelling"
+    }
   },
   "createVendor": {
     "title": "Create New Vendor",

@@ -25,6 +25,22 @@ import themesEn from './locales/Themes/en.json';
 import themesAr from './locales/Themes/ar.json';
 import themesKu from './locales/Themes/ku.json';
 
+import homeEn from './locales/Home/en.json';
+import homeAr from './locales/Home/ar.json';
+import homeKu from './locales/Home/ku.json';
+
+import reportsEn from './locales/Reports/en.json';
+import reportsAr from './locales/Reports/ar.json';
+import reportsKu from './locales/Reports/ku.json';
+
+import profileEn from './locales/Profile/en.json';
+import profileAr from './locales/Profile/ar.json';
+import profileKu from './locales/Profile/ku.json';
+
+import productsEn from './locales/Products/en.json';
+import productsAr from './locales/Products/ar.json';
+import productsKu from './locales/Products/ku.json';
+
 i18n.use(initReactI18next).init({
   resources: {
     en: {
@@ -34,6 +50,10 @@ i18n.use(initReactI18next).init({
       buildings: buildingsEn,
       vendors: vendorsEn,
       themes: themesEn,
+      home: homeEn,
+      reports: reportsEn,
+      profile: profileEn,
+      products: productsEn,
     },
     ar: {
       sidebar: sidebarAr,
@@ -42,6 +62,10 @@ i18n.use(initReactI18next).init({
       buildings: buildingsAr,
       vendors: vendorsAr,
       themes: themesAr,
+      home: homeAr,
+      reports: reportsAr,
+      profile: profileAr,
+      products: productsAr,
     },
     ku: {
       sidebar: sidebarKu,
@@ -50,11 +74,15 @@ i18n.use(initReactI18next).init({
       buildings: buildingsKu,
       vendors: vendorsKu,
       themes: themesKu,
+      home: homeKu,
+      reports: reportsKu,
+      profile: profileKu,
+      products: productsKu,
     },
   },
   lng: 'en', // default language
   fallbackLng: 'en',
-  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors', 'themes'], // namespaces
+  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors', 'themes', 'home', 'reports', 'profile', 'products'], // namespaces
   defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });
