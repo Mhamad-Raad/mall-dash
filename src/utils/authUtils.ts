@@ -9,7 +9,7 @@ export interface RefreshTokenResponse {
 export const validateRefreshToken = async (): Promise<RefreshTokenResponse | null> => {
   try {
     // The refresh token is sent automatically via HTTP-only cookie
-    const response = await axiosInstance.post<RefreshTokenResponse>('/Account/NewRefreshToken', {});
+    const response = await axiosInstance.post<RefreshTokenResponse>('/Account/Web/refresh', {});
     // Return the response data which should contain the new access token
     return response.data;
   } catch (error) {
