@@ -4,7 +4,6 @@ import {
   Mail,
   Phone,
   Clock,
-  Store,
   User,
   ArrowUpRight,
 } from 'lucide-react';
