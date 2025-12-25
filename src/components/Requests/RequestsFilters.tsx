@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import {
 const RequestsFilters = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [status, setStatus] = useState(searchParams.get('status') || 'All');
 
@@ -25,16 +25,16 @@ const RequestsFilters = () => {
     } else {
       params.delete('search');
     }
-    
+
     if (status && status !== 'All') {
       params.set('status', status);
     } else {
       params.delete('status');
     }
-    
+
     // Reset page on filter change
     params.set('page', '1');
-    
+
     navigate(`?${params.toString()}`);
   };
 
@@ -64,7 +64,7 @@ const RequestsFilters = () => {
           />
         </div>
       </div>
-      
+
       <div className='flex flex-col sm:flex-row gap-2'>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className='w-full sm:w-[180px]'>
@@ -83,7 +83,7 @@ const RequestsFilters = () => {
           <Filter className='mr-2 h-4 w-4' />
           Filter
         </Button>
-        
+
         {(search || status !== 'All') && (
           <Button variant='ghost' onClick={clearFilters}>
             <X className='mr-2 h-4 w-4' />
@@ -96,3 +96,4 @@ const RequestsFilters = () => {
 };
 
 export default RequestsFilters;
+
