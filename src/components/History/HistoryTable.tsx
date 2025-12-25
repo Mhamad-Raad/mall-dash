@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
@@ -14,9 +15,14 @@ import type { RootState } from '@/store/store';
 import type { AuditLog } from '@/interfaces/Audit.interface';
 
 const HistoryTable = () => {
+  const navigate = useNavigate();
   const { logs, loading, error, total } = useSelector(
     (state: RootState) => state.audit
   );
+
+  const handleRowClick = (id: string | number) => {
+    navigate(`/history/${id}`);
+  };
 
   if (error) {
     return (
@@ -81,7 +87,8 @@ const HistoryTable = () => {
                 logs.map((log: AuditLog, index) => (
                   <TableRow
                     key={log.id || index}
-                    className='hover:bg-muted/50 transition-colors border-b last:border-0'
+                    className='hover:bg-muted/50 transition-colors border-b last:border-0 cursor-pointer'
+                    onClick={() => handleRowClick(log.id)}
                   >
                     <TableCell className='font-medium py-4'>
                       {log.action || '-'}

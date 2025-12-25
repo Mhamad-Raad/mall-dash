@@ -20,6 +20,7 @@ import Products from './pages/products/Products';
 import CreateProduct from './pages/products/CreateProduct';
 import ProductDetail from './pages/products/ProductDetail';
 import HistoryPage from './pages/HistoryPage';
+import AuditDetailsPage from './pages/AuditDetailsPage';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -84,6 +85,10 @@ const router = createBrowserRouter([
       {
         path: '/history',
         element: <HistoryPage />,
+      },
+      {
+        path: '/history/:id',
+        element: <AuditDetailsPage />,
       },
       {
         path: '/settings/themes',

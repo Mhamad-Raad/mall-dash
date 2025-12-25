@@ -41,3 +41,18 @@ export const fetchAudit = async (params: AuditParams = {}) => {
   }
 };
 
+export const fetchAuditById = async (id: number | string) => {
+  try {
+    const response = await axiosInstance.get(`/Audit/${id}`, {
+      headers: { key: API_KEY, value: API_VALUE },
+    });
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    return {
+      error: errorData?.error || errorData?.message || error.message,
+      statusCode: error.response?.status,
+    };
+  }
+};
+
