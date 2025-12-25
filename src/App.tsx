@@ -19,6 +19,10 @@ import Themes from './pages/settings/Themes';
 import Products from './pages/products/Products';
 import CreateProduct from './pages/products/CreateProduct';
 import ProductDetail from './pages/products/ProductDetail';
+import HistoryPage from './pages/HistoryPage';
+import AuditDetailsPage from './pages/AuditDetailsPage';
+import RequestsPage from './pages/requests/Requests';
+import RequestDetailPage from './pages/requests/RequestDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -79,6 +83,22 @@ const router = createBrowserRouter([
       {
         path: '/reports',
         element: <Reports />,
+      },
+      {
+        path: '/history',
+        element: <HistoryPage />,
+      },
+      {
+        path: '/history/:id',
+        element: <AuditDetailsPage />,
+      },
+      {
+        path: '/requests',
+        element: <RequestsPage />,
+      },
+      {
+        path: '/requests/:id',
+        element: <RequestDetailPage />,
       },
       {
         path: '/settings/themes',
