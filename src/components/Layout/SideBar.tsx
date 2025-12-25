@@ -14,6 +14,7 @@ import {
   ChevronRight,
   User,
   Palette,
+  History,
 } from 'lucide-react';
 
 import { useSelector } from 'react-redux';
@@ -95,6 +96,11 @@ const managementItems = [
     url: '/reports',
     icon: FileText,
   },
+  {
+    titleKey: 'History',
+    url: '/history',
+    icon: History,
+  },
 ];
 
 // Settings sub-items
@@ -118,7 +124,10 @@ export function AppSidebar() {
   const { user: me } = useSelector((state: RootState) => state.me);
   const [settingsOpen, setSettingsOpen] = useState(() => {
     // Open settings menu by default if we're on a settings page
-    return location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings');
+    return (
+      location.pathname.startsWith('/profile') ||
+      location.pathname.startsWith('/settings')
+    );
   });
 
   const user = {

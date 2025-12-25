@@ -19,6 +19,7 @@ import Themes from './pages/settings/Themes';
 import Products from './pages/products/Products';
 import CreateProduct from './pages/products/CreateProduct';
 import ProductDetail from './pages/products/ProductDetail';
+import HistoryPage from './pages/HistoryPage';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -79,6 +80,10 @@ const router = createBrowserRouter([
       {
         path: '/reports',
         element: <Reports />,
+      },
+      {
+        path: '/history',
+        element: <HistoryPage />,
       },
       {
         path: '/settings/themes',
