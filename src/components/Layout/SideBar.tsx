@@ -82,6 +82,11 @@ const mainNavItems = [
     url: '#',
     icon: ShoppingCart,
   },
+  {
+    titleKey: 'Requests',
+    url: '/requests',
+    icon: FileText,
+  },
 ];
 
 // Management items
