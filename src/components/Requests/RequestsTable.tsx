@@ -49,8 +49,8 @@ const RequestsTable = () => {
   }
 
   return (
-    <div className='rounded-xl border bg-card shadow-sm flex flex-col overflow-hidden'>
-      <ScrollArea className='h-[calc(100vh-280px)] md:h-[calc(100vh-280px)]'>
+    <div className='rounded-xl border bg-card shadow-sm flex flex-col overflow-hidden flex-1 min-h-0'>
+      <ScrollArea className='flex-1 min-h-0'>
         <div className='relative w-full overflow-auto'>
           <Table className='w-full min-w-[1000px]'>
             <TableHeader>
@@ -141,14 +141,14 @@ const RequestsTable = () => {
               )}
             </TableBody>
           </Table>
-          <div className='p-4 border-t bg-muted/20 sticky left-0 right-0'>
-            <CustomTablePagination
-              total={total}
-              suggestions={[10, 20, 50, 100]}
-            />
-          </div>
         </div>
       </ScrollArea>
+      <div className='p-4 border-t bg-muted/20 shrink-0'>
+        <CustomTablePagination
+          total={total}
+          suggestions={[10, 20, 50, 100]}
+        />
+      </div>
     </div>
   );
 };
