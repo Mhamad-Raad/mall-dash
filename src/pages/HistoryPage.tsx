@@ -29,9 +29,11 @@ const HistoryPage = () => {
   }, [dispatch, searchParams, limit]);
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500'>
+    <div className='flex flex-col gap-6 p-4 md:p-6 w-full h-full min-h-0 animate-in fade-in duration-500'>
       <HistoryFilters />
-      <HistoryTable />
+      <div className='flex-1 min-h-0 flex flex-col'>
+        <HistoryTable />
+      </div>
     </div>
   );
 };
