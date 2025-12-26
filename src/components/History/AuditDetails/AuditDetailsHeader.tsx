@@ -28,20 +28,20 @@ const AuditDetailsHeader = ({ log, id }: AuditDetailsHeaderProps) => {
         </Button>
         <div className='flex items-center gap-3'>
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-lg ${actionConfig.color}`}
+            className={`flex h-12 w-12 items-center justify-center rounded-lg ${actionConfig.color}`}
           >
-            <ActionIcon className='h-5 w-5' />
+            <ActionIcon className='h-6 w-6' />
           </div>
           <div>
             <div className='flex items-center gap-2'>
-              <h1 className='text-xl font-semibold'>
+              <h1 className='text-2xl font-semibold'>
                 {log.entityName} {actionConfig.label}
               </h1>
-              <Badge variant='outline' className='font-mono text-xs'>
+              <Badge variant='outline' className='font-mono text-sm'>
                 #{log.entityId}
               </Badge>
             </div>
-            <p className='text-sm text-muted-foreground'>
+            <p className='text-base text-muted-foreground'>
               Audit Log #{id}
             </p>
           </div>
