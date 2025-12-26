@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -193,9 +194,14 @@ const HistoryTable = () => {
                         </code>
                       </TableCell>
                       <TableCell className='py-3'>
-                        <div className='flex items-center gap-2'>
-                          <Mail className='h-3.5 w-3.5 text-muted-foreground' />
-                          <span className='text-sm text-muted-foreground truncate max-w-[200px]'>
+                        <div className='flex items-center gap-3'>
+                          <Avatar className='h-8 w-8'>
+                            <AvatarImage src={log.profileImageUrl} alt={log.userEmail} />
+                            <AvatarFallback className='bg-primary/10 text-primary text-xs font-medium'>
+                              {log.userEmail?.slice(0, 2).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className='text-sm truncate max-w-[180px]'>
                             {log.userEmail || '-'}
                           </span>
                         </div>
