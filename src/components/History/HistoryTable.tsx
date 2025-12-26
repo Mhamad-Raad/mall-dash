@@ -116,19 +116,19 @@ const HistoryTable = () => {
         <Table className='w-full'>
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
-              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-11 pl-4'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 pl-4'>
                 User
               </TableHead>
-              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-11 w-[110px]'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 w-[120px]'>
                 Action
               </TableHead>
-              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-11'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
                 Target
               </TableHead>
-              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-11 w-[150px] text-right pr-4'>
+              <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 w-[160px] text-right pr-4'>
                 When
               </TableHead>
-              <TableHead className='sticky top-0 z-10 w-8 bg-muted/50 backdrop-blur-sm border-b h-11 pr-4'></TableHead>
+              <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12 pr-4'></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -193,13 +193,13 @@ const HistoryTable = () => {
                     {/* User Column */}
                     <TableCell className='py-4 pl-4'>
                       <div className='flex items-center gap-3'>
-                        <Avatar className='h-8 w-8 shrink-0'>
+                        <Avatar className='h-14 w-14 border-2 border-border shadow-sm shrink-0 group-hover:shadow-md group-hover:border-primary/50 transition-all'>
                           <AvatarImage src={log.profileImageUrl} alt={log.userEmail} />
-                          <AvatarFallback className='bg-primary/10 text-primary text-xs font-medium'>
+                          <AvatarFallback className='bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-sm font-semibold'>
                             {log.userEmail?.slice(0, 2).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <span className='text-sm font-medium truncate'>
+                        <span className='text-lg font-semibold truncate group-hover:text-primary transition-colors'>
                           {log.userEmail || '-'}
                         </span>
                       </div>
@@ -209,21 +209,21 @@ const HistoryTable = () => {
                     <TableCell className='py-4'>
                       <Badge
                         variant='outline'
-                        className={`${actionConfig.color} gap-1.5 font-medium text-xs`}
+                        className={`${actionConfig.color} gap-1.5 font-semibold text-base px-3 py-1`}
                       >
-                        <ActionIcon className='h-3 w-3' />
+                        <ActionIcon className='h-4 w-4' />
                         {actionConfig.label}
                       </Badge>
                     </TableCell>
 
                     {/* Target Column - Entity + ID combined */}
                     <TableCell className='py-4'>
-                      <div className='flex items-center gap-2'>
-                        <div className='flex h-6 w-6 items-center justify-center rounded bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0'>
-                          <EntityIcon className='h-3.5 w-3.5' />
+                      <div className='flex items-center gap-2.5'>
+                        <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0'>
+                          <EntityIcon className='h-4.5 w-4.5' />
                         </div>
-                        <span className='font-medium text-sm'>{log.entityName || '-'}</span>
-                        <code className='rounded bg-muted/50 px-1.5 py-0.5 text-[11px] font-mono text-muted-foreground'>
+                        <span className='font-semibold text-lg'>{log.entityName || '-'}</span>
+                        <code className='rounded bg-muted/50 px-2 py-1 text-base font-mono text-muted-foreground'>
                           #{log.entityId || '-'}
                         </code>
                       </div>
@@ -232,11 +232,11 @@ const HistoryTable = () => {
                     {/* When Column */}
                     <TableCell className='py-4 text-right pr-4'>
                       <div className='flex flex-col items-end'>
-                        <span className='text-sm font-medium flex items-center gap-1'>
-                          <Clock className='h-3 w-3 text-muted-foreground' />
+                        <span className='text-lg font-medium flex items-center gap-1.5'>
+                          <Clock className='h-4 w-4 text-muted-foreground' />
                           {log.timestamp ? formatRelativeTime(log.timestamp) : '-'}
                         </span>
-                        <span className='text-[11px] text-muted-foreground'>
+                        <span className='text-base text-muted-foreground'>
                           {log.timestamp
                             ? new Date(log.timestamp).toLocaleString('en-US', {
                                 month: 'short',
