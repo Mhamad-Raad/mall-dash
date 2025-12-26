@@ -7,7 +7,7 @@ const mockRequests: Request[] = [
     tenantName: 'Fashion Boutique',
     title: 'AC Not Cooling',
     description:
-      'The air conditioning unit in the main showroom is not cooling properly. It is getting very hot for customers.',
+      'The air conditioning unit in the main showroom is not cooling properly. It has been running continuously for the past two days but the temperature inside remains uncomfortably high, reaching around 28°C during peak hours. Customers have been complaining and some have left without making purchases. We have tried adjusting the thermostat and cleaning the visible filters but the issue persists. This is affecting our business significantly and we request urgent attention.',
     status: 'Pending',
     images: [
       'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
@@ -22,7 +22,7 @@ const mockRequests: Request[] = [
     tenantName: 'Tech Gadgets Store',
     title: 'Leaking Pipe in Storage',
     description:
-      'There is a small leak in the water pipe running through our back storage room.',
+      'There is a small but persistent leak in the water pipe running through our back storage room. We first noticed it yesterday morning when we found a puddle near our electronics inventory boxes. We have placed buckets to catch the dripping water as a temporary measure, but we are concerned about potential water damage to our stock and the possibility of mold growth. The leak appears to be coming from a joint in the pipe near the ceiling. Please send a plumber to inspect and repair as soon as possible.',
     status: 'In Progress',
     images: [],
     createdAt: '2023-10-24T14:30:00Z',
@@ -34,7 +34,7 @@ const mockRequests: Request[] = [
     tenantName: 'Coffee Corner',
     title: 'Broken Door Handle',
     description:
-      'The main entrance door handle is loose and about to fall off.',
+      'The main entrance door handle is loose and about to fall off completely. It has been getting progressively worse over the past week and now wobbles significantly when customers try to open the door. This is both a safety concern and creates a poor first impression for our café. The screws appear to be stripped and the handle mechanism may need complete replacement. We have had to prop the door open during business hours as a temporary solution.',
     status: 'Resolved',
     images: [
       'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
@@ -48,7 +48,7 @@ const mockRequests: Request[] = [
     tenantName: 'Fashion Boutique',
     title: 'Request for Extra Cleaning',
     description:
-      'We had a spill in the fitting room area and need deep cleaning.',
+      'We had a significant spill in the fitting room area this afternoon when a customer accidentally knocked over a large coffee drink. The liquid has seeped into the carpet and left a noticeable stain that our staff was unable to fully remove with basic cleaning supplies. There is also a lingering odor that is quite unpleasant for customers using the fitting rooms. We kindly request a professional deep cleaning service at your earliest convenience to restore the area to its proper condition.',
     status: 'Pending',
     images: [],
     createdAt: '2023-10-26T11:20:00Z',
@@ -60,7 +60,7 @@ const mockRequests: Request[] = [
     tenantName: 'Book Worms',
     title: 'Power Outage in Section B',
     description:
-      "The lights in the children's book section are flickering and going out.",
+      "The lights in the children's book section have been flickering intermittently throughout the day and have now gone out completely in the back corner of the area. This section is popular with families and the poor lighting makes it difficult for customers to browse the shelves safely. We have checked our circuit breaker and it appears to be functioning normally, so the issue may be with the building's electrical supply to this area. Additionally, two of our point-of-sale terminals in this zone have also lost power.",
     status: 'Pending',
     images: [],
     createdAt: '2023-10-26T09:00:00Z',
