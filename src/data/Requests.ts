@@ -11,6 +11,7 @@ const mockRequests: Request[] = [
     status: 'Pending',
     images: [
       'https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1585771724684-38269d6639fd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
     ],
     createdAt: '2023-10-25T10:00:00Z',
     updatedAt: '2023-10-25T10:00:00Z',
