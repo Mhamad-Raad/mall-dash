@@ -1,200 +1,254 @@
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import CardsHome from '@/components/Home/CardsHome';
-import RecentOrdersHome from '@/components/Home/RecentOrdersHome';
-import TopSellingHome from '@/components/Home/TopSellingHome';
-import OrderStatusChart from '@/components/Home/OrderStatusChart';
-import CategoryPerformance from '@/components/Home/CategoryPerformance';
+import { RefreshCw, Calendar } from 'lucide-react';
+
+// Components
+import DashboardStats from '@/components/Home/DashboardStats';
 import OccupancyChart from '@/components/Home/OccupancyChart';
+import VendorDistribution from '@/components/Home/VendorDistribution';
+import TopVendors from '@/components/Home/TopVendors';
+import { Button } from '@/components/ui/button';
+
+// Data fetching
+import { fetchBuildings } from '@/data/Buildings';
+import { fetchVendors } from '@/data/Vendor';
+import { fetchUsers } from '@/data/Users';
+import { fetchProducts } from '@/data/Products';
+
+// Types
+import type {
+  DashboardStat,
+  OccupancyOverview,
+  BuildingOccupancy,
+  VendorTypeDistribution,
+  TopVendor,
+} from '@/interfaces/Home.interface';
+import type { BuildingListItem } from '@/interfaces/Building.interface';
+import type { VendorAPIResponse } from '@/interfaces/Vendor.interface';
 
 const Home = () => {
   const { t } = useTranslation('home');
 
-  const cardsInfo = [
-    {
-      title: t('cards.orders'),
-      value: 1010,
-      badge: { text: '-20%', trendingUp: false },
-      footer: t('cards.downThisMonth', { percent: '20%' }),
-    },
-    {
-      title: t('cards.users'),
-      value: 253,
-      badge: { text: 'App', trendingUp: null },
-      footer: t('cards.applicationWide'),
-    },
-    {
-      title: t('cards.vendors'),
-      value: 3,
-      badge: { text: 'Web', trendingUp: null },
-      footer: t('cards.webBasedVendors'),
-    },
-    {
-      title: t('cards.requests'),
-      value: 20,
-      badge: { text: '+5%', trendingUp: true },
-      footer: t('cards.customerRequests'),
-    },
-  ];
+  // Loading states
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const recentItems = [
-    {
-      id: '1',
-      name: 'Philip George',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png',
-      fallback: 'PG',
-      vendor: 'Mini-Markety barzyakan',
-      location: 'Mumbai, India',
-      status: t('status.onGoing'),
-    },
-    {
-      id: '2',
-      name: 'Tiana Curtis',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-2.png',
-      fallback: 'TC',
-      vendor: 'Aland StakeHouse',
-      location: 'New York, US',
-      status: t('status.canceled'),
-    },
-    {
-      id: '3',
-      name: 'Jaylon Donin',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-3.png',
-      fallback: 'JD',
-      vendor: 'Barzayakan Bakery',
-      location: 'Washington, US',
-      status: t('status.onTheWay'),
-    },
-    {
-      id: '4',
-      name: 'Kim Yim',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png',
-      fallback: 'KY',
-      vendor: 'Mini-Markety barzyakany 2',
-      location: 'Busan, South Korea',
-      status: t('status.delivered'),
-    },
-    {
-      id: '3',
-      name: 'Jaylon Donin',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-3.png',
-      fallback: 'JD',
-      vendor: 'Barzayakan Bakery',
-      location: 'Washington, US',
-      status: t('status.onTheWay'),
-    },
-    {
-      id: '4',
-      name: 'Kim Yim',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png',
-      fallback: 'KY',
-      vendor: 'Mini-Markety barzyakany 2',
-      location: 'Busan, South Korea',
-      status: t('status.delivered'),
-    },
-    {
-      id: '3',
-      name: 'Jaylon Donin',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-3.png',
-      fallback: 'JD',
-      vendor: 'Barzayakan Bakery',
-      location: 'Washington, US',
-      status: t('status.onTheWay'),
-    },
-    {
-      id: '4',
-      name: 'Kim Yim',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png',
-      fallback: 'KY',
-      vendor: 'Mini-Markety barzyakany 2',
-      location: 'Busan, South Korea',
-      status: t('status.delivered'),
-    },
-    {
-      id: '3',
-      name: 'Jaylon Donin',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-3.png',
-      fallback: 'JD',
-      vendor: 'Barzayakan Bakery',
-      location: 'Washington, US',
-      status: t('status.onTheWay'),
-    },
-    {
-      id: '4',
-      name: 'Kim Yim',
-      src: 'https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-4.png',
-      fallback: 'KY',
-      vendor: 'Mini-Markety barzyakany 2',
-      location: 'Busan, South Korea',
-      status: t('status.delivered'),
-    },
-  ];
+  // Data states
+  const [usersCount, setUsersCount] = useState(0);
+  const [vendorsData, setVendorsData] = useState<VendorAPIResponse[]>([]);
+  const [buildingsData, setBuildingsData] = useState<BuildingListItem[]>([]);
+  const [productsCount, setProductsCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  const topSellingItems = [
-    {
-      id: '1',
-      type: 'Market',
-      vendor: 'Mini-Markety barzyakan',
-      sold: 10,
-    },
-    {
-      id: '2',
-      type: 'Restaurant',
-      vendor: 'Aland StakeHouse',
-      sold: 20,
-    },
-    {
-      id: '3',
-      type: 'Bakery',
-      vendor: 'Barzayakan Bakery',
-      sold: 12,
-    },
-    {
-      id: '4',
-      type: 'Market',
-      vendor: 'Mini-Markety barzyakany 2',
-      sold: 100,
-    },
-  ];
+  // Fetch all dashboard data
+  const fetchDashboardData = async (showRefreshing = false) => {
+    if (showRefreshing) setIsRefreshing(true);
+    else setIsLoading(true);
 
-  // Order status data
-  const orderStatusData = [
-    { status: 'Delivered', count: 156, color: '#22c55e' },
-    { status: 'On the Way', count: 45, color: '#3b82f6' },
-    { status: 'Processing', count: 28, color: '#f59e0b' },
-    { status: 'Cancelled', count: 12, color: '#ef4444' },
-  ];
+    try {
+      // Fetch all data in parallel
+      const [usersResponse, vendorsResponse, buildingsResponse, productsResponse] = await Promise.all([
+        fetchUsers({ limit: 1 }),
+        fetchVendors({ limit: 100 }),
+        fetchBuildings({ limit: 100 }),
+        fetchProducts({ limit: 1 }),
+      ]);
 
-  // Category performance data
-  const categoryData = [
-    { category: 'Groceries', value: 12500, color: '#3b82f6' },
-    { category: 'Restaurants', value: 9800, color: '#f59e0b' },
-    { category: 'Bakery', value: 7200, color: '#ec4899' },
-    { category: 'Fast Food', value: 5400, color: '#8b5cf6' },
-  ];
+      // Process users count
+      if (usersResponse && !usersResponse.error) {
+        setUsersCount(usersResponse.totalCount || usersResponse.data?.length || 0);
+      }
+
+      // Process vendors
+      if (vendorsResponse && !vendorsResponse.error) {
+        setVendorsData(vendorsResponse.data || []);
+      }
+
+      // Process buildings
+      if (buildingsResponse && !buildingsResponse.error) {
+        setBuildingsData(buildingsResponse.data || []);
+      }
+
+      // Process products count
+      if (productsResponse && !productsResponse.error) {
+        setProductsCount(productsResponse.totalCount || productsResponse.data?.length || 0);
+      }
+
+      setLastUpdated(new Date());
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  // Compute dashboard stats
+  const dashboardStats: DashboardStat[] = useMemo(() => {
+    const totalApartments = buildingsData.reduce((sum, b) => sum + (b.totalApartments || 0), 0);
+    const totalOccupied = buildingsData.reduce((sum, b) => sum + (b.occupants || 0), 0);
+
+    return [
+      {
+        id: 'users',
+        title: t('cards.users'),
+        value: usersCount,
+        icon: 'users',
+        description: t('cards.applicationWide'),
+        href: '/users',
+      },
+      {
+        id: 'vendors',
+        title: t('cards.vendors'),
+        value: vendorsData.length,
+        icon: 'vendors',
+        description: t('cards.activeVendors', 'Active vendors in the system'),
+        href: '/vendors',
+      },
+      {
+        id: 'buildings',
+        title: t('cards.buildings', 'Buildings'),
+        value: buildingsData.length,
+        icon: 'buildings',
+        description: t('cards.managedBuildings', 'Managed buildings'),
+        href: '/buildings',
+      },
+      {
+        id: 'apartments',
+        title: t('cards.apartments', 'Apartments'),
+        value: totalApartments,
+        icon: 'apartments',
+        description: `${totalOccupied} ${t('occupancy.occupied').toLowerCase()}`,
+        href: '/buildings',
+      },
+      {
+        id: 'products',
+        title: t('cards.products', 'Products'),
+        value: productsCount,
+        icon: 'products',
+        description: t('cards.listedProducts', 'Listed products'),
+        href: '/products',
+      },
+      {
+        id: 'requests',
+        title: t('cards.requests'),
+        value: 0,
+        icon: 'requests',
+        description: t('cards.customerRequests'),
+        href: '/requests',
+      },
+    ];
+  }, [usersCount, vendorsData, buildingsData, productsCount, t]);
+
+  // Compute occupancy data
+  const occupancyData: OccupancyOverview = useMemo(() => {
+    const buildings: BuildingOccupancy[] = buildingsData.map((b) => ({
+      id: b.id,
+      name: b.name,
+      totalApartments: b.totalApartments || 0,
+      occupied: b.occupants || 0,
+      occupancyRate: b.totalApartments > 0 ? ((b.occupants || 0) / b.totalApartments) * 100 : 0,
+    }));
+
+    const totalApartments = buildings.reduce((sum, b) => sum + b.totalApartments, 0);
+    const totalOccupied = buildings.reduce((sum, b) => sum + b.occupied, 0);
+
+    return {
+      totalBuildings: buildings.length,
+      totalApartments,
+      totalOccupied,
+      totalVacant: totalApartments - totalOccupied,
+      overallRate: totalApartments > 0 ? (totalOccupied / totalApartments) * 100 : 0,
+      buildings: buildings.sort((a, b) => b.occupancyRate - a.occupancyRate),
+    };
+  }, [buildingsData]);
+
+  // Compute vendor distribution
+  const vendorDistribution: VendorTypeDistribution[] = useMemo(() => {
+    const typeCount: Record<string, number> = {};
+
+    vendorsData.forEach((vendor) => {
+      const type = vendor.type || 'Other';
+      typeCount[type] = (typeCount[type] || 0) + 1;
+    });
+
+    const total = vendorsData.length;
+    return Object.entries(typeCount)
+      .map(([type, count]) => ({
+        type,
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [vendorsData]);
+
+  // Compute top vendors
+  const topVendors: TopVendor[] = useMemo(() => {
+    // TODO: Replace with actual order count from orders API when available
+    return vendorsData.slice(0, 5).map((v) => ({
+      id: v.id,
+      name: v.name,
+      type: v.type || 'Other',
+      orderCount: 0, // Placeholder - would come from orders API
+      logo: v.profileImageUrl || undefined,
+    }));
+  }, [vendorsData]);
+
+  const formatLastUpdated = () => {
+    return lastUpdated.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6'>
-      {/* Stats Cards */}
-      <CardsHome cards={cardsInfo} />
-
-      {/* Occupancy Chart */}
-      <OccupancyChart totalApartments={180} occupied={142} totalBuildings={3} />
-
-      {/* Recent Orders and Top Selling */}
-      <div className='grid grid-cols-1 xl:grid-cols-3 gap-6'>
-        <div className='xl:col-span-2 bg-card border rounded-lg p-6 shadow-sm'>
-          <h3 className='text-lg font-semibold mb-4'>{t('sections.recentOrders')}</h3>
-          <RecentOrdersHome items={recentItems} />
+    <div className='flex flex-col gap-6'>
+      {/* Header */}
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+        <div>
+          <h1 className='text-2xl font-bold tracking-tight'>
+            {t('title', 'Dashboard')}
+          </h1>
+          <p className='text-muted-foreground text-sm'>
+            {t('subtitle', 'Welcome back! Here\'s an overview of your system.')}
+          </p>
         </div>
-        <div className='xl:col-span-1 bg-card border rounded-lg p-6 shadow-sm'>
-          <h3 className='text-lg font-semibold mb-4'>{t('sections.topSelling')}</h3>
-          <TopSellingHome items={topSellingItems} />
+        <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+            <Calendar className='size-3.5' />
+            <span>{t('lastUpdated', 'Last updated')}: {formatLastUpdated()}</span>
+          </div>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => fetchDashboardData(true)}
+            disabled={isRefreshing}
+            className='h-8'
+          >
+            <RefreshCw className={`size-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {t('actions.refresh', 'Refresh')}
+          </Button>
         </div>
       </div>
 
-      {/* Performance Charts */}
+      {/* Stats Cards */}
+      <DashboardStats stats={dashboardStats} isLoading={isLoading} />
+
+      {/* Building Occupancy - Full Width */}
+      <OccupancyChart data={occupancyData} isLoading={isLoading} />
+
+      {/* Vendors Section */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        <OrderStatusChart data={orderStatusData} />
-        <CategoryPerformance data={categoryData} />
+        <VendorDistribution
+          data={vendorDistribution}
+          totalVendors={vendorsData.length}
+          isLoading={isLoading}
+        />
+        <TopVendors vendors={topVendors} isLoading={isLoading} />
       </div>
     </div>
   );
