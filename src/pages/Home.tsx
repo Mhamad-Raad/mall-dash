@@ -10,10 +10,9 @@ import TopVendors from '@/components/Home/TopVendors';
 import { Button } from '@/components/ui/button';
 
 // Data fetching
+import { fetchDashboardStats } from '@/data/Dashboard';
 import { fetchBuildings } from '@/data/Buildings';
 import { fetchVendors } from '@/data/Vendor';
-import { fetchUsers } from '@/data/Users';
-import { fetchProducts } from '@/data/Products';
 
 // Types
 import type {
@@ -34,10 +33,17 @@ const Home = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Data states
-  const [usersCount, setUsersCount] = useState(0);
+  const [dashboardData, setDashboardData] = useState({
+    totalUsers: 0,
+    activeVendors: 0,
+    totalBuildings: 0,
+    totalApartments: 0,
+    occupiedApartments: 0,
+    totalProducts: 0,
+    pendingRequests: 0,
+  });
   const [vendorsData, setVendorsData] = useState<VendorAPIResponse[]>([]);
   const [buildingsData, setBuildingsData] = useState<BuildingListItem[]>([]);
-  const [productsCount, setProductsCount] = useState(0);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   // Fetch all dashboard data
@@ -47,16 +53,15 @@ const Home = () => {
 
     try {
       // Fetch all data in parallel
-      const [usersResponse, vendorsResponse, buildingsResponse, productsResponse] = await Promise.all([
-        fetchUsers({ limit: 1 }),
+      const [statsResponse, vendorsResponse, buildingsResponse] = await Promise.all([
+        fetchDashboardStats(),
         fetchVendors({ limit: 100 }),
         fetchBuildings({ limit: 100 }),
-        fetchProducts({ limit: 1 }),
       ]);
 
-      // Process users count
-      if (usersResponse && !usersResponse.error) {
-        setUsersCount(usersResponse.totalCount || usersResponse.data?.length || 0);
+      // Process dashboard stats
+      if (statsResponse && !statsResponse.error) {
+        setDashboardData(statsResponse);
       }
 
       // Process vendors
@@ -67,11 +72,6 @@ const Home = () => {
       // Process buildings
       if (buildingsResponse && !buildingsResponse.error) {
         setBuildingsData(buildingsResponse.data || []);
-      }
-
-      // Process products count
-      if (productsResponse && !productsResponse.error) {
-        setProductsCount(productsResponse.totalCount || productsResponse.data?.length || 0);
       }
 
       setLastUpdated(new Date());
@@ -89,14 +89,11 @@ const Home = () => {
 
   // Compute dashboard stats
   const dashboardStats: DashboardStat[] = useMemo(() => {
-    const totalApartments = buildingsData.reduce((sum, b) => sum + (b.totalApartments || 0), 0);
-    const totalOccupied = buildingsData.reduce((sum, b) => sum + (b.occupants || 0), 0);
-
     return [
       {
         id: 'users',
         title: t('cards.users'),
-        value: usersCount,
+        value: dashboardData.totalUsers,
         icon: 'users',
         description: t('cards.applicationWide'),
         href: '/users',
@@ -104,7 +101,7 @@ const Home = () => {
       {
         id: 'vendors',
         title: t('cards.vendors'),
-        value: vendorsData.length,
+        value: dashboardData.activeVendors,
         icon: 'vendors',
         description: t('cards.activeVendors', 'Active vendors in the system'),
         href: '/vendors',
@@ -112,7 +109,7 @@ const Home = () => {
       {
         id: 'buildings',
         title: t('cards.buildings', 'Buildings'),
-        value: buildingsData.length,
+        value: dashboardData.totalBuildings,
         icon: 'buildings',
         description: t('cards.managedBuildings', 'Managed buildings'),
         href: '/buildings',
@@ -120,15 +117,15 @@ const Home = () => {
       {
         id: 'apartments',
         title: t('cards.apartments', 'Apartments'),
-        value: totalApartments,
+        value: dashboardData.totalApartments,
         icon: 'apartments',
-        description: `${totalOccupied} ${t('occupancy.occupied').toLowerCase()}`,
+        description: `${dashboardData.occupiedApartments} ${t('occupancy.occupied').toLowerCase()}`,
         href: '/buildings',
       },
       {
         id: 'products',
         title: t('cards.products', 'Products'),
-        value: productsCount,
+        value: dashboardData.totalProducts,
         icon: 'products',
         description: t('cards.listedProducts', 'Listed products'),
         href: '/products',
@@ -136,13 +133,13 @@ const Home = () => {
       {
         id: 'requests',
         title: t('cards.requests'),
-        value: 0,
+        value: dashboardData.pendingRequests,
         icon: 'requests',
         description: t('cards.customerRequests'),
         href: '/requests',
       },
     ];
-  }, [usersCount, vendorsData, buildingsData, productsCount, t]);
+  }, [dashboardData, t]);
 
   // Compute occupancy data
   const occupancyData: OccupancyOverview = useMemo(() => {
@@ -154,18 +151,15 @@ const Home = () => {
       occupancyRate: b.totalApartments > 0 ? ((b.occupants || 0) / b.totalApartments) * 100 : 0,
     }));
 
-    const totalApartments = buildings.reduce((sum, b) => sum + b.totalApartments, 0);
-    const totalOccupied = buildings.reduce((sum, b) => sum + b.occupied, 0);
-
     return {
-      totalBuildings: buildings.length,
-      totalApartments,
-      totalOccupied,
-      totalVacant: totalApartments - totalOccupied,
-      overallRate: totalApartments > 0 ? (totalOccupied / totalApartments) * 100 : 0,
+      totalBuildings: dashboardData.totalBuildings,
+      totalApartments: dashboardData.totalApartments,
+      totalOccupied: dashboardData.occupiedApartments,
+      totalVacant: dashboardData.totalApartments - dashboardData.occupiedApartments,
+      overallRate: dashboardData.totalApartments > 0 ? (dashboardData.occupiedApartments / dashboardData.totalApartments) * 100 : 0,
       buildings: buildings.sort((a, b) => b.occupancyRate - a.occupancyRate),
     };
-  }, [buildingsData]);
+  }, [buildingsData, dashboardData]);
 
   // Compute vendor distribution
   const vendorDistribution: VendorTypeDistribution[] = useMemo(() => {
