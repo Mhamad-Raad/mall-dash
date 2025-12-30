@@ -207,3 +207,36 @@ export const deleteBuilding = async (id: number) => {
     };
   }
 };
+
+export const updateApartmentLayout = async (
+  apartmentId: number,
+  layout: {
+    rooms: Array<{
+      id: string;
+      type: string;
+      name: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }>;
+    gridSize: number;
+  }
+) => {
+  try {
+    const response = await axiosInstance.put(
+      `/Building/apartment/${apartmentId}/layout`,
+      { layout },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
+  }
+};
