@@ -84,6 +84,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   // Ctrl+scroll zoom handler - needs non-passive event listener to prevent browser zoom
   // Attached to scroll container to capture wheel events in the entire area
@@ -126,6 +128,62 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  // Middle mouse button panning
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // Middle mouse button = 1
+      if (e.button === 1) {
+        e.preventDefault();
+        isPanningRef.current = true;
+        panStartRef.current = {
+          x: e.clientX,
+          y: e.clientY,
+          scrollLeft: container.scrollLeft,
+          scrollTop: container.scrollTop,
+        };
+        container.style.cursor = 'grabbing';
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isPanningRef.current) return;
+      e.preventDefault();
+      const dx = e.clientX - panStartRef.current.x;
+      const dy = e.clientY - panStartRef.current.y;
+      container.scrollLeft = panStartRef.current.scrollLeft - dx;
+      container.scrollTop = panStartRef.current.scrollTop - dy;
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 1 || isPanningRef.current) {
+        isPanningRef.current = false;
+        container.style.cursor = '';
+      }
+    };
+
+    // Prevent default middle-click behavior (auto-scroll)
+    const handleAuxClick = (e: MouseEvent) => {
+      if (e.button === 1) {
+        e.preventDefault();
+      }
+    };
+
+    container.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    container.addEventListener('auxclick', handleAuxClick);
+
+    return () => {
+      container.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      container.removeEventListener('auxclick', handleAuxClick);
+    };
   }, []);
 
   // Ensure doors array exists
