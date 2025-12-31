@@ -61,6 +61,15 @@ export const getAllOverlappingRoomIds = (rooms: Room[]): Set<string> => {
   return overlapping;
 };
 
+// Calculate distance from a point to a room's bounding box
+const distanceToRoom = (x: number, y: number, width: number, height: number, room: Room): number => {
+  const roomCenterX = room.x + room.width / 2;
+  const roomCenterY = room.y + room.height / 2;
+  const movingCenterX = x + width / 2;
+  const movingCenterY = y + height / 2;
+  return Math.sqrt(Math.pow(roomCenterX - movingCenterX, 2) + Math.pow(roomCenterY - movingCenterY, 2));
+};
+
 // Find the nearest non-overlapping position for a room
 export const findNearestValidPosition = (
   movingRoom: Room,
@@ -76,12 +85,26 @@ export const findNearestValidPosition = (
     return { x: targetX, y: targetY };
   }
   
-  // Collect all potential snap positions from ALL rooms (not just overlapping ones)
-  // This ensures we find valid positions even in complex multi-room scenarios
-  const candidates: { x: number; y: number; distance: number }[] = [];
+  // Find which room(s) the target position overlaps with
+  const overlappingRooms = otherRooms.filter(r => roomsOverlap(testRoom, r));
   
-  // Generate snap points from all room edges
-  for (const other of otherRooms) {
+  // Sort other rooms by distance to target position (prioritize nearby rooms)
+  const roomsByDistance = [...otherRooms].sort((a, b) => {
+    const distA = distanceToRoom(targetX, targetY, movingRoom.width, movingRoom.height, a);
+    const distB = distanceToRoom(targetX, targetY, movingRoom.width, movingRoom.height, b);
+    return distA - distB;
+  });
+  
+  // Collect candidates - prioritize rooms that are overlapping or very close to target
+  const candidates: { x: number; y: number; distance: number; priority: number }[] = [];
+  
+  // Generate snap points from rooms, prioritizing overlapping ones
+  for (const other of roomsByDistance) {
+    const isOverlapping = overlappingRooms.some(r => r.id === other.id);
+    // Priority: 0 = overlapping (best), 1 = nearby, 2 = far
+    const distToOther = distanceToRoom(targetX, targetY, movingRoom.width, movingRoom.height, other);
+    const priority = isOverlapping ? 0 : (distToOther < 5 ? 1 : 2);
+    
     const snapPoints = [
       // Snap to right edge of other room
       { x: other.x + other.width, y: targetY },
@@ -115,13 +138,17 @@ export const findNearestValidPosition = (
       // Check if this position is valid (no overlap with any room)
       if (!roomOverlapsAny({ ...movingRoom, x, y }, otherRooms)) {
         const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
-        candidates.push({ x, y, distance });
+        candidates.push({ x, y, distance, priority });
       }
     }
   }
   
   // Also try positions that align the moving room's edges with other rooms' edges
-  for (const other of otherRooms) {
+  for (const other of roomsByDistance) {
+    const isOverlapping = overlappingRooms.some(r => r.id === other.id);
+    const distToOther = distanceToRoom(targetX, targetY, movingRoom.width, movingRoom.height, other);
+    const priority = isOverlapping ? 0 : (distToOther < 5 ? 1 : 2);
+    
     // Align moving room's left edge with other's right edge
     const alignPoints = [
       { x: other.x + other.width, y: other.y },
@@ -144,15 +171,23 @@ export const findNearestValidPosition = (
         const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
         // Avoid duplicates
         if (!candidates.some(c => c.x === x && c.y === y)) {
-          candidates.push({ x, y, distance });
+          candidates.push({ x, y, distance, priority });
         }
       }
     }
   }
   
-  // If we found valid positions, return the closest one
+  // If we found valid positions, return the closest one with highest priority
+  // Priority 0 (overlapping room) > Priority 1 (nearby) > Priority 2 (far)
   if (candidates.length > 0) {
-    candidates.sort((a, b) => a.distance - b.distance);
+    candidates.sort((a, b) => {
+      // First sort by priority (lower is better)
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+      // Then by distance
+      return a.distance - b.distance;
+    });
     return { x: candidates[0].x, y: candidates[0].y };
   }
   
