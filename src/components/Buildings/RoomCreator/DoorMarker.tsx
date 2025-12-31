@@ -3,7 +3,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { Door, Room } from './types';
 import { getRoomConfig } from './types';
 import { cn } from '@/lib/utils';
-import { DoorOpen, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface DoorMarkerProps {
   door: Door;
@@ -31,7 +31,7 @@ export const DoorMarker = ({
 
   const isVertical = door.edge === 'left' || door.edge === 'right';
   const doorWidthPx = door.width * cellSize;
-  const doorThickness = 8;
+  const doorThickness = 12;
 
   // Calculate door position based on edge and position
   let x = room.x * cellSize;
@@ -70,9 +70,7 @@ export const DoorMarker = ({
       ref={setNodeRef}
       className={cn(
         'absolute cursor-grab active:cursor-grabbing z-30',
-        !isDragging && 'transition-shadow duration-150',
-        isSelected && 'ring-2 ring-primary ring-offset-1',
-        isDragging && 'opacity-70'
+        isDragging && 'opacity-60'
       )}
       style={style}
       onClick={(e) => {
@@ -82,46 +80,46 @@ export const DoorMarker = ({
       {...listeners}
       {...attributes}
     >
-      {/* Door visual - gradient showing connection */}
+      {/* Door opening - clean bar style matching room borders */}
       <div
         className={cn(
-          'w-full h-full rounded-sm relative overflow-hidden',
-          'border-2 border-background shadow-md'
+          'w-full h-full rounded-sm relative',
+          isSelected && 'ring-1 ring-white ring-offset-1 ring-offset-background'
         )}
         style={{
           background: connectedRoom
-            ? `linear-gradient(${isVertical ? '0deg' : '90deg'}, ${roomColor}, ${connectedColor})`
+            ? `linear-gradient(${isVertical ? '180deg' : '90deg'}, ${roomColor}, ${connectedColor})`
             : roomColor,
         }}
       >
-        {/* Door icon */}
-        <div className='absolute inset-0 flex items-center justify-center'>
-          <DoorOpen
-            className='text-white drop-shadow-sm'
-            style={{
-              width: Math.min(isVertical ? doorThickness - 2 : doorWidthPx - 4, 16),
-              height: Math.min(isVertical ? doorWidthPx - 4 : doorThickness - 2, 16),
-            }}
-          />
-        </div>
+        {/* Inner line to show door opening */}
+        <div 
+          className={cn(
+            'absolute bg-background/80',
+            isVertical 
+              ? 'left-1/2 -translate-x-1/2 top-2 bottom-2 w-0.5' 
+              : 'top-1/2 -translate-y-1/2 left-2 right-2 h-0.5'
+          )}
+        />
       </div>
 
       {/* Delete button when selected */}
       {isSelected && (
         <button
           className={cn(
-            'absolute -top-2 -right-2 w-4 h-4 rounded-full',
+            'absolute w-4 h-4 rounded-full',
             'bg-destructive text-destructive-foreground',
             'flex items-center justify-center',
-            'hover:bg-destructive/90 transition-colors',
-            'shadow-md z-40'
+            'hover:bg-destructive/90',
+            'z-40',
+            isVertical ? '-top-2 left-1/2 -translate-x-1/2' : '-right-2 top-1/2 -translate-y-1/2'
           )}
           onClick={(e) => {
             e.stopPropagation();
             onDelete(door.id);
           }}
         >
-          <X className='w-3 h-3' />
+          <X className='w-2.5 h-2.5' />
         </button>
       )}
 
@@ -129,19 +127,25 @@ export const DoorMarker = ({
       {isSelected && (
         <div
           className={cn(
-            'absolute left-1/2 -translate-x-1/2 whitespace-nowrap',
+            'absolute whitespace-nowrap',
             'px-2 py-1 rounded text-xs bg-popover text-popover-foreground',
-            'border shadow-lg z-50',
-            door.edge === 'top' || door.edge === 'left' ? 'top-full mt-1' : 'bottom-full mb-1'
+            'border shadow-md z-50',
+            isVertical 
+              ? 'left-full ml-2 top-1/2 -translate-y-1/2'
+              : 'top-full mt-2 left-1/2 -translate-x-1/2'
           )}
         >
-          {room.name}
-          {connectedRoom && (
-            <>
-              <span className='mx-1 text-muted-foreground'>↔</span>
-              {connectedRoom.name}
-            </>
-          )}
+          <div className='flex items-center gap-1.5'>
+            <span 
+              className='w-1.5 h-1.5 rounded-full' 
+              style={{ backgroundColor: roomColor }}
+            />
+            <span className='text-muted-foreground'>↔</span>
+            <span 
+              className='w-1.5 h-1.5 rounded-full' 
+              style={{ backgroundColor: connectedColor }}
+            />
+          </div>
         </div>
       )}
     </div>
