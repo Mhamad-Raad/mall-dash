@@ -10,7 +10,6 @@ import {
   Fence,
   Archive,
   Briefcase,
-  Trash2,
   MoveHorizontal,
   DoorOpen,
 } from 'lucide-react';
@@ -31,6 +30,10 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   'door-open': DoorOpen,
 };
 
+type ResizeDirection = 
+  | 'top' | 'bottom' | 'left' | 'right' 
+  | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
 interface RoomBoxProps {
   room: Room;
   cellSize: number;
@@ -38,7 +41,7 @@ interface RoomBoxProps {
   isOverlapping?: boolean;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
-  onResize: (id: string, width: number, height: number) => void;
+  onResize: (id: string, width: number, height: number, deltaX?: number, deltaY?: number) => void;
 }
 
 export const RoomBox = ({
@@ -82,35 +85,66 @@ export const RoomBox = ({
     touchAction: 'none',
   };
 
-  // Resize handler factory
-  const createResizeHandler = (
-    direction: 'right' | 'bottom' | 'corner'
-  ) => (e: React.MouseEvent) => {
+  // Resize handler factory - supports all 8 directions
+  const createResizeHandler = (direction: ResizeDirection) => (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setIsResizing(true);
     
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const startMouseX = e.clientX;
+    const startMouseY = e.clientY;
     const startWidth = room.width;
     const startHeight = room.height;
+    const startX = room.x;
+    const startY = room.y;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       moveEvent.preventDefault();
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
+      const mouseDeltaX = moveEvent.clientX - startMouseX;
+      const mouseDeltaY = moveEvent.clientY - startMouseY;
       
       let newWidth = startWidth;
       let newHeight = startHeight;
+      let positionDeltaX: number | undefined;
+      let positionDeltaY: number | undefined;
       
-      if (direction === 'right' || direction === 'corner') {
-        newWidth = Math.max(0.5, Math.round((startWidth + deltaX / cellSize) * 100) / 100);
-      }
-      if (direction === 'bottom' || direction === 'corner') {
-        newHeight = Math.max(0.5, Math.round((startHeight + deltaY / cellSize) * 100) / 100);
+      // Handle horizontal resizing
+      if (direction.includes('right')) {
+        // Expanding/shrinking from right - just change width
+        newWidth = Math.max(0.5, Math.round((startWidth + mouseDeltaX / cellSize) * 100) / 100);
+      } else if (direction.includes('left')) {
+        // Expanding/shrinking from left - change width and move position
+        const widthChange = -mouseDeltaX / cellSize;
+        newWidth = Math.max(0.5, Math.round((startWidth + widthChange) * 100) / 100);
+        // Position moves by the inverse of the width change
+        const actualWidthChange = newWidth - startWidth;
+        positionDeltaX = -actualWidthChange;
+        // Prevent moving past origin
+        if (startX + positionDeltaX < 0) {
+          positionDeltaX = -startX;
+          newWidth = startWidth + startX;
+        }
       }
       
-      onResize(room.id, newWidth, newHeight);
+      // Handle vertical resizing
+      if (direction.includes('bottom')) {
+        // Expanding/shrinking from bottom - just change height
+        newHeight = Math.max(0.5, Math.round((startHeight + mouseDeltaY / cellSize) * 100) / 100);
+      } else if (direction.includes('top')) {
+        // Expanding/shrinking from top - change height and move position
+        const heightChange = -mouseDeltaY / cellSize;
+        newHeight = Math.max(0.5, Math.round((startHeight + heightChange) * 100) / 100);
+        // Position moves by the inverse of the height change
+        const actualHeightChange = newHeight - startHeight;
+        positionDeltaY = -actualHeightChange;
+        // Prevent moving past origin
+        if (startY + positionDeltaY < 0) {
+          positionDeltaY = -startY;
+          newHeight = startHeight + startY;
+        }
+      }
+      
+      onResize(room.id, newWidth, newHeight, positionDeltaX, positionDeltaY);
     };
 
     const handleMouseUp = () => {
@@ -121,6 +155,24 @@ export const RoomBox = ({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Get cursor style for resize direction
+  const getCursor = (direction: ResizeDirection): string => {
+    switch (direction) {
+      case 'top':
+      case 'bottom':
+        return 'cursor-ns-resize';
+      case 'left':
+      case 'right':
+        return 'cursor-ew-resize';
+      case 'top-left':
+      case 'bottom-right':
+        return 'cursor-nwse-resize';
+      case 'top-right':
+      case 'bottom-left':
+        return 'cursor-nesw-resize';
+    }
   };
 
   return (
@@ -164,22 +216,6 @@ export const RoomBox = ({
       
       {/* Main content */}
       <div className='flex-1 flex flex-col items-center justify-center p-1 min-h-0 relative'>
-        {/* Delete button - always accessible on hover */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(room.id);
-          }}
-          className={cn(
-            'absolute top-0.5 right-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20',
-            'bg-background/80 hover:bg-destructive hover:text-destructive-foreground',
-            'shadow-sm border border-border/50',
-            isVerySmall ? 'p-0.5' : 'p-1'
-          )}
-        >
-          <Trash2 className={isVerySmall ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
-        </button>
-
         {/* Room icon - size based on room dimensions */}
         {IconComponent && (
           <div style={{ color: isOverlapping ? '#ef4444' : config.color }}>
@@ -216,22 +252,55 @@ export const RoomBox = ({
       {/* Resize handles - only show when selected, z-index above drag overlay */}
       {isSelected && !isDragging && (
         <>
-          {/* Right resize handle */}
+          {/* Edge resize handles */}
+          {/* Top */}
           <div
-            className='absolute right-0 top-1/2 -translate-y-1/2 w-3 h-10 bg-primary hover:bg-primary/80 cursor-ew-resize rounded-l z-20'
-            onMouseDown={createResizeHandler('right')}
+            className={cn('absolute top-0 left-1/2 -translate-x-1/2 h-2 w-8 bg-primary/80 hover:bg-primary rounded-b z-20', getCursor('top'))}
+            onMouseDown={createResizeHandler('top')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Bottom resize handle */}
+          {/* Bottom */}
           <div
-            className='absolute bottom-0 left-1/2 -translate-x-1/2 h-3 w-10 bg-primary hover:bg-primary/80 cursor-ns-resize rounded-t z-20'
+            className={cn('absolute bottom-0 left-1/2 -translate-x-1/2 h-2 w-8 bg-primary/80 hover:bg-primary rounded-t z-20', getCursor('bottom'))}
             onMouseDown={createResizeHandler('bottom')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Corner resize handle */}
+          {/* Left */}
           <div
-            className='absolute bottom-0 right-0 w-4 h-4 bg-primary hover:bg-primary/80 cursor-nwse-resize rounded-tl z-20'
-            onMouseDown={createResizeHandler('corner')}
+            className={cn('absolute left-0 top-1/2 -translate-y-1/2 w-2 h-8 bg-primary/80 hover:bg-primary rounded-r z-20', getCursor('left'))}
+            onMouseDown={createResizeHandler('left')}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+          {/* Right */}
+          <div
+            className={cn('absolute right-0 top-1/2 -translate-y-1/2 w-2 h-8 bg-primary/80 hover:bg-primary rounded-l z-20', getCursor('right'))}
+            onMouseDown={createResizeHandler('right')}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+          
+          {/* Corner resize handles */}
+          {/* Top-Left */}
+          <div
+            className={cn('absolute top-0 left-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-br z-20', getCursor('top-left'))}
+            onMouseDown={createResizeHandler('top-left')}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+          {/* Top-Right */}
+          <div
+            className={cn('absolute top-0 right-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-bl z-20', getCursor('top-right'))}
+            onMouseDown={createResizeHandler('top-right')}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+          {/* Bottom-Left */}
+          <div
+            className={cn('absolute bottom-0 left-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-tr z-20', getCursor('bottom-left'))}
+            onMouseDown={createResizeHandler('bottom-left')}
+            onPointerDown={(e) => e.stopPropagation()}
+          />
+          {/* Bottom-Right */}
+          <div
+            className={cn('absolute bottom-0 right-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-tl z-20', getCursor('bottom-right'))}
+            onMouseDown={createResizeHandler('bottom-right')}
             onPointerDown={(e) => e.stopPropagation()}
           />
         </>

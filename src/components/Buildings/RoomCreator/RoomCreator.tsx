@@ -258,15 +258,23 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   );
 
   const resizeRoom = useCallback(
-    (id: string, width: number, height: number) => {
+    (id: string, width: number, height: number, deltaX?: number, deltaY?: number) => {
       const room = layout.rooms.find((r) => r.id === id);
       if (!room) return;
 
       const newWidth = Math.max(0.5, Math.round(width * 100) / 100);
       const newHeight = Math.max(0.5, Math.round(height * 100) / 100);
+      
+      // Calculate new position if provided (for top/left edge resizing)
+      const newX = deltaX !== undefined 
+        ? Math.max(0, Math.round((room.x + deltaX) * 100) / 100)
+        : room.x;
+      const newY = deltaY !== undefined 
+        ? Math.max(0, Math.round((room.y + deltaY) * 100) / 100)
+        : room.y;
 
       // Check if the new size would cause overlap
-      const testRoom: Room = { ...room, width: newWidth, height: newHeight };
+      const testRoom: Room = { ...room, x: newX, y: newY, width: newWidth, height: newHeight };
       const otherRooms = layout.rooms.filter((r) => r.id !== id);
       const wouldOverlap = otherRooms.some((other) => {
         const r1Right = testRoom.x + testRoom.width;
@@ -283,7 +291,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         onLayoutChange({
           ...layout,
           rooms: layout.rooms.map((r) =>
-            r.id === id ? { ...r, width: newWidth, height: newHeight } : r
+            r.id === id ? { ...r, x: newX, y: newY, width: newWidth, height: newHeight } : r
           ),
         });
       }
