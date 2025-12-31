@@ -86,15 +86,16 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Ctrl+scroll zoom handler - needs non-passive event listener to prevent browser zoom
+  // Attached to scroll container to capture wheel events in the entire area
   useEffect(() => {
+    const container = scrollContainerRef.current;
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!container || !canvas) return;
 
     const handleWheel = (e: WheelEvent) => {
       if (e.ctrlKey) {
         e.preventDefault();
-        const container = scrollContainerRef.current;
-        if (!container) return;
+        e.stopPropagation();
         
         const rect = canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
@@ -113,8 +114,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             const newScrollY = mouseY * scale - (mouseY - scrollY);
             
             requestAnimationFrame(() => {
-              container.scrollLeft = newScrollX;
-              container.scrollTop = newScrollY;
+              container.scrollLeft = Math.max(0, newScrollX);
+              container.scrollTop = Math.max(0, newScrollY);
             });
           }
           
@@ -123,8 +124,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       }
     };
 
-    canvas.addEventListener('wheel', handleWheel, { passive: false });
-    return () => canvas.removeEventListener('wheel', handleWheel);
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
   }, []);
 
   // Ensure doors array exists
@@ -631,7 +632,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       {/* Main content: Canvas + Room Editor side panel */}
       <div className='flex-1 flex gap-4 min-h-0 overflow-hidden'>
         {/* Canvas area - scrollable */}
-        <div ref={scrollContainerRef} className='flex-1 overflow-auto bg-muted/20 rounded-xl p-4'>
+        <div ref={scrollContainerRef} className='flex-1 overflow-auto bg-muted/20 rounded-xl'>
           <DndContext
             sensors={sensors}
             onDragStart={handleDragStart}
@@ -642,16 +643,16 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                 <div
                   ref={canvasRef}
                   className={cn(
-                    'relative border-2 border-dashed rounded-xl overflow-hidden bg-background shadow-sm',
+                    'relative overflow-hidden bg-background',
                     'transition-colors',
-                    selectedType && 'border-primary cursor-crosshair',
-                    doorMode && 'border-amber-500 cursor-pointer'
+                    selectedType && 'cursor-crosshair',
+                    doorMode && 'cursor-pointer'
                   )}
                   style={{
                     width: gridCols * cellSize,
                     height: gridRows * cellSize,
-                    minWidth: MIN_GRID_COLS * cellSize,
-                    minHeight: MIN_GRID_ROWS * cellSize,
+                    minWidth: '100%',
+                    minHeight: '100%',
                   }}
                   onContextMenu={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
