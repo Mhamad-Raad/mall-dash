@@ -206,27 +206,43 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   // Ensure doors array exists
   const doors = layout.doors || [];
   
-  // Dynamic grid sizing based on room positions
-  const { gridCols, gridRows } = useMemo(() => {
+  // Dynamic grid sizing based on room positions - expands in all directions
+  const { gridCols, gridRows, offsetX, offsetY } = useMemo(() => {
     if (layout.rooms.length === 0) {
-      return { gridCols: MIN_GRID_COLS, gridRows: MIN_GRID_ROWS };
+      return { gridCols: MIN_GRID_COLS, gridRows: MIN_GRID_ROWS, offsetX: 0, offsetY: 0 };
     }
     
-    // Find the maximum extent of all rooms
+    // Find the bounding box of all rooms
+    let minX = Infinity;
+    let minY = Infinity;
     let maxX = 0;
     let maxY = 0;
     
     for (const room of layout.rooms) {
-      const roomRight = room.x + room.width;
-      const roomBottom = room.y + room.height;
-      maxX = Math.max(maxX, roomRight);
-      maxY = Math.max(maxY, roomBottom);
+      minX = Math.min(minX, room.x);
+      minY = Math.min(minY, room.y);
+      maxX = Math.max(maxX, room.x + room.width);
+      maxY = Math.max(maxY, room.y + room.height);
     }
     
-    // Add padding and ensure minimum size
+    // Calculate offset to ensure padding on left/top
+    // If rooms start at x=2, we want padding before them
+    const needsLeftPadding = minX < GRID_PADDING;
+    const needsTopPadding = minY < GRID_PADDING;
+    
+    // Offset shifts the coordinate system so there's always padding
+    const offX = needsLeftPadding ? GRID_PADDING - minX : 0;
+    const offY = needsTopPadding ? GRID_PADDING - minY : 0;
+    
+    // Total grid size includes padding on all sides
+    const totalWidth = maxX + offX + GRID_PADDING;
+    const totalHeight = maxY + offY + GRID_PADDING;
+    
     return {
-      gridCols: Math.max(MIN_GRID_COLS, maxX + GRID_PADDING),
-      gridRows: Math.max(MIN_GRID_ROWS, maxY + GRID_PADDING),
+      gridCols: Math.max(MIN_GRID_COLS, Math.ceil(totalWidth)),
+      gridRows: Math.max(MIN_GRID_ROWS, Math.ceil(totalHeight)),
+      offsetX: offX,
+      offsetY: offY,
     };
   }, [layout.rooms]);
 
@@ -332,8 +348,9 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         id: generateId(),
         type,
         name: config.label,
-        x: Math.max(0, Math.round(x * 100) / 100),
-        y: Math.max(0, Math.round(y * 100) / 100),
+        // Allow negative positions - canvas will expand
+        x: Math.round(x * 100) / 100,
+        y: Math.round(y * 100) / 100,
         width: config.defaultWidth,
         height: config.defaultHeight,
       };
@@ -591,9 +608,9 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     const room = layout.rooms.find((r) => r.id === id);
 
     if (room && delta) {
-      // Calculate target position with 0.01m precision
-      const targetX = Math.max(0, Math.round((room.x + delta.x / cellSize) * 100) / 100);
-      const targetY = Math.max(0, Math.round((room.y + delta.y / cellSize) * 100) / 100);
+      // Calculate target position with 0.01m precision - allow negative for canvas expansion
+      const targetX = Math.round((room.x + delta.x / cellSize) * 100) / 100;
+      const targetY = Math.round((room.y + delta.y / cellSize) * 100) / 100;
 
       // Get other rooms (excluding the one being dragged)
       const otherRooms = layout.rooms.filter((r) => r.id !== id);
@@ -751,8 +768,9 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                   }}
                   onContextMenu={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / cellSize;
-                    const y = (e.clientY - rect.top) / cellSize;
+                    // Convert pixel position to room coordinates (subtract offset)
+                    const x = (e.clientX - rect.left) / cellSize - offsetX;
+                    const y = (e.clientY - rect.top) / cellSize - offsetY;
                     setContextMenuPos({ x, y });
                   }}
                   onClick={(e) => {
@@ -762,13 +780,16 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
                     // Door mode - add door on shared edge
                     if (doorMode) {
-                      const edge = getEdgeAtPoint(clickX, clickY, layout.rooms, cellSize, 20);
+                      // Adjust click position for offset when checking edges
+                      const adjustedClickX = clickX - offsetX * cellSize;
+                      const adjustedClickY = clickY - offsetY * cellSize;
+                      const edge = getEdgeAtPoint(adjustedClickX, adjustedClickY, layout.rooms, cellSize, 20);
                       if (edge) {
                     // Calculate position along the edge (0-1)
                     const isVertical = edge.edge === 'left' || edge.edge === 'right';
                     const edgeStart = isVertical ? edge.y1 * cellSize : edge.x1 * cellSize;
                     const edgeEnd = isVertical ? edge.y2 * cellSize : edge.x2 * cellSize;
-                    const clickPos = isVertical ? clickY : clickX;
+                    const clickPos = isVertical ? adjustedClickY : adjustedClickX;
                     const position = (clickPos - edgeStart) / (edgeEnd - edgeStart);
                     addDoor(edge, Math.max(0.15, Math.min(0.85, position)));
                   }
@@ -777,16 +798,17 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
                 // Add room on click when type is selected
                 if (selectedType) {
-                  const x = Math.round((clickX / cellSize) * 100) / 100;
-                  const y = Math.round((clickY / cellSize) * 100) / 100;
+                  // Convert click position to room coordinates (subtract offset)
+                  const x = Math.round(((clickX / cellSize) - offsetX) * 100) / 100;
+                  const y = Math.round(((clickY / cellSize) - offsetY) * 100) / 100;
                   const config = getRoomConfig(selectedType);
 
                   const newRoom: Room = {
                     id: generateId(),
                     type: selectedType,
                     name: config.label,
-                    x: Math.max(0, x),
-                    y: Math.max(0, y),
+                    x: x,
+                    y: y,
                     width: config.defaultWidth,
                     height: config.defaultHeight,
                   };
@@ -806,38 +828,44 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
               {/* Ruler markings - horizontal (top) */}
               {showGrid && (
                 <div className='absolute -top-6 left-0 right-0 h-5 flex pointer-events-none'>
-                  {Array.from({ length: Math.ceil(gridCols) }).map((_, i) => (
-                    <div
-                      key={`ruler-h-${i}`}
-                      className='relative'
-                      style={{ width: cellSize }}
-                    >
-                      {i % 2 === 0 && (
-                        <span className='absolute left-0 -top-0.5 text-[9px] text-muted-foreground/70 font-mono'>
-                          {i}m
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                  {Array.from({ length: Math.ceil(gridCols) }).map((_, i) => {
+                    const actualCoord = Math.round(i - offsetX);
+                    return (
+                      <div
+                        key={`ruler-h-${i}`}
+                        className='relative'
+                        style={{ width: cellSize }}
+                      >
+                        {i % 2 === 0 && (
+                          <span className='absolute left-0 -top-0.5 text-[9px] text-muted-foreground/70 font-mono'>
+                            {actualCoord}m
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
               {/* Ruler markings - vertical (left) */}
               {showGrid && (
                 <div className='absolute top-0 -left-6 bottom-0 w-5 pointer-events-none'>
-                  {Array.from({ length: Math.ceil(gridRows) }).map((_, i) => (
-                    <div
-                      key={`ruler-v-${i}`}
-                      className='relative'
-                      style={{ height: cellSize }}
-                    >
-                      {i % 2 === 0 && (
-                        <span className='absolute -left-0.5 top-0 text-[9px] text-muted-foreground/70 font-mono'>
-                          {i}m
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                  {Array.from({ length: Math.ceil(gridRows) }).map((_, i) => {
+                    const actualCoord = Math.round(i - offsetY);
+                    return (
+                      <div
+                        key={`ruler-v-${i}`}
+                        className='relative'
+                        style={{ height: cellSize }}
+                      >
+                        {i % 2 === 0 && (
+                          <span className='absolute -left-0.5 top-0 text-[9px] text-muted-foreground/70 font-mono'>
+                            {actualCoord}m
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -873,6 +901,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                   cellSize={cellSize}
                   isSelected={selectedRoomId === room.id}
                   isOverlapping={overlappingRoomIds.has(room.id)}
+                  offsetX={offsetX}
+                  offsetY={offsetY}
                   onSelect={(id) => {
                     setSelectedRoomId(id);
                     setSelectedDoorId(null);
@@ -885,10 +915,10 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
               {/* Shared edges highlight (when in door mode) */}
               {doorMode && sharedEdges.map((edge, i) => {
-                const x1 = edge.x1 * cellSize;
-                const y1 = edge.y1 * cellSize;
-                const x2 = edge.x2 * cellSize;
-                const y2 = edge.y2 * cellSize;
+                const x1 = (edge.x1 + offsetX) * cellSize;
+                const y1 = (edge.y1 + offsetY) * cellSize;
+                const x2 = (edge.x2 + offsetX) * cellSize;
+                const y2 = (edge.y2 + offsetY) * cellSize;
                 const isVertical = x1 === x2;
                 
                 return (
@@ -923,6 +953,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     connectedRoom={connectedRoom}
                     cellSize={cellSize}
                     isSelected={selectedDoorId === door.id}
+                    offsetX={offsetX}
+                    offsetY={offsetY}
                     onSelect={(id) => {
                       setSelectedDoorId(id);
                       setSelectedRoomId(null);

@@ -11,6 +11,8 @@ interface DoorMarkerProps {
   connectedRoom?: Room;
   cellSize: number;
   isSelected: boolean;
+  offsetX?: number;
+  offsetY?: number;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -21,6 +23,8 @@ export const DoorMarker = ({
   connectedRoom,
   cellSize,
   isSelected,
+  offsetX = 0,
+  offsetY = 0,
   onSelect,
   onDelete,
 }: DoorMarkerProps) => {
@@ -33,9 +37,9 @@ export const DoorMarker = ({
   const doorWidthPx = door.width * cellSize;
   const doorThickness = 12;
 
-  // Calculate door position based on edge and position
-  let x = room.x * cellSize;
-  let y = room.y * cellSize;
+  // Calculate door position based on edge and position (with offset)
+  let x = (room.x + offsetX) * cellSize;
+  let y = (room.y + offsetY) * cellSize;
 
   if (door.edge === 'top') {
     x += room.width * cellSize * door.position - doorWidthPx / 2;

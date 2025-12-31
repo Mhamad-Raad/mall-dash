@@ -128,8 +128,7 @@ export const findNearestValidPosition = (
     ];
     
     for (const point of snapPoints) {
-      // Ensure position is valid (not negative)
-      if (point.x < 0 || point.y < 0) continue;
+      // Allow negative positions - canvas will expand to accommodate
       
       // Round to 0.01 precision
       const x = Math.round(point.x * 100) / 100;
@@ -162,8 +161,7 @@ export const findNearestValidPosition = (
     ];
     
     for (const point of alignPoints) {
-      if (point.x < 0 || point.y < 0) continue;
-      
+      // Allow negative positions - canvas will expand to accommodate
       const x = Math.round(point.x * 100) / 100;
       const y = Math.round(point.y * 100) / 100;
       
@@ -199,8 +197,9 @@ export const findNearestValidPosition = (
   
   for (let dx = -searchRadius; dx <= searchRadius; dx += step) {
     for (let dy = -searchRadius; dy <= searchRadius; dy += step) {
-      const x = Math.max(0, Math.round((targetX + dx) * 100) / 100);
-      const y = Math.max(0, Math.round((targetY + dy) * 100) / 100);
+      // Allow negative positions - canvas will expand to accommodate
+      const x = Math.round((targetX + dx) * 100) / 100;
+      const y = Math.round((targetY + dy) * 100) / 100;
       
       if (!roomOverlapsAny({ ...movingRoom, x, y }, otherRooms)) {
         const distance = Math.sqrt(dx * dx + dy * dy);

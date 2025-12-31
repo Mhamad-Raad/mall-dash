@@ -48,6 +48,8 @@ interface RoomBoxProps {
   cellSize: number;
   isSelected: boolean;
   isOverlapping?: boolean;
+  offsetX?: number;
+  offsetY?: number;
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
@@ -59,6 +61,8 @@ export const RoomBox = ({
   cellSize,
   isSelected,
   isOverlapping = false,
+  offsetX = 0,
+  offsetY = 0,
   onSelect,
   onDelete,
   onDuplicate,
@@ -87,8 +91,8 @@ export const RoomBox = ({
   // Only apply transform during active drag
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: room.x * cellSize,
-    top: room.y * cellSize,
+    left: (room.x + offsetX) * cellSize,
+    top: (room.y + offsetY) * cellSize,
     width: pixelWidth,
     height: pixelHeight,
     transform: isDragging ? CSS.Translate.toString(transform) : undefined,
