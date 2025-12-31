@@ -24,10 +24,44 @@ import {
   RotateCw,
   AlertTriangle,
   DoorOpen,
+  Bed,
+  Bath,
+  CookingPot,
+  Sofa,
+  Utensils,
+  Fence,
+  Archive,
+  Briefcase,
+  MoveHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getAllOverlappingRoomIds, findNearestValidPosition } from './collisionUtils';
 import { findSharedEdges, getEdgeAtPoint, generateDoorId, type SharedEdge } from './doorUtils';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+import { ROOM_TYPES } from './types';
+import type { LucideIcon } from 'lucide-react';
+
+const ROOM_ICON_MAP: Record<string, LucideIcon> = {
+  bed: Bed,
+  bath: Bath,
+  'cooking-pot': CookingPot,
+  sofa: Sofa,
+  utensils: Utensils,
+  fence: Fence,
+  archive: Archive,
+  briefcase: Briefcase,
+  'move-horizontal': MoveHorizontal,
+  'door-open': DoorOpen,
+};
 
 interface RoomCreatorProps {
   layout: ApartmentLayout;
@@ -47,6 +81,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [showGrid, setShowGrid] = useState(true);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   // Ensure doors array exists
   const doors = layout.doors || [];
@@ -166,6 +201,38 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       });
       setSelectedRoomId(newRoom.id);
       setSelectedType(null);
+    },
+    [layout, onLayoutChange]
+  );
+
+  const addRoomAtPosition = useCallback(
+    (type: RoomType, x: number, y: number) => {
+      const config = getRoomConfig(type);
+      const newRoom: Room = {
+        id: generateId(),
+        type,
+        name: config.label,
+        x: Math.max(0, Math.round(x * 100) / 100),
+        y: Math.max(0, Math.round(y * 100) / 100),
+        width: config.defaultWidth,
+        height: config.defaultHeight,
+      };
+
+      // Find valid position if there's overlap
+      const validPos = findNearestValidPosition(
+        newRoom,
+        newRoom.x,
+        newRoom.y,
+        layout.rooms
+      );
+      newRoom.x = validPos.x;
+      newRoom.y = validPos.y;
+
+      onLayoutChange({
+        ...layout,
+        rooms: [...layout.rooms, newRoom],
+      });
+      setSelectedRoomId(newRoom.id);
     },
     [layout, onLayoutChange]
   );
@@ -462,28 +529,36 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div
-              className={cn(
-                'relative border-2 border-dashed rounded-xl overflow-hidden bg-background shadow-sm',
-                'transition-colors',
-                selectedType && 'border-primary cursor-crosshair',
-                doorMode && 'border-amber-500 cursor-pointer'
-              )}
-              style={{
-                width: gridCols * cellSize,
-                height: gridRows * cellSize,
-                minWidth: MIN_GRID_COLS * cellSize,
-                minHeight: MIN_GRID_ROWS * cellSize,
-              }}
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const clickY = e.clientY - rect.top;
+            <ContextMenu modal={false}>
+              <ContextMenuTrigger asChild>
+                <div
+                  className={cn(
+                    'relative border-2 border-dashed rounded-xl overflow-hidden bg-background shadow-sm',
+                    'transition-colors',
+                    selectedType && 'border-primary cursor-crosshair',
+                    doorMode && 'border-amber-500 cursor-pointer'
+                  )}
+                  style={{
+                    width: gridCols * cellSize,
+                    height: gridRows * cellSize,
+                    minWidth: MIN_GRID_COLS * cellSize,
+                    minHeight: MIN_GRID_ROWS * cellSize,
+                  }}
+                  onContextMenu={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / cellSize;
+                    const y = (e.clientY - rect.top) / cellSize;
+                    setContextMenuPos({ x, y });
+                  }}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
 
-                // Door mode - add door on shared edge
-                if (doorMode) {
-                  const edge = getEdgeAtPoint(clickX, clickY, layout.rooms, cellSize, 20);
-                  if (edge) {
+                    // Door mode - add door on shared edge
+                    if (doorMode) {
+                      const edge = getEdgeAtPoint(clickX, clickY, layout.rooms, cellSize, 20);
+                      if (edge) {
                     // Calculate position along the edge (0-1)
                     const isVertical = edge.edge === 'left' || edge.edge === 'right';
                     const edgeStart = isVertical ? edge.y1 * cellSize : edge.x1 * cellSize;
@@ -597,6 +672,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     setSelectedDoorId(null);
                   }}
                   onDelete={deleteRoom}
+                  onDuplicate={duplicateRoom}
                   onResize={resizeRoom}
                 />
               ))}
@@ -675,7 +751,47 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                   Click on a highlighted wall to add a door
                 </div>
               )}
-            </div>
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="w-56">
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
+                    <span>Add Room</span>
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent className="w-48">
+                    {ROOM_TYPES.map((roomType) => {
+                      const config = getRoomConfig(roomType.type);
+                      const IconComponent = ROOM_ICON_MAP[config.icon];
+                      return (
+                        <ContextMenuItem
+                          key={roomType.type}
+                          onClick={() => {
+                            if (contextMenuPos) {
+                              addRoomAtPosition(roomType.type, contextMenuPos.x, contextMenuPos.y);
+                            }
+                          }}
+                        >
+                          {IconComponent && (
+                            <IconComponent 
+                              className="mr-2 h-4 w-4" 
+                              style={{ color: config.color }}
+                            />
+                          )}
+                          {roomType.label}
+                        </ContextMenuItem>
+                      );
+                    })}
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  onClick={() => setDoorMode(!doorMode)}
+                >
+                  <DoorOpen className="mr-2 h-4 w-4" />
+                  {doorMode ? 'Exit Door Mode' : 'Add Doors'}
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
 
             <DragOverlay>
               {activeRoom && (
