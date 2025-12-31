@@ -128,17 +128,18 @@ export const RoomBox = ({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'rounded-md group overflow-hidden',
-        'flex flex-col border shadow-sm',
-        !isDragging && !isResizing && 'transition-[box-shadow,ring,border-color] duration-150',
-        isDragging && 'opacity-90 shadow-lg cursor-grabbing',
-        !isDragging && !isResizing && 'cursor-grab',
+        'rounded-lg group overflow-hidden',
+        'flex flex-col border',
+        !isDragging && !isResizing && 'transition-all duration-150',
+        isDragging && 'opacity-90 shadow-2xl cursor-grabbing scale-[1.02]',
+        !isDragging && !isResizing && 'cursor-grab hover:shadow-lg',
         isResizing && 'cursor-nwse-resize',
-        isSelected && 'ring-2 ring-primary ring-offset-1',
+        isSelected && 'ring-2 ring-primary ring-offset-2 shadow-lg',
         isOverlapping 
-          ? 'border-red-500 bg-destructive/10' 
-          : 'border-border bg-card'
+          ? 'border-red-500 bg-destructive/10 shadow-red-500/20' 
+          : 'border-border/50 bg-card shadow-sm'
       )}
+      title={`${room.name}\n${room.width}m × ${room.height}m\nArea: ${(room.width * room.height).toFixed(2)}m²`}
     >
       {/* Drag overlay - captures drag events */}
       <div
@@ -150,12 +151,14 @@ export const RoomBox = ({
         {...attributes}
         {...listeners}
       />
-      {/* Color indicator bar */}
+      {/* Color indicator bar with gradient */}
       <div 
         className='w-full shrink-0'
         style={{ 
-          height: isVerySmall ? 2 : 3,
-          backgroundColor: isOverlapping ? '#ef4444' : config.color 
+          height: isVerySmall ? 3 : 4,
+          background: isOverlapping 
+            ? '#ef4444' 
+            : `linear-gradient(90deg, ${config.color}, ${config.color}dd)`
         }}
       />
       
@@ -168,9 +171,10 @@ export const RoomBox = ({
             onDelete(room.id);
           }}
           className={cn(
-            'absolute top-0.5 right-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity',
-            'bg-muted hover:bg-destructive/20 hover:text-destructive',
-            isVerySmall ? 'p-0.5' : 'p-0.5'
+            'absolute top-0.5 right-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20',
+            'bg-background/80 hover:bg-destructive hover:text-destructive-foreground',
+            'shadow-sm border border-border/50',
+            isVerySmall ? 'p-0.5' : 'p-1'
           )}
         >
           <Trash2 className={isVerySmall ? 'w-2.5 h-2.5' : 'w-3 h-3'} />

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -514,12 +514,53 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                 }
               }}
             >
+              {/* Ruler markings - horizontal (top) */}
+              {showGrid && (
+                <div className='absolute -top-6 left-0 right-0 h-5 flex pointer-events-none'>
+                  {Array.from({ length: Math.ceil(gridCols) }).map((_, i) => (
+                    <div
+                      key={`ruler-h-${i}`}
+                      className='relative'
+                      style={{ width: cellSize }}
+                    >
+                      {i % 2 === 0 && (
+                        <span className='absolute left-0 -top-0.5 text-[9px] text-muted-foreground/70 font-mono'>
+                          {i}m
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Ruler markings - vertical (left) */}
+              {showGrid && (
+                <div className='absolute top-0 -left-6 bottom-0 w-5 pointer-events-none'>
+                  {Array.from({ length: Math.ceil(gridRows) }).map((_, i) => (
+                    <div
+                      key={`ruler-v-${i}`}
+                      className='relative'
+                      style={{ height: cellSize }}
+                    >
+                      {i % 2 === 0 && (
+                        <span className='absolute -left-0.5 top-0 text-[9px] text-muted-foreground/70 font-mono'>
+                          {i}m
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Grid lines */}
               {showGrid &&
                 Array.from({ length: gridCols + 1 }).map((_, i) => (
                   <div
                     key={`v-${i}`}
-                    className='absolute top-0 bottom-0 w-px bg-border/40'
+                    className={cn(
+                      'absolute top-0 bottom-0 w-px',
+                      i % 5 === 0 ? 'bg-border/50' : 'bg-border/20'
+                    )}
                     style={{ left: i * cellSize }}
                   />
                 ))}
@@ -527,7 +568,10 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                 Array.from({ length: gridRows + 1 }).map((_, i) => (
                   <div
                     key={`h-${i}`}
-                    className='absolute left-0 right-0 h-px bg-border/40'
+                    className={cn(
+                      'absolute left-0 right-0 h-px',
+                      i % 5 === 0 ? 'bg-border/50' : 'bg-border/20'
+                    )}
                     style={{ top: i * cellSize }}
                   />
                 ))}
@@ -628,14 +672,21 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             <DragOverlay>
               {activeRoom && (
                 <div
-                  className='rounded-lg border-2 opacity-50'
+                  className='rounded-lg border-2 border-dashed shadow-2xl'
                   style={{
                     width: activeRoom.width * cellSize,
                     height: activeRoom.height * cellSize,
-                    backgroundColor: `${getRoomConfig(activeRoom.type).color}40`,
+                    backgroundColor: `${getRoomConfig(activeRoom.type).color}30`,
                     borderColor: getRoomConfig(activeRoom.type).color,
+                    boxShadow: `0 0 20px ${getRoomConfig(activeRoom.type).color}40`,
                   }}
-                />
+                >
+                  <div className='absolute inset-0 flex items-center justify-center'>
+                    <div className='bg-background/90 px-2 py-1 rounded text-xs font-medium shadow-sm'>
+                      {activeRoom.width}m × {activeRoom.height}m
+                    </div>
+                  </div>
+                </div>
               )}
             </DragOverlay>
           </DndContext>
@@ -845,6 +896,16 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     <span className='text-muted-foreground'>{doors.length}</span>
                   </div>
                 )}
+              </div>
+              
+              {/* Total area */}
+              <div className='mt-3 pt-3 border-t'>
+                <div className='flex items-center justify-between'>
+                  <span className='text-sm font-medium'>Total Area</span>
+                  <span className='text-sm font-semibold text-primary'>
+                    {layout.rooms.reduce((sum, room) => sum + room.width * room.height, 0).toFixed(2)} m²
+                  </span>
+                </div>
               </div>
             </div>
           )}
