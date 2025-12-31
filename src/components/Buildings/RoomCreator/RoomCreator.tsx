@@ -33,6 +33,9 @@ import {
   Archive,
   Briefcase,
   MoveHorizontal,
+  Save,
+  FolderOpen,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getAllOverlappingRoomIds, findNearestValidPosition } from './collisionUtils';
@@ -48,6 +51,15 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { ROOM_TYPES } from './types';
+import { useLayoutTemplates } from './useLayoutTemplates';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import type { LucideIcon } from 'lucide-react';
 
 const ROOM_ICON_MAP: Record<string, LucideIcon> = {
@@ -82,10 +94,15 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [showGrid, setShowGrid] = useState(true);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [loadTemplateOpen, setLoadTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const isPanningRef = useRef(false);
   const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
+
+  const { templates, saveTemplate, deleteTemplate, applyTemplate } = useLayoutTemplates();
 
   // Ctrl+scroll zoom handler - needs non-passive event listener to prevent browser zoom
   // Attached to scroll container to capture wheel events in the entire area
@@ -671,6 +688,30 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           >
             <Grid3X3 className='w-3.5 h-3.5' />
           </Button>
+          <div className='w-px h-4 bg-border mx-0.5' />
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-7 w-7'
+            onClick={() => {
+              setTemplateName('');
+              setSaveTemplateOpen(true);
+            }}
+            title='Save as template'
+            disabled={layout.rooms.length === 0}
+          >
+            <Save className='w-3.5 h-3.5' />
+          </Button>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-7 w-7'
+            onClick={() => setLoadTemplateOpen(true)}
+            title='Load template'
+          >
+            <FolderOpen className='w-3.5 h-3.5' />
+          </Button>
+          <div className='w-px h-4 bg-border mx-0.5' />
           <Button
             variant='ghost'
             size='icon'
@@ -1195,6 +1236,235 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           )}
         </div>
       </div>
+
+      {/* Save Template Dialog */}
+      <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+        <DialogContent className='sm:max-w-md'>
+          <DialogHeader>
+            <DialogTitle>Save as Template</DialogTitle>
+            <DialogDescription>
+              Save the current layout as a reusable template for other apartments.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-4 py-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='template-name'>Template Name</Label>
+              <Input
+                id='template-name'
+                placeholder='e.g., Studio Apartment, 2BR Layout'
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+              />
+            </div>
+            <div className='text-sm text-muted-foreground'>
+              <p>This template will include:</p>
+              <ul className='list-disc list-inside mt-1 space-y-0.5'>
+                <li>{layout.rooms.length} room{layout.rooms.length !== 1 ? 's' : ''}</li>
+                <li>{doors.length} door{doors.length !== 1 ? 's' : ''}</li>
+                <li>{layout.rooms.reduce((sum, room) => sum + room.width * room.height, 0).toFixed(2)} m² total area</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant='outline' onClick={() => setSaveTemplateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (templateName.trim()) {
+                  saveTemplate(templateName.trim(), layout);
+                  setSaveTemplateOpen(false);
+                  setTemplateName('');
+                }
+              }}
+              disabled={!templateName.trim()}
+            >
+              Save Template
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Load Template Dialog */}
+      <Dialog open={loadTemplateOpen} onOpenChange={setLoadTemplateOpen}>
+        <DialogContent className='sm:max-w-2xl'>
+          <DialogHeader>
+            <DialogTitle>Load Template</DialogTitle>
+            <DialogDescription>
+              Choose a saved template to apply to this apartment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='py-4'>
+            {templates.length === 0 ? (
+              <div className='text-center py-8 text-muted-foreground'>
+                <FolderOpen className='w-12 h-12 mx-auto mb-3 opacity-50' />
+                <p>No templates saved yet</p>
+                <p className='text-sm mt-1'>Save a layout as a template to reuse it later</p>
+              </div>
+            ) : (
+              <div className='grid grid-cols-2 gap-4 max-h-[450px] overflow-auto p-1'>
+                {templates.map((template) => {
+                  // Calculate bounds for preview
+                  const rooms = template.layout.rooms;
+                  const doors = template.layout.doors || [];
+                  const minX = Math.min(...rooms.map(r => r.x));
+                  const minY = Math.min(...rooms.map(r => r.y));
+                  const maxX = Math.max(...rooms.map(r => r.x + r.width));
+                  const maxY = Math.max(...rooms.map(r => r.y + r.height));
+                  const layoutWidth = maxX - minX;
+                  const layoutHeight = maxY - minY;
+                  const previewSize = 160;
+                  const padding = 12;
+                  const availableSize = previewSize - padding * 2;
+                  const scale = Math.min(availableSize / layoutWidth, availableSize / layoutHeight, 18);
+                  
+                  return (
+                    <div
+                      key={template.id}
+                      className='relative p-4 rounded-xl border-2 border-transparent bg-gradient-to-br from-muted/30 to-muted/10 hover:border-primary/40 hover:from-muted/50 hover:to-muted/20 transition-all duration-200 group cursor-pointer shadow-sm hover:shadow-md'
+                      onClick={() => {
+                        const newLayout = applyTemplate(template);
+                        onLayoutChange(newLayout);
+                        setLoadTemplateOpen(false);
+                        setSelectedRoomId(null);
+                        setSelectedDoorId(null);
+                      }}
+                    >
+                      {/* Delete button */}
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all z-10 bg-background/80 backdrop-blur-sm rounded-full'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteTemplate(template.id);
+                        }}
+                        title='Delete template'
+                      >
+                        <Trash2 className='w-3.5 h-3.5' />
+                      </Button>
+                      
+                      {/* Preview canvas */}
+                      <div 
+                        className='relative rounded-lg mb-3 mx-auto overflow-hidden'
+                        style={{ 
+                          width: previewSize, 
+                          height: previewSize,
+                          background: 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)',
+                          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                        }}
+                      >
+                        {/* Grid pattern background */}
+                        <div 
+                          className='absolute inset-0 opacity-20'
+                          style={{
+                            backgroundImage: 'linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)',
+                            backgroundSize: '10px 10px',
+                          }}
+                        />
+                        
+                        {/* Centered container with calculated dimensions */}
+                        <div 
+                          className='absolute'
+                          style={{
+                            left: (previewSize - layoutWidth * scale) / 2,
+                            top: (previewSize - layoutHeight * scale) / 2,
+                            width: layoutWidth * scale,
+                            height: layoutHeight * scale,
+                          }}
+                        >
+                          {rooms.map((room) => {
+                            const config = getRoomConfig(room.type);
+                            const roomW = room.width * scale;
+                            const roomH = room.height * scale;
+                            const fontSize = Math.max(6, Math.min(10, Math.min(roomW, roomH) * 0.25));
+                            const showName = roomW > 20 && roomH > 15;
+                            return (
+                              <div
+                                key={room.id}
+                                className='absolute rounded-sm shadow-sm overflow-hidden flex items-center justify-center'
+                                style={{
+                                  left: (room.x - minX) * scale,
+                                  top: (room.y - minY) * scale,
+                                  width: roomW,
+                                  height: roomH,
+                                  backgroundColor: `${config.color}50`,
+                                  border: `1.5px solid ${config.color}`,
+                                  boxShadow: `0 1px 3px ${config.color}30`,
+                                }}
+                              >
+                                {showName && (
+                                  <span
+                                    className='text-center font-medium leading-tight px-0.5'
+                                    style={{
+                                      fontSize: `${fontSize}px`,
+                                      color: config.color,
+                                      maxWidth: '100%',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                      textShadow: '0 0 2px rgba(255,255,255,0.8)',
+                                    }}
+                                  >
+                                    {room.name || config.label}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {/* Door indicators */}
+                          {doors.map((door) => {
+                            const room = rooms.find(r => r.id === door.roomId);
+                            if (!room) return null;
+                            const isVertical = door.edge === 'left' || door.edge === 'right';
+                            let x = (room.x - minX) * scale;
+                            let y = (room.y - minY) * scale;
+                            const doorWidth = Math.max(4, door.width * scale * 0.8);
+                            
+                            if (door.edge === 'top') {
+                              x += room.width * scale * door.position - doorWidth / 2;
+                            } else if (door.edge === 'bottom') {
+                              x += room.width * scale * door.position - doorWidth / 2;
+                              y += room.height * scale - 2;
+                            } else if (door.edge === 'left') {
+                              y += room.height * scale * door.position - doorWidth / 2;
+                            } else {
+                              x += room.width * scale - 2;
+                              y += room.height * scale * door.position - doorWidth / 2;
+                            }
+                            
+                            return (
+                              <div
+                                key={door.id}
+                                className='absolute rounded-full'
+                                style={{
+                                  left: x,
+                                  top: y,
+                                  width: isVertical ? 3 : doorWidth,
+                                  height: isVertical ? doorWidth : 3,
+                                  backgroundColor: '#f59e0b',
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* Template info */}
+                      <div className='text-center space-y-0.5'>
+                        <p className='font-semibold text-sm truncate'>{template.name}</p>
+                        <p className='text-xs text-muted-foreground'>
+                          {template.roomCount} room{template.roomCount !== 1 ? 's' : ''} • {template.doorCount} door{template.doorCount !== 1 ? 's' : ''} • {template.totalArea.toFixed(0)} m²
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
