@@ -331,18 +331,82 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
       const newWidth = Math.max(0.5, Math.round(width * 100) / 100);
       const newHeight = Math.max(0.5, Math.round(height * 100) / 100);
+      const otherRooms = layout.rooms.filter((r) => r.id !== id);
+      const tolerance = 0.1;
       
-      // Calculate new position if provided (for top/left edge resizing)
-      const newX = deltaX !== undefined 
-        ? Math.max(0, Math.round((room.x + deltaX) * 100) / 100)
-        : room.x;
-      const newY = deltaY !== undefined 
-        ? Math.max(0, Math.round((room.y + deltaY) * 100) / 100)
-        : room.y;
+      // Calculate new position
+      let newX = room.x;
+      let newY = room.y;
+      
+      if (deltaX !== undefined || deltaY !== undefined) {
+        // Position deltas provided (from edge/corner resizing)
+        newX = deltaX !== undefined 
+          ? Math.round((room.x + deltaX) * 100) / 100
+          : room.x;
+        newY = deltaY !== undefined 
+          ? Math.round((room.y + deltaY) * 100) / 100
+          : room.y;
+      } else {
+        // Smart resize from input fields - detect blocked sides
+        const widthDiff = newWidth - room.width;
+        const heightDiff = newHeight - room.height;
+        
+        // Check which sides are blocked by adjacent rooms
+        const blockedLeft = otherRooms.some((other) => {
+          const touchesLeft = Math.abs((other.x + other.width) - room.x) < tolerance;
+          const overlapY = !(room.y + room.height <= other.y || other.y + other.height <= room.y);
+          return touchesLeft && overlapY;
+        });
+        
+        const blockedRight = otherRooms.some((other) => {
+          const touchesRight = Math.abs(other.x - (room.x + room.width)) < tolerance;
+          const overlapY = !(room.y + room.height <= other.y || other.y + other.height <= room.y);
+          return touchesRight && overlapY;
+        });
+        
+        const blockedTop = otherRooms.some((other) => {
+          const touchesTop = Math.abs((other.y + other.height) - room.y) < tolerance;
+          const overlapX = !(room.x + room.width <= other.x || other.x + other.width <= room.x);
+          return touchesTop && overlapX;
+        });
+        
+        const blockedBottom = otherRooms.some((other) => {
+          const touchesBottom = Math.abs(other.y - (room.y + room.height)) < tolerance;
+          const overlapX = !(room.x + room.width <= other.x || other.x + other.width <= room.x);
+          return touchesBottom && overlapX;
+        });
+        
+        // Determine how to distribute width change
+        if (widthDiff !== 0) {
+          if (blockedLeft && !blockedRight) {
+            // Grow right only (x stays same)
+          } else if (blockedRight && !blockedLeft) {
+            // Grow left only (move x left)
+            newX = Math.round((room.x - widthDiff) * 100) / 100;
+          } else if (!blockedLeft && !blockedRight) {
+            // Grow from center
+            newX = Math.round((room.x - widthDiff / 2) * 100) / 100;
+          }
+          // If both blocked, grow right (default)
+        }
+        
+        // Determine how to distribute height change
+        if (heightDiff !== 0) {
+          if (blockedTop && !blockedBottom) {
+            // Grow down only (y stays same)
+          } else if (blockedBottom && !blockedTop) {
+            // Grow up only (move y up)
+            newY = Math.round((room.y - heightDiff) * 100) / 100;
+          } else if (!blockedTop && !blockedBottom) {
+            // Grow from center
+            newY = Math.round((room.y - heightDiff / 2) * 100) / 100;
+          }
+          // If both blocked, grow down (default)
+        }
+      }
 
       // Check if the new size would cause overlap
       const testRoom: Room = { ...room, x: newX, y: newY, width: newWidth, height: newHeight };
-      const otherRooms = layout.rooms.filter((r) => r.id !== id);
       const wouldOverlap = otherRooms.some((other) => {
         const r1Right = testRoom.x + testRoom.width;
         const r1Bottom = testRoom.y + testRoom.height;
