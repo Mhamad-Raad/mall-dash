@@ -1287,7 +1287,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
       {/* Load Template Dialog */}
       <Dialog open={loadTemplateOpen} onOpenChange={setLoadTemplateOpen}>
-        <DialogContent className='sm:max-w-2xl'>
+        <DialogContent className='sm:max-w-4xl'>
           <DialogHeader>
             <DialogTitle>Load Template</DialogTitle>
             <DialogDescription>
@@ -1302,7 +1302,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                 <p className='text-sm mt-1'>Save a layout as a template to reuse it later</p>
               </div>
             ) : (
-              <div className='grid grid-cols-2 gap-4 max-h-[450px] overflow-auto p-1'>
+              <div className='grid grid-cols-2 gap-5 max-h-[550px] overflow-auto p-1'>
                 {templates.map((template) => {
                   // Calculate bounds for preview
                   const rooms = template.layout.rooms;
@@ -1313,10 +1313,10 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                   const maxY = Math.max(...rooms.map(r => r.y + r.height));
                   const layoutWidth = maxX - minX;
                   const layoutHeight = maxY - minY;
-                  const previewSize = 160;
-                  const padding = 12;
+                  const previewSize = 240;
+                  const padding = 16;
                   const availableSize = previewSize - padding * 2;
-                  const scale = Math.min(availableSize / layoutWidth, availableSize / layoutHeight, 18);
+                  const scale = Math.min(availableSize / layoutWidth, availableSize / layoutHeight, 22);
                   
                   return (
                     <div
