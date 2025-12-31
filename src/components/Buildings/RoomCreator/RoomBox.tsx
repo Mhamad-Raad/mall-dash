@@ -104,10 +104,10 @@ export const RoomBox = ({
       let newHeight = startHeight;
       
       if (direction === 'right' || direction === 'corner') {
-        newWidth = Math.max(0.5, Math.round((startWidth + deltaX / cellSize) * 10) / 10);
+        newWidth = Math.max(0.5, Math.round((startWidth + deltaX / cellSize) * 100) / 100);
       }
       if (direction === 'bottom' || direction === 'corner') {
-        newHeight = Math.max(0.5, Math.round((startHeight + deltaY / cellSize) * 10) / 10);
+        newHeight = Math.max(0.5, Math.round((startHeight + deltaY / cellSize) * 100) / 100);
       }
       
       onResize(room.id, newWidth, newHeight);
@@ -206,7 +206,7 @@ export const RoomBox = ({
           isVerySmall ? 'text-[8px] py-0.5 px-0.5' : isSmall ? 'text-[9px] py-0.5 px-1' : 'text-[10px] py-1 px-1.5'
         )}
       >
-        {area.toFixed(1)}m²
+        {area.toFixed(2)}m²
       </div>
 
       {/* Resize handles - only show when selected, z-index above drag overlay */}

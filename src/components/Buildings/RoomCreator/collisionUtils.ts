@@ -164,7 +164,7 @@ export const findNearestValidPosition = (
   // If we found valid positions, return the closest one
   if (candidates.length > 0) {
     candidates.sort((a, b) => a.distance - b.distance);
-    return { x: Math.round(candidates[0].x * 10) / 10, y: Math.round(candidates[0].y * 10) / 10 };
+    return { x: Math.round(candidates[0].x * 100) / 100, y: Math.round(candidates[0].y * 100) / 100 };
   }
   
   // Fallback: keep the room at its original position

@@ -262,8 +262,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       const room = layout.rooms.find((r) => r.id === id);
       if (!room) return;
 
-      const newWidth = Math.max(0.5, Math.round(width * 10) / 10);
-      const newHeight = Math.max(0.5, Math.round(height * 10) / 10);
+      const newWidth = Math.max(0.5, Math.round(width * 100) / 100);
+      const newHeight = Math.max(0.5, Math.round(height * 100) / 100);
 
       // Check if the new size would cause overlap
       const testRoom: Room = { ...room, width: newWidth, height: newHeight };
@@ -332,9 +332,9 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     const room = layout.rooms.find((r) => r.id === id);
 
     if (room && delta) {
-      // Calculate target position with 0.1m precision
-      const targetX = Math.max(0, Math.round((room.x + delta.x / cellSize) * 10) / 10);
-      const targetY = Math.max(0, Math.round((room.y + delta.y / cellSize) * 10) / 10);
+      // Calculate target position with 0.01m precision
+      const targetX = Math.max(0, Math.round((room.x + delta.x / cellSize) * 100) / 100);
+      const targetY = Math.max(0, Math.round((room.y + delta.y / cellSize) * 100) / 100);
 
       // Get other rooms (excluding the one being dragged)
       const otherRooms = layout.rooms.filter((r) => r.id !== id);
@@ -360,40 +360,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const selectedRoom = layout.rooms.find((r) => r.id === selectedRoomId);
   const selectedDoor = doors.find((d) => d.id === selectedDoorId);
   const activeRoom = layout.rooms.find((r) => r.id === activeId);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Escape = Cancel door mode or deselect
-      if (e.key === 'Escape') {
-        setDoorMode(false);
-        setSelectedType(null);
-        setSelectedDoorId(null);
-      }
-      // Delete or Backspace = Delete selected room or door
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedRoomId) {
-        e.preventDefault();
-        deleteRoom(selectedRoomId);
-      }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedDoorId) {
-        e.preventDefault();
-        deleteDoor(selectedDoorId);
-      }
-      // Ctrl/Cmd + D = Duplicate
-      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedRoomId) {
-        e.preventDefault();
-        duplicateRoom(selectedRoomId);
-      }
-      // R = Rotate
-      if (e.key === 'r' && selectedRoomId && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        rotateRoom(selectedRoomId);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedRoomId, selectedDoorId, deleteRoom, duplicateRoom, rotateRoom, deleteDoor]);
 
   return (
     <div className='flex flex-col h-full'>
@@ -523,8 +489,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
                 // Add room on click when type is selected
                 if (selectedType) {
-                  const x = Math.round((clickX / cellSize) * 10) / 10;
-                  const y = Math.round((clickY / cellSize) * 10) / 10;
+                  const x = Math.round((clickX / cellSize) * 100) / 100;
+                  const y = Math.round((clickY / cellSize) * 100) / 100;
                   const config = getRoomConfig(selectedType);
 
                   const newRoom: Room = {
@@ -708,7 +674,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                       type='number'
                       min={0.5}
                       max={50}
-                      step={0.1}
+                      step={0.01}
                       value={selectedRoom.width}
                       onChange={(e) =>
                         resizeRoom(
@@ -724,7 +690,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                       type='number'
                       min={0.5}
                       max={50}
-                      step={0.1}
+                      step={0.01}
                       value={selectedRoom.height}
                       onChange={(e) =>
                         resizeRoom(
@@ -882,33 +848,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
               </div>
             </div>
           )}
-
-          {/* Keyboard shortcuts */}
-          <div className='p-4 bg-muted/10 rounded-xl border text-xs text-muted-foreground'>
-            <p className='font-medium mb-2'>Keyboard Shortcuts</p>
-            <div className='space-y-1'>
-              <div className='flex justify-between'>
-                <span>Undo</span>
-                <kbd className='px-1.5 py-0.5 bg-muted rounded text-[10px]'>Ctrl+Z</kbd>
-              </div>
-              <div className='flex justify-between'>
-                <span>Redo</span>
-                <kbd className='px-1.5 py-0.5 bg-muted rounded text-[10px]'>Ctrl+Y</kbd>
-              </div>
-              <div className='flex justify-between'>
-                <span>Duplicate</span>
-                <kbd className='px-1.5 py-0.5 bg-muted rounded text-[10px]'>Ctrl+D</kbd>
-              </div>
-              <div className='flex justify-between'>
-                <span>Rotate</span>
-                <kbd className='px-1.5 py-0.5 bg-muted rounded text-[10px]'>R</kbd>
-              </div>
-              <div className='flex justify-between'>
-                <span>Delete</span>
-                <kbd className='px-1.5 py-0.5 bg-muted rounded text-[10px]'>Del</kbd>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
