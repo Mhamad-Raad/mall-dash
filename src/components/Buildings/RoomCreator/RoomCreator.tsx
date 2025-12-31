@@ -594,6 +594,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                   setSelectedType(null);
                 } else {
                   setSelectedRoomId(null);
+                  setSelectedDoorId(null);
                 }
               }}
             >

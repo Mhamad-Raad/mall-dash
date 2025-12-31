@@ -128,23 +128,29 @@ export const DoorMarker = ({
         <div
           className={cn(
             'absolute whitespace-nowrap',
-            'px-2 py-1 rounded text-xs bg-popover text-popover-foreground',
+            'px-2 py-1.5 rounded text-xs bg-popover text-popover-foreground',
             'border shadow-md z-50',
             isVertical 
               ? 'left-full ml-2 top-1/2 -translate-y-1/2'
               : 'top-full mt-2 left-1/2 -translate-x-1/2'
           )}
         >
-          <div className='flex items-center gap-1.5'>
-            <span 
-              className='w-1.5 h-1.5 rounded-full' 
-              style={{ backgroundColor: roomColor }}
-            />
+          <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-1'>
+              <span 
+                className='w-2 h-2 rounded-full' 
+                style={{ backgroundColor: roomColor }}
+              />
+              <span className='font-medium'>{room.name}</span>
+            </div>
             <span className='text-muted-foreground'>↔</span>
-            <span 
-              className='w-1.5 h-1.5 rounded-full' 
-              style={{ backgroundColor: connectedColor }}
-            />
+            <div className='flex items-center gap-1'>
+              <span 
+                className='w-2 h-2 rounded-full' 
+                style={{ backgroundColor: connectedColor }}
+              />
+              <span className='font-medium'>{connectedRoom?.name || 'Outside'}</span>
+            </div>
           </div>
         </div>
       )}
