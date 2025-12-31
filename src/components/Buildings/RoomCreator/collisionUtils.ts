@@ -21,6 +21,11 @@ export const roomsOverlap = (room1: Room, room2: Room): boolean => {
   return true;
 };
 
+// Check if a room overlaps with any other rooms
+export const roomOverlapsAny = (room: Room, allRooms: Room[]): boolean => {
+  return allRooms.some(r => roomsOverlap(room, r));
+};
+
 // Get all rooms that overlap with a given room
 export const getOverlappingRooms = (room: Room, allRooms: Room[]): string[] => {
   return allRooms
@@ -54,4 +59,114 @@ export const getAllOverlappingRoomIds = (rooms: Room[]): Set<string> => {
   }
   
   return overlapping;
+};
+
+// Find the nearest non-overlapping position for a room
+export const findNearestValidPosition = (
+  movingRoom: Room,
+  targetX: number,
+  targetY: number,
+  otherRooms: Room[]
+): { x: number; y: number } => {
+  // Create a test room at the target position
+  const testRoom: Room = { ...movingRoom, x: targetX, y: targetY };
+  
+  // If no overlap, return the target position
+  if (!roomOverlapsAny(testRoom, otherRooms)) {
+    return { x: targetX, y: targetY };
+  }
+  
+  // Find all rooms that overlap with the test position
+  const overlappingRooms = otherRooms.filter(r => roomsOverlap(testRoom, r));
+  
+  // Calculate possible snap positions (edges of overlapping rooms)
+  const candidates: { x: number; y: number; distance: number }[] = [];
+  
+  for (const other of overlappingRooms) {
+    // Snap to right edge of other room
+    const rightX = other.x + other.width;
+    if (!roomOverlapsAny({ ...movingRoom, x: rightX, y: targetY }, otherRooms)) {
+      candidates.push({
+        x: rightX,
+        y: targetY,
+        distance: Math.abs(rightX - targetX) + Math.abs(targetY - targetY),
+      });
+    }
+    
+    // Snap to left edge of other room
+    const leftX = other.x - movingRoom.width;
+    if (leftX >= 0 && !roomOverlapsAny({ ...movingRoom, x: leftX, y: targetY }, otherRooms)) {
+      candidates.push({
+        x: leftX,
+        y: targetY,
+        distance: Math.abs(leftX - targetX),
+      });
+    }
+    
+    // Snap to bottom edge of other room
+    const bottomY = other.y + other.height;
+    if (!roomOverlapsAny({ ...movingRoom, x: targetX, y: bottomY }, otherRooms)) {
+      candidates.push({
+        x: targetX,
+        y: bottomY,
+        distance: Math.abs(bottomY - targetY),
+      });
+    }
+    
+    // Snap to top edge of other room
+    const topY = other.y - movingRoom.height;
+    if (topY >= 0 && !roomOverlapsAny({ ...movingRoom, x: targetX, y: topY }, otherRooms)) {
+      candidates.push({
+        x: targetX,
+        y: topY,
+        distance: Math.abs(topY - targetY),
+      });
+    }
+    
+    // Also try corner positions
+    // Bottom-right of other
+    if (!roomOverlapsAny({ ...movingRoom, x: rightX, y: bottomY }, otherRooms)) {
+      candidates.push({
+        x: rightX,
+        y: bottomY,
+        distance: Math.sqrt(Math.pow(rightX - targetX, 2) + Math.pow(bottomY - targetY, 2)),
+      });
+    }
+    
+    // Bottom-left of other
+    if (leftX >= 0 && !roomOverlapsAny({ ...movingRoom, x: leftX, y: bottomY }, otherRooms)) {
+      candidates.push({
+        x: leftX,
+        y: bottomY,
+        distance: Math.sqrt(Math.pow(leftX - targetX, 2) + Math.pow(bottomY - targetY, 2)),
+      });
+    }
+    
+    // Top-right of other
+    if (topY >= 0 && !roomOverlapsAny({ ...movingRoom, x: rightX, y: topY }, otherRooms)) {
+      candidates.push({
+        x: rightX,
+        y: topY,
+        distance: Math.sqrt(Math.pow(rightX - targetX, 2) + Math.pow(topY - targetY, 2)),
+      });
+    }
+    
+    // Top-left of other
+    if (leftX >= 0 && topY >= 0 && !roomOverlapsAny({ ...movingRoom, x: leftX, y: topY }, otherRooms)) {
+      candidates.push({
+        x: leftX,
+        y: topY,
+        distance: Math.sqrt(Math.pow(leftX - targetX, 2) + Math.pow(topY - targetY, 2)),
+      });
+    }
+  }
+  
+  // If we found valid positions, return the closest one
+  if (candidates.length > 0) {
+    candidates.sort((a, b) => a.distance - b.distance);
+    return { x: Math.round(candidates[0].x * 10) / 10, y: Math.round(candidates[0].y * 10) / 10 };
+  }
+  
+  // Fallback: keep the room at its original position
+  return { x: movingRoom.x, y: movingRoom.y };
 };

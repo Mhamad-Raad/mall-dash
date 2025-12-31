@@ -26,7 +26,7 @@ import {
   DoorOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getAllOverlappingRoomIds } from './collisionUtils';
+import { getAllOverlappingRoomIds, findNearestValidPosition } from './collisionUtils';
 import { findSharedEdges, getEdgeAtPoint, generateDoorId, type SharedEdge } from './doorUtils';
 
 interface RoomCreatorProps {
@@ -194,13 +194,24 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       const room = layout.rooms.find(r => r.id === id);
       if (!room) return;
       
+      // Find a valid position for the duplicate
       const newRoom: Room = {
         ...room,
         id: generateId(),
         name: `${room.name} (copy)`,
-        x: room.x + 1,
-        y: room.y + 1,
+        x: room.x,
+        y: room.y,
       };
+
+      // Find nearest valid position offset from original
+      const validPos = findNearestValidPosition(
+        newRoom,
+        room.x + 1,
+        room.y + 1,
+        layout.rooms
+      );
+      newRoom.x = validPos.x;
+      newRoom.y = validPos.y;
       
       onLayoutChange({
         ...layout,
@@ -216,34 +227,66 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       const room = layout.rooms.find(r => r.id === id);
       if (!room) return;
       
-      // Swap width and height - grid will expand as needed
+      // Swap width and height
       const newWidth = room.height;
       const newHeight = room.width;
       
-      onLayoutChange({
-        ...layout,
-        rooms: layout.rooms.map((r) =>
-          r.id === id ? { ...r, width: newWidth, height: newHeight } : r
-        ),
+      // Check if rotation would cause overlap
+      const testRoom: Room = { ...room, width: newWidth, height: newHeight };
+      const otherRooms = layout.rooms.filter((r) => r.id !== id);
+      const wouldOverlap = otherRooms.some((other) => {
+        const r1Right = testRoom.x + testRoom.width;
+        const r1Bottom = testRoom.y + testRoom.height;
+        const r2Right = other.x + other.width;
+        const r2Bottom = other.y + other.height;
+        if (r1Right <= other.x || r2Right <= testRoom.x) return false;
+        if (r1Bottom <= other.y || r2Bottom <= testRoom.y) return false;
+        return true;
       });
+
+      // Only rotate if it won't cause overlap
+      if (!wouldOverlap) {
+        onLayoutChange({
+          ...layout,
+          rooms: layout.rooms.map((r) =>
+            r.id === id ? { ...r, width: newWidth, height: newHeight } : r
+          ),
+        });
+      }
     },
     [layout, onLayoutChange]
   );
 
   const resizeRoom = useCallback(
     (id: string, width: number, height: number) => {
-      onLayoutChange({
-        ...layout,
-        rooms: layout.rooms.map((r) =>
-          r.id === id
-            ? {
-                ...r,
-                width: Math.max(0.5, Math.round(width * 10) / 10),
-                height: Math.max(0.5, Math.round(height * 10) / 10),
-              }
-            : r
-        ),
+      const room = layout.rooms.find((r) => r.id === id);
+      if (!room) return;
+
+      const newWidth = Math.max(0.5, Math.round(width * 10) / 10);
+      const newHeight = Math.max(0.5, Math.round(height * 10) / 10);
+
+      // Check if the new size would cause overlap
+      const testRoom: Room = { ...room, width: newWidth, height: newHeight };
+      const otherRooms = layout.rooms.filter((r) => r.id !== id);
+      const wouldOverlap = otherRooms.some((other) => {
+        const r1Right = testRoom.x + testRoom.width;
+        const r1Bottom = testRoom.y + testRoom.height;
+        const r2Right = other.x + other.width;
+        const r2Bottom = other.y + other.height;
+        if (r1Right <= other.x || r2Right <= testRoom.x) return false;
+        if (r1Bottom <= other.y || r2Bottom <= testRoom.y) return false;
+        return true;
       });
+
+      // Only resize if it won't cause overlap
+      if (!wouldOverlap) {
+        onLayoutChange({
+          ...layout,
+          rooms: layout.rooms.map((r) =>
+            r.id === id ? { ...r, width: newWidth, height: newHeight } : r
+          ),
+        });
+      }
     },
     [layout, onLayoutChange]
   );
@@ -289,14 +332,20 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     const room = layout.rooms.find((r) => r.id === id);
 
     if (room && delta) {
-      // Allow room to be dragged anywhere with 0.1m precision
-      const newX = Math.max(0, Math.round((room.x + delta.x / cellSize) * 10) / 10);
-      const newY = Math.max(0, Math.round((room.y + delta.y / cellSize) * 10) / 10);
+      // Calculate target position with 0.1m precision
+      const targetX = Math.max(0, Math.round((room.x + delta.x / cellSize) * 10) / 10);
+      const targetY = Math.max(0, Math.round((room.y + delta.y / cellSize) * 10) / 10);
+
+      // Get other rooms (excluding the one being dragged)
+      const otherRooms = layout.rooms.filter((r) => r.id !== id);
+
+      // Find the nearest valid position that doesn't overlap
+      const validPosition = findNearestValidPosition(room, targetX, targetY, otherRooms);
 
       onLayoutChange({
         ...layout,
         rooms: layout.rooms.map((r) =>
-          r.id === id ? { ...r, x: newX, y: newY } : r
+          r.id === id ? { ...r, x: validPosition.x, y: validPosition.y } : r
         ),
       });
     }
