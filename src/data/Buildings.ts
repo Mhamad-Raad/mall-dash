@@ -1,4 +1,5 @@
 import { axiosInstance } from '@/data/axiosInstance';
+import type { ApartmentLayout } from '@/interfaces/Building.interface';
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 const API_VALUE = import.meta.env.VITE_API_VALUE;
@@ -104,12 +105,13 @@ export const deleteBuildingFloor = async (floorId: number) => {
 export const updateApartment = async (
   id: number,
   apartmentName: string,
-  userId: string | number | null
+  userId: string | number | null,
+  layout?: ApartmentLayout
 ) => {
   try {
     const response = await axiosInstance.put(
       `/Building/apartment/${id}`,
-      { apartmentName, userId },
+      { apartmentName, userId, layout },
       {
         headers: { 'Content-Type': 'application/json' },
       }
