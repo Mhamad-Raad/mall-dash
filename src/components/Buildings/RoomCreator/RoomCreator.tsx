@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -82,6 +82,50 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [showGrid, setShowGrid] = useState(true);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Ctrl+scroll zoom handler - needs non-passive event listener to prevent browser zoom
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const zoomDelta = e.deltaY > 0 ? -4 : 4;
+        
+        setCellSize((oldCellSize) => {
+          const newCellSize = Math.max(24, Math.min(96, oldCellSize + zoomDelta));
+          
+          if (newCellSize !== oldCellSize) {
+            const scale = newCellSize / oldCellSize;
+            const scrollX = container.scrollLeft;
+            const scrollY = container.scrollTop;
+            const newScrollX = mouseX * scale - (mouseX - scrollX);
+            const newScrollY = mouseY * scale - (mouseY - scrollY);
+            
+            requestAnimationFrame(() => {
+              container.scrollLeft = newScrollX;
+              container.scrollTop = newScrollY;
+            });
+          }
+          
+          return newCellSize;
+        });
+      }
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, []);
 
   // Ensure doors array exists
   const doors = layout.doors || [];
@@ -587,7 +631,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       {/* Main content: Canvas + Room Editor side panel */}
       <div className='flex-1 flex gap-4 min-h-0 overflow-hidden'>
         {/* Canvas area - scrollable */}
-        <div className='flex-1 overflow-auto bg-muted/20 rounded-xl p-4'>
+        <div ref={scrollContainerRef} className='flex-1 overflow-auto bg-muted/20 rounded-xl p-4'>
           <DndContext
             sensors={sensors}
             onDragStart={handleDragStart}
@@ -596,6 +640,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             <ContextMenu modal={false}>
               <ContextMenuTrigger asChild>
                 <div
+                  ref={canvasRef}
                   className={cn(
                     'relative border-2 border-dashed rounded-xl overflow-hidden bg-background shadow-sm',
                     'transition-colors',
