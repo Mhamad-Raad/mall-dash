@@ -68,8 +68,8 @@ interface RoomCreatorProps {
   onLayoutChange: (layout: ApartmentLayout) => void;
 }
 
-const MIN_GRID_COLS = 16;
-const MIN_GRID_ROWS = 8;
+const MIN_GRID_COLS = 20;
+const MIN_GRID_ROWS = 12;
 const GRID_PADDING = 3; // Extra cells beyond the furthest room
 const DEFAULT_CELL_SIZE = 52;
 
