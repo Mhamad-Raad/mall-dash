@@ -117,10 +117,23 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const throttledSetGhostPosition = useCallback((pos: { x: number; y: number; width: number; height: number } | null) => {
     if (ghostUpdateTimeoutRef.current) {
       clearTimeout(ghostUpdateTimeoutRef.current);
+      ghostUpdateTimeoutRef.current = null;
     }
+    // Use requestAnimationFrame instead of setTimeout for smoother updates
     ghostUpdateTimeoutRef.current = setTimeout(() => {
       setGhostPosition(pos);
+      ghostUpdateTimeoutRef.current = null;
     }, 16); // ~60fps
+  }, []);
+
+  // Cleanup throttled function on unmount
+  useEffect(() => {
+    return () => {
+      if (ghostUpdateTimeoutRef.current) {
+        clearTimeout(ghostUpdateTimeoutRef.current);
+        ghostUpdateTimeoutRef.current = null;
+      }
+    };
   }, []);
 
   // Cleanup throttled function on unmount
