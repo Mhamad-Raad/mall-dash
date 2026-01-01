@@ -665,6 +665,11 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveId(null);
+    // Clear any pending ghost update before clearing the ghost
+    if (ghostUpdateTimeoutRef.current) {
+      clearTimeout(ghostUpdateTimeoutRef.current);
+      ghostUpdateTimeoutRef.current = null;
+    }
     setGhostPosition(null);
     const { active, delta } = event;
     const id = active.id as string;
