@@ -83,8 +83,8 @@ interface RoomCreatorProps {
   onLayoutChange: (layout: ApartmentLayout) => void;
 }
 
-const MIN_GRID_COLS = 20;
-const MIN_GRID_ROWS = 12;
+const MIN_GRID_COLS = 45;
+const MIN_GRID_ROWS = 35;
 const GRID_PADDING = 3; // Extra cells beyond the furthest room
 const DEFAULT_CELL_SIZE = 52;
 
@@ -815,6 +815,26 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       panStartRef.current = { x: 0, y: 0, scrollLeft: 0, scrollTop: 0 };
     };
   }, []);
+
+  // Center canvas on mount
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Small delay to ensure layout is calculated
+    const timer = setTimeout(() => {
+      const canvasWidth = gridCols * cellSize;
+      const canvasHeight = gridRows * cellSize;
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+
+      // Scroll to center
+      container.scrollLeft = (canvasWidth - containerWidth) / 2;
+      container.scrollTop = (canvasHeight - containerHeight) / 2;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [gridCols, gridRows, cellSize]);
 
   const selectedRoom = layout.rooms.find((r) => r.id === selectedRoomId);
   const selectedDoor = doors.find((d) => d.id === selectedDoorId);
