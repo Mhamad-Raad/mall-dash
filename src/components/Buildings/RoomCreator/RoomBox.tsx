@@ -96,6 +96,7 @@ export const RoomBox = ({
     width: pixelWidth,
     height: pixelHeight,
     transform: isDragging ? CSS.Translate.toString(transform) : undefined,
+    opacity: isDragging ? 0 : 1,
     zIndex: isDragging ? 1000 : isSelected ? 100 : 1,
     touchAction: 'none',
   };
@@ -199,7 +200,7 @@ export const RoomBox = ({
           className={cn(
             'rounded-lg group overflow-hidden',
             'flex flex-col border',
-            !isDragging && !isResizing && 'transition-all duration-150',
+            !isDragging && !isResizing && 'transition-colors transition-shadow transition-opacity duration-150',
             isDragging && 'opacity-90 shadow-2xl cursor-grabbing scale-[1.02]',
             !isDragging && !isResizing && 'cursor-grab hover:shadow-lg',
             isResizing && 'cursor-nwse-resize',

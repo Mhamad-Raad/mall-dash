@@ -1079,19 +1079,68 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             <DragOverlay>
               {activeRoom && (
                 <div
-                  className='rounded-lg border-2 border-dashed shadow-2xl'
+                  className={cn(
+                    'rounded-lg group overflow-hidden',
+                    'flex flex-col border',
+                    'opacity-90 shadow-2xl cursor-grabbing scale-[1.02]',
+                    'border-border/50 bg-card shadow-sm'
+                  )}
                   style={{
                     width: activeRoom.width * cellSize,
                     height: activeRoom.height * cellSize,
-                    backgroundColor: `${getRoomConfig(activeRoom.type).color}30`,
-                    borderColor: getRoomConfig(activeRoom.type).color,
-                    boxShadow: `0 0 20px ${getRoomConfig(activeRoom.type).color}40`,
                   }}
                 >
-                  <div className='absolute inset-0 flex items-center justify-center'>
-                    <div className='bg-background/90 px-2 py-1 rounded text-xs font-medium shadow-sm'>
-                      {activeRoom.width}m × {activeRoom.height}m
-                    </div>
+                  {/* Color indicator bar */}
+                  <div 
+                    className='w-full shrink-0'
+                    style={{ 
+                      height: (activeRoom.width * cellSize < 80 || activeRoom.height * cellSize < 60) ? 3 : 4,
+                      background: `linear-gradient(90deg, ${getRoomConfig(activeRoom.type).color}, ${getRoomConfig(activeRoom.type).color}dd)`
+                    }}
+                  />
+                  
+                  {/* Main content */}
+                  <div className='flex-1 flex flex-col items-center justify-center p-1 min-h-0 relative'>
+                    {(() => {
+                      const config = getRoomConfig(activeRoom.type);
+                      const IconComponent = ROOM_ICON_MAP[config.icon];
+                      const isVerySmall = activeRoom.width * cellSize < 80 || activeRoom.height * cellSize < 60;
+                      const isSmall = activeRoom.width * cellSize < 120 || activeRoom.height * cellSize < 80;
+                      
+                      return (
+                        <>
+                          {IconComponent && (
+                            <div style={{ color: config.color }}>
+                              <IconComponent className={cn(
+                                isVerySmall ? 'w-4 h-4' : isSmall ? 'w-5 h-5' : 'w-6 h-6'
+                              )} />
+                            </div>
+                          )}
+                          {!isVerySmall && (
+                            <span
+                              className={cn(
+                                'font-medium text-center truncate max-w-full text-foreground',
+                                isSmall ? 'text-[10px] leading-tight' : 'text-xs mt-0.5'
+                              )}
+                            >
+                              {activeRoom.name || config.label}
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Area footer */}
+                  <div 
+                    className={cn(
+                      'shrink-0 text-center font-medium border-t border-border',
+                      'bg-muted/50 text-muted-foreground',
+                      (activeRoom.width * cellSize < 80 || activeRoom.height * cellSize < 60) ? 'text-[8px] py-0.5 px-0.5' : 
+                      (activeRoom.width * cellSize < 120 || activeRoom.height * cellSize < 80) ? 'text-[9px] py-0.5 px-1' : 'text-[10px] py-1 px-1.5'
+                    )}
+                  >
+                    {(activeRoom.width * activeRoom.height).toFixed(2)}m²
                   </div>
                 </div>
               )}
