@@ -36,8 +36,11 @@ import {
   Save,
   FolderOpen,
   Trash2,
+  Undo,
+  Redo,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useHistory } from './useHistory';
 import { getAllOverlappingRoomIds, findNearestValidPosition } from './collisionUtils';
 import { findSharedEdges, getEdgeAtPoint, generateDoorId, type SharedEdge } from './doorUtils';
 import {
@@ -104,6 +107,28 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const panStartRef = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   const { templates, saveTemplate, deleteTemplate, applyTemplate } = useLayoutTemplates();
+
+  // History management
+  const { pushState, undo, redo, canUndo, canRedo } = useHistory(layout);
+
+  const handleLayoutChange = useCallback((newLayout: ApartmentLayout) => {
+    pushState(newLayout);
+    onLayoutChange(newLayout);
+  }, [onLayoutChange, pushState]);
+
+  const handleUndo = useCallback(() => {
+    const previousLayout = undo();
+    if (previousLayout) {
+      onLayoutChange(previousLayout);
+    }
+  }, [undo, onLayoutChange]);
+
+  const handleRedo = useCallback(() => {
+    const nextLayout = redo();
+    if (nextLayout) {
+      onLayoutChange(nextLayout);
+    }
+  }, [redo, onLayoutChange]);
 
   // Ctrl+scroll zoom handler - needs non-passive event listener to prevent browser zoom
   // Attached to scroll container to capture wheel events in the entire area
@@ -282,19 +307,19 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         width: 0.9, // Default door width in meters
       };
 
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         doors: [...doors, newDoor],
       });
       setSelectedDoorId(newDoor.id);
       setDoorMode(false);
     },
-    [layout, doors, onLayoutChange]
+    [layout, doors, handleLayoutChange]
   );
 
   const deleteDoor = useCallback(
     (id: string) => {
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         doors: doors.filter((d) => d.id !== id),
       });
@@ -302,12 +327,12 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         setSelectedDoorId(null);
       }
     },
-    [layout, doors, onLayoutChange, selectedDoorId]
+    [layout, doors, handleLayoutChange, selectedDoorId]
   );
 
   const updateDoorPosition = useCallback(
     (id: string, position: number) => {
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         doors: doors.map((d) =>
           d.id === id
@@ -316,7 +341,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         ),
       });
     },
-    [layout, doors, onLayoutChange]
+    [layout, doors, handleLayoutChange]
   );
 
   const addRoom = useCallback(
@@ -332,14 +357,14 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         height: config.defaultHeight,
       };
 
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         rooms: [...layout.rooms, newRoom],
       });
       setSelectedRoomId(newRoom.id);
       setSelectedType(null);
     },
-    [layout, onLayoutChange]
+    [layout, handleLayoutChange]
   );
 
   const addRoomAtPosition = useCallback(
@@ -366,13 +391,13 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       newRoom.x = validPos.x;
       newRoom.y = validPos.y;
 
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         rooms: [...layout.rooms, newRoom],
       });
       setSelectedRoomId(newRoom.id);
     },
-    [layout, onLayoutChange]
+    [layout, handleLayoutChange]
   );
 
   const deleteRoom = useCallback(
@@ -382,7 +407,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         (d) => d.roomId !== id && d.connectedRoomId !== id
       );
       
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         rooms: layout.rooms.filter((r) => r.id !== id),
         doors: updatedDoors,
@@ -391,7 +416,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         setSelectedRoomId(null);
       }
     },
-    [layout, doors, onLayoutChange, selectedRoomId]
+    [layout, doors, handleLayoutChange, selectedRoomId]
   );
 
   const duplicateRoom = useCallback(
@@ -418,13 +443,13 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       newRoom.x = validPos.x;
       newRoom.y = validPos.y;
       
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         rooms: [...layout.rooms, newRoom],
       });
       setSelectedRoomId(newRoom.id);
     },
-    [layout, onLayoutChange]
+    [layout, handleLayoutChange]
   );
 
   const rotateRoom = useCallback(
@@ -451,7 +476,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
       // Only rotate if it won't cause overlap
       if (!wouldOverlap) {
-        onLayoutChange({
+        handleLayoutChange({
           ...layout,
           rooms: layout.rooms.map((r) =>
             r.id === id ? { ...r, width: newWidth, height: newHeight } : r
@@ -459,7 +484,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         });
       }
     },
-    [layout, onLayoutChange]
+    [layout, handleLayoutChange]
   );
 
   const resizeRoom = useCallback(
@@ -557,7 +582,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
       // Only resize if it won't cause overlap
       if (!wouldOverlap) {
-        onLayoutChange({
+        handleLayoutChange({
           ...layout,
           rooms: layout.rooms.map((r) =>
             r.id === id ? { ...r, x: newX, y: newY, width: newWidth, height: newHeight } : r
@@ -565,17 +590,17 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         });
       }
     },
-    [layout, onLayoutChange]
+    [layout, handleLayoutChange]
   );
 
   const updateRoomName = useCallback(
     (id: string, name: string) => {
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         rooms: layout.rooms.map((r) => (r.id === id ? { ...r, name } : r)),
       });
     },
-    [layout, onLayoutChange]
+    [layout, handleLayoutChange]
   );
 
   const handleDragMove = (event: DragMoveEvent) => {
@@ -649,7 +674,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       // Find the nearest valid position that doesn't overlap
       const validPosition = findNearestValidPosition(room, targetX, targetY, otherRooms);
 
-      onLayoutChange({
+      handleLayoutChange({
         ...layout,
         rooms: layout.rooms.map((r) =>
           r.id === id ? { ...r, x: validPosition.x, y: validPosition.y } : r
@@ -659,10 +684,76 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   };
 
   const handleClearAll = () => {
-    onLayoutChange({ ...layout, rooms: [], doors: [] });
+    handleLayoutChange({ ...layout, rooms: [], doors: [] });
     setSelectedRoomId(null);
     setSelectedDoorId(null);
   };
+
+  const moveRoom = useCallback((id: string, x: number, y: number) => {
+      const room = layout.rooms.find(r => r.id === id);
+      if (!room) return;
+      
+      // Check bounds or collisions if needed, but for nudge we might allow temporary overlap or just clamp to grid
+      // For now, just update position
+      handleLayoutChange({
+          ...layout,
+          rooms: layout.rooms.map(r => r.id === id ? { ...r, x, y } : r)
+      });
+  }, [layout, handleLayoutChange]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Undo/Redo
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleRedo();
+      }
+      
+      // Delete
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        // Only if not typing in an input
+        if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+          if (selectedRoomId) {
+            deleteRoom(selectedRoomId);
+          } else if (selectedDoorId) {
+             deleteDoor(selectedDoorId);
+          }
+        }
+      }
+
+      // Nudge with arrows
+      if (selectedRoomId && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+          const room = layout.rooms.find(r => r.id === selectedRoomId);
+          if (room && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+              let dx = 0;
+              let dy = 0;
+              if (e.key === 'ArrowLeft') dx = -0.1;
+              if (e.key === 'ArrowRight') dx = 0.1;
+              if (e.key === 'ArrowUp') dy = -0.1;
+              if (e.key === 'ArrowDown') dy = 0.1;
+              
+              if (dx !== 0 || dy !== 0) {
+                  e.preventDefault();
+                  // Round to 2 decimal places
+                  const newX = Math.round((room.x + dx) * 100) / 100;
+                  const newY = Math.round((room.y + dy) * 100) / 100;
+                  moveRoom(selectedRoomId, newX, newY);
+              }
+          }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo, selectedRoomId, selectedDoorId, layout.rooms, deleteRoom, deleteDoor, moveRoom]);
 
   const selectedRoom = layout.rooms.find((r) => r.id === selectedRoomId);
   const selectedDoor = doors.find((d) => d.id === selectedDoorId);
@@ -706,6 +797,27 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         </div>
 
         <div className='flex items-center gap-0.5 shrink-0'>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-7 w-7'
+            onClick={handleUndo}
+            disabled={!canUndo}
+            title='Undo (Ctrl+Z)'
+          >
+            <Undo className='w-3.5 h-3.5' />
+          </Button>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-7 w-7'
+            onClick={handleRedo}
+            disabled={!canRedo}
+            title='Redo (Ctrl+Y)'
+          >
+            <Redo className='w-3.5 h-3.5' />
+          </Button>
+          <div className='w-px h-4 bg-border mx-0.5' />
           <Button
             variant='ghost'
             size='icon'
@@ -845,7 +957,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     height: config.defaultHeight,
                   };
 
-                  onLayoutChange({
+                  handleLayoutChange({
                     ...layout,
                     rooms: [...layout.rooms, newRoom],
                   });
@@ -1288,7 +1400,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     value={selectedDoor.width}
                     onChange={(e) => {
                       const newWidth = parseFloat(e.target.value) || 0.9;
-                      onLayoutChange({
+                      handleLayoutChange({
                         ...layout,
                         doors: doors.map(d => 
                           d.id === selectedDoor.id ? { ...d, width: Math.max(0.6, Math.min(2, newWidth)) } : d
@@ -1450,7 +1562,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                       className='relative p-4 rounded-xl border-2 border-transparent bg-gradient-to-br from-muted/30 to-muted/10 hover:border-primary/40 hover:from-muted/50 hover:to-muted/20 transition-all duration-200 group cursor-pointer shadow-sm hover:shadow-md'
                       onClick={() => {
                         const newLayout = applyTemplate(template);
-                        onLayoutChange(newLayout);
+                        handleLayoutChange(newLayout);
                         setLoadTemplateOpen(false);
                         setSelectedRoomId(null);
                         setSelectedDoorId(null);
