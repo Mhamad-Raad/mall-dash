@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -56,7 +56,43 @@ interface RoomBoxProps {
   onResize: (id: string, width: number, height: number, deltaX?: number, deltaY?: number, isResizing?: boolean) => void;
 }
 
-export const RoomBox = ({
+// Custom comparison to prevent unnecessary re-renders
+// Only re-render if room data, selection, or display properties change
+const arePropsEqual = (prevProps: RoomBoxProps, nextProps: RoomBoxProps): boolean => {
+  // Check room object properties individually (more efficient than deep compare)
+  const prevRoom = prevProps.room;
+  const nextRoom = nextProps.room;
+  
+  if (
+    prevRoom.id !== nextRoom.id ||
+    prevRoom.type !== nextRoom.type ||
+    prevRoom.name !== nextRoom.name ||
+    prevRoom.x !== nextRoom.x ||
+    prevRoom.y !== nextRoom.y ||
+    prevRoom.width !== nextRoom.width ||
+    prevRoom.height !== nextRoom.height
+  ) {
+    return false;
+  }
+  
+  // Check display properties
+  if (
+    prevProps.cellSize !== nextProps.cellSize ||
+    prevProps.isSelected !== nextProps.isSelected ||
+    prevProps.isOverlapping !== nextProps.isOverlapping ||
+    prevProps.offsetX !== nextProps.offsetX ||
+    prevProps.offsetY !== nextProps.offsetY
+  ) {
+    return false;
+  }
+  
+  // Callbacks are compared by reference - if parent uses useCallback, they'll be stable
+  // We intentionally skip callback comparison since we'll stabilize them in the parent
+  
+  return true;
+};
+
+export const RoomBox = memo(function RoomBox({
   room,
   cellSize,
   isSelected,
@@ -67,7 +103,7 @@ export const RoomBox = ({
   onDelete,
   onDuplicate,
   onResize,
-}: RoomBoxProps) => {
+}: RoomBoxProps) {
   const [isResizing, setIsResizing] = useState(false);
   const config = getRoomConfig(room.type);
   const IconComponent = ICON_MAP[config.icon];
@@ -378,4 +414,4 @@ export const RoomBox = ({
       </ContextMenuContent>
     </ContextMenu>
   );
-};
+}, arePropsEqual);
