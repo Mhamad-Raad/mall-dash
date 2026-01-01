@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 
+const MAX_HISTORY = 50; // Hard limit to prevent unbounded growth
+
 export function useHistory<T>(initialState: T) {
   const [history, setHistory] = useState<T[]>([initialState]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -7,9 +9,18 @@ export function useHistory<T>(initialState: T) {
   const pushState = useCallback((newState: T) => {
     setHistory(prev => {
       const newHistory = prev.slice(0, currentIndex + 1);
-      return [...newHistory, newState];
+      const updated = [...newHistory, newState];
+      
+      // Hard limit - remove oldest entries
+      if (updated.length > MAX_HISTORY) {
+        const trimmed = updated.slice(-MAX_HISTORY);
+        setCurrentIndex(MAX_HISTORY - 1);
+        return trimmed;
+      }
+      
+      return updated;
     });
-    setCurrentIndex(prev => prev + 1);
+    setCurrentIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
   }, [currentIndex]);
 
   const undo = useCallback(() => {

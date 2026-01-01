@@ -185,12 +185,9 @@ export const RoomBox = ({
       // Final resize - save to history
       onResize(room.id, room.width, room.height, undefined, undefined, false);
       
-      if (mouseHandlersRef.current.handleMouseMove) {
-        document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
-      }
-      if (mouseHandlersRef.current.handleMouseUp) {
-        document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
-      }
+      // Clean up immediately - CRITICAL to prevent memory leak
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
       mouseHandlersRef.current = { handleMouseMove: null, handleMouseUp: null };
     };
 

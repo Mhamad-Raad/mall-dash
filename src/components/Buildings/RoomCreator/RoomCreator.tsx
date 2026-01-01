@@ -112,6 +112,26 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const { pushState, undo, redo, canUndo, canRedo } = useHistory(layout);
   const skipHistoryRef = useRef(false); // Skip history during continuous operations
 
+  // Throttled ghost position update to prevent render thrashing (~60fps)
+  const ghostUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const throttledSetGhostPosition = useCallback((pos: { x: number; y: number; width: number; height: number } | null) => {
+    if (ghostUpdateTimeoutRef.current) {
+      clearTimeout(ghostUpdateTimeoutRef.current);
+    }
+    ghostUpdateTimeoutRef.current = setTimeout(() => {
+      setGhostPosition(pos);
+    }, 16); // ~60fps
+  }, []);
+
+  // Cleanup throttled function on unmount
+  useEffect(() => {
+    return () => {
+      if (ghostUpdateTimeoutRef.current) {
+        clearTimeout(ghostUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleLayoutChange = useCallback((newLayout: ApartmentLayout, skipHistory = false) => {
     if (!skipHistory && !skipHistoryRef.current) {
       pushState(newLayout);
@@ -625,20 +645,16 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       const wasSnapped = Math.abs(validPosition.x - targetX) > 0.01 || Math.abs(validPosition.y - targetY) > 0.01;
       
       if (wasSnapped) {
-        setGhostPosition((prev) => {
-          if (prev && Math.abs(prev.x - validPosition.x) < 0.01 && Math.abs(prev.y - validPosition.y) < 0.01) {
-            return prev;
-          }
-          return {
-            x: validPosition.x,
-            y: validPosition.y,
-            width: room.width,
-            height: room.height
-          };
+        // Use throttled setter to prevent render thrashing
+        throttledSetGhostPosition({
+          x: validPosition.x,
+          y: validPosition.y,
+          width: room.width,
+          height: room.height
         });
       } else {
         // Clear ghost if no snapping occurred
-        setGhostPosition(null);
+        throttledSetGhostPosition(null);
       }
     }
   };
