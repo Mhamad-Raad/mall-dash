@@ -816,7 +816,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     };
   }, []);
 
-  // Center canvas on mount
+  // Center canvas on mount only (not on subsequent changes)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -834,7 +834,8 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [gridCols, gridRows, cellSize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   const selectedRoom = layout.rooms.find((r) => r.id === selectedRoomId);
   const selectedDoor = doors.find((d) => d.id === selectedDoorId);

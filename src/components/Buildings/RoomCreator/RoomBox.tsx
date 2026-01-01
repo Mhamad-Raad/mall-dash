@@ -129,6 +129,12 @@ export const RoomBox = ({
     const startHeight = room.height;
     const startX = room.x;
     const startY = room.y;
+    
+    // Track the last resize values for final save
+    let lastWidth = startWidth;
+    let lastHeight = startHeight;
+    let lastDeltaX: number | undefined;
+    let lastDeltaY: number | undefined;
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       moveEvent.preventDefault();
@@ -143,11 +149,11 @@ export const RoomBox = ({
       // Handle horizontal resizing
       if (direction.includes('right')) {
         // Expanding/shrinking from right - just change width
-        newWidth = Math.max(0.5, Math.round((startWidth + mouseDeltaX / cellSize) * 100) / 100);
+        newWidth = Math.max(0.5, Math.round((startWidth + mouseDeltaX / cellSize) * 10000) / 10000);
       } else if (direction.includes('left')) {
         // Expanding/shrinking from left - change width and move position
         const widthChange = -mouseDeltaX / cellSize;
-        newWidth = Math.max(0.5, Math.round((startWidth + widthChange) * 100) / 100);
+        newWidth = Math.max(0.5, Math.round((startWidth + widthChange) * 10000) / 10000);
         // Position moves by the inverse of the width change
         const actualWidthChange = newWidth - startWidth;
         positionDeltaX = -actualWidthChange;
@@ -161,11 +167,11 @@ export const RoomBox = ({
       // Handle vertical resizing
       if (direction.includes('bottom')) {
         // Expanding/shrinking from bottom - just change height
-        newHeight = Math.max(0.5, Math.round((startHeight + mouseDeltaY / cellSize) * 100) / 100);
+        newHeight = Math.max(0.5, Math.round((startHeight + mouseDeltaY / cellSize) * 10000) / 10000);
       } else if (direction.includes('top')) {
         // Expanding/shrinking from top - change height and move position
         const heightChange = -mouseDeltaY / cellSize;
-        newHeight = Math.max(0.5, Math.round((startHeight + heightChange) * 100) / 100);
+        newHeight = Math.max(0.5, Math.round((startHeight + heightChange) * 10000) / 10000);
         // Position moves by the inverse of the height change
         const actualHeightChange = newHeight - startHeight;
         positionDeltaY = -actualHeightChange;
@@ -176,14 +182,20 @@ export const RoomBox = ({
         }
       }
       
+      // Store for final save
+      lastWidth = newWidth;
+      lastHeight = newHeight;
+      lastDeltaX = positionDeltaX;
+      lastDeltaY = positionDeltaY;
+      
       onResize(room.id, newWidth, newHeight, positionDeltaX, positionDeltaY, true); // Mark as continuous resizing
     };
 
     const handleMouseUp = () => {
       setIsResizing(false);
       
-      // Final resize - save to history
-      onResize(room.id, room.width, room.height, undefined, undefined, false);
+      // Final resize with last values - save to history
+      onResize(room.id, lastWidth, lastHeight, lastDeltaX, lastDeltaY, false);
       
       // Clean up immediately - CRITICAL to prevent memory leak
       document.removeEventListener('mousemove', handleMouseMove);
