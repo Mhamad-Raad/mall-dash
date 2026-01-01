@@ -1,13 +1,17 @@
 import type { Room } from './types';
 
+const EPSILON = 0.01;
+
 // Helper to check if two rooms overlap
 export const roomsOverlap = (room1: Room, room2: Room): boolean => {
   if (room1.id === room2.id) return false;
   
-  const r1Left = room1.x;
-  const r1Right = room1.x + room1.width;
-  const r1Top = room1.y;
-  const r1Bottom = room1.y + room1.height;
+  // Shrink the bounding box slightly to avoid floating point errors
+  // and allow rooms to touch edges without counting as overlap
+  const r1Left = room1.x + EPSILON;
+  const r1Right = room1.x + room1.width - EPSILON;
+  const r1Top = room1.y + EPSILON;
+  const r1Bottom = room1.y + room1.height - EPSILON;
   
   const r2Left = room2.x;
   const r2Right = room2.x + room2.width;
