@@ -6,7 +6,7 @@ import {
   useSensors,
   PointerSensor,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent, DragMoveEvent } from '@dnd-kit/core';
 import type { Room, RoomType, ApartmentLayout, Door } from './types';
 import { getRoomConfig } from './types';
 import { RoomBox } from './RoomBox';
@@ -97,6 +97,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
   const [loadTemplateOpen, setLoadTemplateOpen] = useState(false);
   const [templateName, setTemplateName] = useState('');
+  const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const isPanningRef = useRef(false);
@@ -577,12 +578,42 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     [layout, onLayoutChange]
   );
 
+  const handleDragMove = (event: DragMoveEvent) => {
+    const { active, delta } = event;
+    const id = active.id as string;
+
+    // Only show ghost for rooms, not doors
+    if (id.startsWith('door-')) return;
+
+    const room = layout.rooms.find((r) => r.id === id);
+    if (room && delta) {
+      const targetX = Math.round((room.x + delta.x / cellSize) * 100) / 100;
+      const targetY = Math.round((room.y + delta.y / cellSize) * 100) / 100;
+
+      const otherRooms = layout.rooms.filter((r) => r.id !== id);
+      const validPosition = findNearestValidPosition(room, targetX, targetY, otherRooms);
+
+      setGhostPosition((prev) => {
+        if (prev && Math.abs(prev.x - validPosition.x) < 0.01 && Math.abs(prev.y - validPosition.y) < 0.01) {
+          return prev;
+        }
+        return {
+          x: validPosition.x,
+          y: validPosition.y,
+          width: room.width,
+          height: room.height
+        };
+      });
+    }
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveId(null);
+    setGhostPosition(null);
     const { active, delta } = event;
     const id = active.id as string;
 
@@ -748,6 +779,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           <DndContext
             sensors={sensors}
             onDragStart={handleDragStart}
+            onDragMove={handleDragMove}
             onDragEnd={handleDragEnd}
           >
             <ContextMenu modal={false}>
@@ -892,6 +924,19 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     style={{ top: i * cellSize }}
                   />
                 ))}
+
+              {/* Ghost Room */}
+              {ghostPosition && (
+                <div
+                  className="absolute border-2 border-dashed border-primary/50 bg-primary/10 pointer-events-none z-10 transition-all duration-200 ease-out"
+                  style={{
+                    left: (ghostPosition.x + offsetX) * cellSize,
+                    top: (ghostPosition.y + offsetY) * cellSize,
+                    width: ghostPosition.width * cellSize,
+                    height: ghostPosition.height * cellSize,
+                  }}
+                />
+              )}
 
               {/* Rooms */}
               {layout.rooms.map((room) => (
