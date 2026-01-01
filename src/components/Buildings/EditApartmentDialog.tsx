@@ -68,6 +68,19 @@ const EditApartmentDialog = ({
     apartment?.layout,
   ]);
 
+  // Cleanup memory when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset layout to release memory from large room/door arrays
+      const cleanupTimer = setTimeout(() => {
+        setLayout(DEFAULT_LAYOUT);
+        setPendingOccupant(null);
+      }, 300); // Small delay to allow closing animation
+
+      return () => clearTimeout(cleanupTimer);
+    }
+  }, [isOpen]);
+
   const fetchUserObjects = useCallback(
     async (query: string): Promise<UserResult[]> => {
       const result = await fetchUsers({ searchTerm: query, limit: 5 });

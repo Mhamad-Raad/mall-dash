@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -53,7 +53,7 @@ interface RoomBoxProps {
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
-  onResize: (id: string, width: number, height: number, deltaX?: number, deltaY?: number) => void;
+  onResize: (id: string, width: number, height: number, deltaX?: number, deltaY?: number, isResizing?: boolean) => void;
 }
 
 export const RoomBox = ({
@@ -71,6 +71,22 @@ export const RoomBox = ({
   const [isResizing, setIsResizing] = useState(false);
   const config = getRoomConfig(room.type);
   const IconComponent = ICON_MAP[config.icon];
+  const mouseHandlersRef = useRef<{
+    handleMouseMove: ((e: MouseEvent) => void) | null;
+    handleMouseUp: (() => void) | null;
+  }>({ handleMouseMove: null, handleMouseUp: null });
+
+  // Cleanup event listeners on unmount
+  useEffect(() => {
+    return () => {
+      if (mouseHandlersRef.current.handleMouseMove) {
+        document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
+      }
+      if (mouseHandlersRef.current.handleMouseUp) {
+        document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
+      }
+    };
+  }, []);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -160,14 +176,26 @@ export const RoomBox = ({
         }
       }
       
-      onResize(room.id, newWidth, newHeight, positionDeltaX, positionDeltaY);
+      onResize(room.id, newWidth, newHeight, positionDeltaX, positionDeltaY, true); // Mark as continuous resizing
     };
 
     const handleMouseUp = () => {
       setIsResizing(false);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      
+      // Final resize - save to history
+      onResize(room.id, room.width, room.height, undefined, undefined, false);
+      
+      if (mouseHandlersRef.current.handleMouseMove) {
+        document.removeEventListener('mousemove', mouseHandlersRef.current.handleMouseMove);
+      }
+      if (mouseHandlersRef.current.handleMouseUp) {
+        document.removeEventListener('mouseup', mouseHandlersRef.current.handleMouseUp);
+      }
+      mouseHandlersRef.current = { handleMouseMove: null, handleMouseUp: null };
     };
+
+    // Store references for cleanup
+    mouseHandlersRef.current = { handleMouseMove, handleMouseUp };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);

@@ -110,9 +110,12 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
 
   // History management
   const { pushState, undo, redo, canUndo, canRedo } = useHistory(layout);
+  const skipHistoryRef = useRef(false); // Skip history during continuous operations
 
-  const handleLayoutChange = useCallback((newLayout: ApartmentLayout) => {
-    pushState(newLayout);
+  const handleLayoutChange = useCallback((newLayout: ApartmentLayout, skipHistory = false) => {
+    if (!skipHistory && !skipHistoryRef.current) {
+      pushState(newLayout);
+    }
     onLayoutChange(newLayout);
   }, [onLayoutChange, pushState]);
 
@@ -488,7 +491,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   );
 
   const resizeRoom = useCallback(
-    (id: string, width: number, height: number, deltaX?: number, deltaY?: number) => {
+    (id: string, width: number, height: number, deltaX?: number, deltaY?: number, isResizing = false) => {
       const room = layout.rooms.find((r) => r.id === id);
       if (!room) return;
 
@@ -587,7 +590,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           rooms: layout.rooms.map((r) =>
             r.id === id ? { ...r, x: newX, y: newY, width: newWidth, height: newHeight } : r
           ),
-        });
+        }, isResizing); // Skip history during continuous resize
       }
     },
     [layout, handleLayoutChange]
@@ -618,17 +621,25 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
       const otherRooms = layout.rooms.filter((r) => r.id !== id);
       const validPosition = findNearestValidPosition(room, targetX, targetY, otherRooms);
 
-      setGhostPosition((prev) => {
-        if (prev && Math.abs(prev.x - validPosition.x) < 0.01 && Math.abs(prev.y - validPosition.y) < 0.01) {
-          return prev;
-        }
-        return {
-          x: validPosition.x,
-          y: validPosition.y,
-          width: room.width,
-          height: room.height
-        };
-      });
+      // Only show ghost if position was adjusted (snapped) to avoid collision
+      const wasSnapped = Math.abs(validPosition.x - targetX) > 0.01 || Math.abs(validPosition.y - targetY) > 0.01;
+      
+      if (wasSnapped) {
+        setGhostPosition((prev) => {
+          if (prev && Math.abs(prev.x - validPosition.x) < 0.01 && Math.abs(prev.y - validPosition.y) < 0.01) {
+            return prev;
+          }
+          return {
+            x: validPosition.x,
+            y: validPosition.y,
+            width: room.width,
+            height: room.height
+          };
+        });
+      } else {
+        // Clear ghost if no snapping occurred
+        setGhostPosition(null);
+      }
     }
   };
 
@@ -754,6 +765,35 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo, handleRedo, selectedRoomId, selectedDoorId, layout.rooms, deleteRoom, deleteDoor, moveRoom]);
+
+  // Cleanup effect to release memory when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear all state to help garbage collection
+      setSelectedRoomId(null);
+      setSelectedDoorId(null);
+      setSelectedType(null);
+      setDoorMode(false);
+      setActiveId(null);
+      setGhostPosition(null);
+      setContextMenuPos(null);
+      setSaveTemplateOpen(false);
+      setLoadTemplateOpen(false);
+      setTemplateName('');
+      
+      // Clear refs
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current = null;
+      }
+      if (canvasRef.current) {
+        canvasRef.current = null;
+      }
+      
+      // Reset panning state
+      isPanningRef.current = false;
+      panStartRef.current = { x: 0, y: 0, scrollLeft: 0, scrollTop: 0 };
+    };
+  }, []);
 
   const selectedRoom = layout.rooms.find((r) => r.id === selectedRoomId);
   const selectedDoor = doors.find((d) => d.id === selectedDoorId);
