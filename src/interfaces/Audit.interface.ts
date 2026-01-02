@@ -2,6 +2,7 @@ export interface AuditLog {
   id: number | string;
   userId: string;
   userEmail: string;
+  profileImageUrl?: string;
   entityName: string;
   entityId: string;
   action: string;

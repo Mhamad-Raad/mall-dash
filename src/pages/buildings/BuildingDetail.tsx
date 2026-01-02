@@ -13,7 +13,7 @@ import BuildingDetailSkeleton from '@/components/Buildings/BuildingDetailSkeleto
 import BuildingDetailError from '@/components/Buildings/BuildingDetailError';
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
 
-import type { Apartment } from '@/interfaces/Building.interface';
+import type { Apartment, ApartmentLayout } from '@/interfaces/Building.interface';
 
 import {
   getBuildingById,
@@ -88,7 +88,7 @@ const BuildingDetail = () => {
   };
 
   // Runs when clicking save in dialog
-  const handleSave = async (occupant: any, name: string) => {
+  const handleSave = async (occupant: any, name: string, layout?: ApartmentLayout) => {
     setIsDialogOpen(false);
     if (selectedApartment) {
       const result = await dispatch(
@@ -96,6 +96,7 @@ const BuildingDetail = () => {
           id: selectedApartment.id,
           apartmentName: name,
           userId: occupant,
+          layout,
         })
       );
       if (updateApartmentThunk.rejected.match(result)) {
