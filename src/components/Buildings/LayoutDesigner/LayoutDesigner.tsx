@@ -16,12 +16,10 @@ interface LayoutDesignerProps {
   embedded?: boolean;
 }
 
-// Canvas dimension limits in grid cells (meters)
-const MIN_CANVAS_WIDTH = 12;
-const MIN_CANVAS_HEIGHT = 8;
-const MAX_CANVAS_WIDTH = 50;
-const MAX_CANVAS_HEIGHT = 50;
-const EXPAND_THRESHOLD = 2; // Expand when room is within this many cells of edge
+// Infinite canvas config
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 2;
+const ZOOM_STEP = 0.1;
 
 export function LayoutDesigner({
   initialLayout,
@@ -42,33 +40,29 @@ export function LayoutDesigner({
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
-  const [canvasWidth, setCanvasWidth] = useState(initialLayout?.width || MIN_CANVAS_WIDTH);
-  const [canvasHeight, setCanvasHeight] = useState(initialLayout?.height || MIN_CANVAS_HEIGHT);
+
+  // Pan state for infinite canvas (Draw.io style)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   // Ref to track if we need to save
   const pendingSaveRef = useRef(false);
 
-  // Calculate required canvas size based on room positions
-  const recalculateCanvasSize = useCallback((currentRooms: DroppedRoom[]) => {
-    if (currentRooms.length === 0) {
-      setCanvasWidth(MIN_CANVAS_WIDTH);
-      setCanvasHeight(MIN_CANVAS_HEIGHT);
-      return;
-    }
-
-    let maxRight = 0;
-    let maxBottom = 0;
-    currentRooms.forEach((room) => {
-      maxRight = Math.max(maxRight, room.x + room.width);
-      maxBottom = Math.max(maxBottom, room.y + room.height);
+  // Calculate canvas bounds (for saving, we compute based on room extents)
+  const canvasBounds = useMemo(() => {
+    if (rooms.length === 0) return { minX: 0, minY: 0, maxX: 12, maxY: 8 };
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    rooms.forEach((room) => {
+      minX = Math.min(minX, room.x);
+      minY = Math.min(minY, room.y);
+      maxX = Math.max(maxX, room.x + room.width);
+      maxY = Math.max(maxY, room.y + room.height);
     });
-
-    const neededWidth = Math.max(MIN_CANVAS_WIDTH, Math.min(maxRight + EXPAND_THRESHOLD + 2, MAX_CANVAS_WIDTH));
-    const neededHeight = Math.max(MIN_CANVAS_HEIGHT, Math.min(maxBottom + EXPAND_THRESHOLD + 2, MAX_CANVAS_HEIGHT));
-
-    setCanvasWidth(neededWidth);
-    setCanvasHeight(neededHeight);
-  }, []);
+    return { minX, minY, maxX, maxY };
+  }, [rooms]);
 
   // Debounce helper for save operations
   const debouncedSave = useMemo(() => {
@@ -111,14 +105,107 @@ export function LayoutDesigner({
         })),
         doors,
         gridSize: zoom,
-        width: canvasWidth,
-        height: canvasHeight,
+        width: Math.ceil(canvasBounds.maxX - canvasBounds.minX + 2),
+        height: Math.ceil(canvasBounds.maxY - canvasBounds.minY + 2),
       };
       debouncedSave(layout);
     }
     
     return () => debouncedSave.cancel();
-  }, [rooms, doors, zoom, canvasWidth, canvasHeight, embedded, onSave, debouncedSave]);
+  }, [rooms, doors, zoom, canvasBounds, embedded, onSave, debouncedSave]);
+
+  // === Pan & Zoom handlers (Draw.io style) ===
+  
+  // Handle mouse wheel zoom
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = -Math.sign(e.deltaY) * ZOOM_STEP;
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + delta));
+      
+      // Zoom towards cursor position
+      if (viewportRef.current) {
+        const rect = viewportRef.current.getBoundingClientRect();
+        const cursorX = e.clientX - rect.left;
+        const cursorY = e.clientY - rect.top;
+        
+        // Calculate the point in canvas space under the cursor
+        const canvasX = (cursorX - panOffset.x) / zoom;
+        const canvasY = (cursorY - panOffset.y) / zoom;
+        
+        // After zoom, adjust pan so the same canvas point is under the cursor
+        const newPanX = cursorX - canvasX * newZoom;
+        const newPanY = cursorY - canvasY * newZoom;
+        
+        setPanOffset({ x: newPanX, y: newPanY });
+      }
+      
+      setZoom(newZoom);
+    } else if (!e.shiftKey) {
+      // Regular scroll = pan
+      setPanOffset((prev) => ({
+        x: prev.x - e.deltaX,
+        y: prev.y - e.deltaY,
+      }));
+    }
+  }, [zoom, panOffset]);
+
+  // Handle space key for pan mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !(e.target as HTMLElement)?.closest('input, textarea')) {
+        e.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setIsSpacePressed(false);
+        setIsPanning(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // Pan on middle mouse button or space+drag
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button === 1 || (isSpacePressed && e.button === 0)) {
+      e.preventDefault();
+      setIsPanning(true);
+      panStartRef.current = { x: e.clientX, y: e.clientY, panX: panOffset.x, panY: panOffset.y };
+    }
+  }, [isSpacePressed, panOffset]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isPanning) {
+      const dx = e.clientX - panStartRef.current.x;
+      const dy = e.clientY - panStartRef.current.y;
+      setPanOffset({ x: panStartRef.current.panX + dx, y: panStartRef.current.panY + dy });
+    }
+  }, [isPanning]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  // Center view on rooms initially
+  useEffect(() => {
+    if (viewportRef.current && rooms.length > 0) {
+      const rect = viewportRef.current.getBoundingClientRect();
+      const centerX = (canvasBounds.minX + canvasBounds.maxX) / 2 * GRID_CELL_SIZE;
+      const centerY = (canvasBounds.minY + canvasBounds.maxY) / 2 * GRID_CELL_SIZE;
+      setPanOffset({
+        x: rect.width / 2 - centerX * zoom,
+        y: rect.height / 2 - centerY * zoom,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -146,63 +233,66 @@ export function LayoutDesigner({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedRoomId]);
 
-  // Handle room move from ResizableRoom
+  // Handle room move from ResizableRoom (no canvas bounds, infinite canvas)
   const handleRoomMove = useCallback((id: string, x: number, y: number) => {
-    setRooms((prev) => {
-      const updated = prev.map((room) => 
-        room.id === id ? { ...room, x, y } : room
-      );
-      // Defer canvas recalculation to avoid excessive updates
-      requestAnimationFrame(() => recalculateCanvasSize(updated));
-      return updated;
-    });
-  }, [recalculateCanvasSize]);
+    setRooms((prev) =>
+      prev.map((room) => (room.id === id ? { ...room, x, y } : room))
+    );
+  }, []);
 
   // Handle room resize from ResizableRoom
   const handleRoomResize = useCallback((id: string, width: number, height: number, x: number, y: number) => {
-    setRooms((prev) => {
-      const updated = prev.map((room) =>
-        room.id === id ? { ...room, width, height, x, y } : room
-      );
-      requestAnimationFrame(() => recalculateCanvasSize(updated));
-      return updated;
-    });
-  }, [recalculateCanvasSize]);
+    setRooms((prev) =>
+      prev.map((room) => (room.id === id ? { ...room, width, height, x, y } : room))
+    );
+  }, []);
 
-  // Add room from toolbar click
+  // Add room - place in view center
   const handleAddRoom = useCallback((template: RoomTemplate) => {
-    // Create a temporary room object to check collisions
+    // Calculate center of current viewport in grid coordinates
+    const viewportRect = viewportRef.current?.getBoundingClientRect();
+    let centerX = 5, centerY = 5; // fallback
+    
+    if (viewportRect) {
+      const viewCenterX = viewportRect.width / 2;
+      const viewCenterY = viewportRect.height / 2;
+      // Convert screen coords to canvas coords
+      centerX = Math.round((viewCenterX - panOffset.x) / zoom / GRID_CELL_SIZE);
+      centerY = Math.round((viewCenterY - panOffset.y) / zoom / GRID_CELL_SIZE);
+    }
+
+    // Create room at center position
     const tempRoom: DroppedRoom = {
       id: 'temp',
       type: template.type,
       name: template.name,
-      x: 0,
-      y: 0,
+      x: centerX,
+      y: centerY,
       width: template.defaultWidth,
       height: template.defaultHeight,
       borderColor: template.borderColor,
     };
 
-    // Find first available position within current canvas
-    let x = 1;
-    let y = 1;
-    let found = false;
+    // Find first available position with spiral search from center
+    let x = centerX, y = centerY;
+    let found = !wouldCollide(tempRoom, x, y, rooms);
 
-    outer: for (let ty = 1; ty < canvasHeight - template.defaultHeight; ty++) {
-      for (let tx = 1; tx < canvasWidth - template.defaultWidth; tx++) {
-        if (!wouldCollide({ ...tempRoom, x: tx, y: ty }, tx, ty, rooms)) {
-          x = tx;
-          y = ty;
-          found = true;
-          break outer;
+    if (!found) {
+      const maxRadius = 20;
+      outer: for (let radius = 1; radius <= maxRadius; radius++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          for (let dy = -radius; dy <= radius; dy++) {
+            const testX = centerX + dx;
+            const testY = centerY + dy;
+            if (!wouldCollide({ ...tempRoom, x: testX, y: testY }, testX, testY, rooms)) {
+              x = testX;
+              y = testY;
+              found = true;
+              break outer;
+            }
+          }
         }
       }
-    }
-
-    // If no space found, place at end and expand canvas
-    if (!found) {
-      x = 1;
-      y = canvasHeight;
     }
 
     const newRoom: DroppedRoom = {
@@ -216,19 +306,15 @@ export function LayoutDesigner({
       borderColor: template.borderColor,
     };
 
-    const updatedRooms = [...rooms, newRoom];
-    setRooms(updatedRooms);
-    recalculateCanvasSize(updatedRooms);
+    setRooms((prev) => [...prev, newRoom]);
     setSelectedRoomId(newRoom.id);
-  }, [rooms, canvasWidth, canvasHeight, recalculateCanvasSize]);
+  }, [rooms, zoom, panOffset]);
 
   const handleDeleteRoom = useCallback((id: string) => {
-    const updatedRooms = rooms.filter((room) => room.id !== id);
-    setRooms(updatedRooms);
+    setRooms((prev) => prev.filter((room) => room.id !== id));
     setDoors((prev) => prev.filter((door) => door.roomId !== id && door.connectedRoomId !== id));
     setSelectedRoomId(null);
-    recalculateCanvasSize(updatedRooms);
-  }, [rooms, recalculateCanvasSize]);
+  }, []);
 
   const handleRotateRoom = useCallback((id: string) => {
     setRooms((prev) => {
@@ -270,8 +356,8 @@ export function LayoutDesigner({
     for (let radius = 1; radius <= maxSearchRadius && !found; radius++) {
       for (let dx = -radius; dx <= radius && !found; dx++) {
         for (let dy = -radius; dy <= radius && !found; dy++) {
-          const testX = Math.max(0, room.x + dx);
-          const testY = Math.max(0, room.y + dy);
+          const testX = room.x + dx;
+          const testY = room.y + dy;
           if (!wouldCollide({ ...room, x: testX, y: testY }, testX, testY, rooms)) {
             newX = testX;
             newY = testY;
@@ -288,11 +374,9 @@ export function LayoutDesigner({
       y: newY,
     };
 
-    const updatedRooms = [...rooms, newRoom];
-    setRooms(updatedRooms);
-    recalculateCanvasSize(updatedRooms);
+    setRooms((prev) => [...prev, newRoom]);
     setSelectedRoomId(newRoom.id);
-  }, [rooms, recalculateCanvasSize]);
+  }, [rooms]);
 
   // Handle room updates from the properties panel
   const handleUpdateRoom = useCallback((id: string, updates: Partial<DroppedRoom>) => {
@@ -310,34 +394,48 @@ export function LayoutDesigner({
         }
       }
 
-      const updated = prev.map((room) => {
-        if (room.id === id) {
-          return updatedRoom;
-        }
-        return room;
-      });
-
-      recalculateCanvasSize(updated);
-      return updated;
+      return prev.map((room) => room.id === id ? updatedRoom : room);
     });
-  }, [recalculateCanvasSize]);
+  }, []);
 
   const handleCanvasClick = useCallback(() => {
-    setSelectedRoomId(null);
-  }, []);
+    if (!isPanning) {
+      setSelectedRoomId(null);
+    }
+  }, [isPanning]);
 
   const handleReset = useCallback(() => {
     setRooms([]);
     setDoors([]);
     setSelectedRoomId(null);
-    setCanvasWidth(MIN_CANVAS_WIDTH);
-    setCanvasHeight(MIN_CANVAS_HEIGHT);
+    setPanOffset({ x: 0, y: 0 });
+    setZoom(1);
   }, []);
 
-  // Canvas dimensions in pixels
+  // Fit view to show all rooms
+  const handleFitView = useCallback(() => {
+    if (!viewportRef.current || rooms.length === 0) return;
+    const rect = viewportRef.current.getBoundingClientRect();
+    const padding = 60;
+    
+    const contentWidth = (canvasBounds.maxX - canvasBounds.minX) * GRID_CELL_SIZE;
+    const contentHeight = (canvasBounds.maxY - canvasBounds.minY) * GRID_CELL_SIZE;
+    
+    const scaleX = (rect.width - padding * 2) / contentWidth;
+    const scaleY = (rect.height - padding * 2) / contentHeight;
+    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(scaleX, scaleY)));
+    
+    const centerX = (canvasBounds.minX + canvasBounds.maxX) / 2 * GRID_CELL_SIZE;
+    const centerY = (canvasBounds.minY + canvasBounds.maxY) / 2 * GRID_CELL_SIZE;
+    
+    setZoom(newZoom);
+    setPanOffset({
+      x: rect.width / 2 - centerX * newZoom,
+      y: rect.height / 2 - centerY * newZoom,
+    });
+  }, [rooms.length, canvasBounds]);
+
   const cellSize = GRID_CELL_SIZE;
-  const canvasPixelWidth = canvasWidth * cellSize;
-  const canvasPixelHeight = canvasHeight * cellSize;
 
   return (
     <div className="flex flex-col h-full">
@@ -349,55 +447,76 @@ export function LayoutDesigner({
         onAddRoom={handleAddRoom}
         showGrid={showGrid}
         onToggleGrid={() => setShowGrid(!showGrid)}
+        onFitView={handleFitView}
       />
 
       {/* Main Content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Canvas Area with scroll */}
-        <div className="flex-1 overflow-auto p-4">
+        {/* Infinite Canvas Viewport */}
+        <div
+          ref={viewportRef}
+          className={cn(
+            'flex-1 overflow-hidden relative',
+            isPanning && 'cursor-grabbing',
+            isSpacePressed && !isPanning && 'cursor-grab'
+          )}
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {/* Canvas Transform Layer */}
           <div
-            className="relative origin-top-left"
+            className="absolute"
             style={{
-              transform: `scale(${zoom})`,
-              width: canvasPixelWidth,
-              height: canvasPixelHeight,
+              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
+              transformOrigin: '0 0',
             }}
           >
-            {/* Grid background */}
+            {/* Infinite Grid Background */}
             <div
               onClick={handleCanvasClick}
-              className={cn(
-                'absolute inset-0 rounded-lg transition-colors',
-                'bg-muted/30'
-              )}
+              className="fixed inset-0 pointer-events-auto"
               style={{
+                width: '200vw',
+                height: '200vh',
+                marginLeft: '-50vw',
+                marginTop: '-50vh',
                 backgroundImage: showGrid
                   ? `
-                    linear-gradient(to right, hsl(var(--border) / 0.3) 1px, transparent 1px),
-                    linear-gradient(to bottom, hsl(var(--border) / 0.3) 1px, transparent 1px)
+                    linear-gradient(to right, hsl(var(--border) / 0.2) 1px, transparent 1px),
+                    linear-gradient(to bottom, hsl(var(--border) / 0.2) 1px, transparent 1px)
                   `
                   : 'none',
                 backgroundSize: `${cellSize}px ${cellSize}px`,
+                backgroundPosition: `${(-panOffset.x / zoom) % cellSize}px ${(-panOffset.y / zoom) % cellSize}px`,
               }}
             />
 
-            {/* Rooms container */}
-            <div className="absolute inset-0">
-              {rooms.map((room) => (
-                <ResizableRoom
-                  key={room.id}
-                  room={room}
-                  isSelected={room.id === selectedRoomId}
-                  onSelect={setSelectedRoomId}
-                  onMove={handleRoomMove}
-                  onResize={handleRoomResize}
-                  zoom={zoom}
-                  canvasWidth={canvasWidth}
-                  canvasHeight={canvasHeight}
-                  allRooms={rooms}
-                />
-              ))}
-            </div>
+            {/* Rooms */}
+            {rooms.map((room) => (
+              <ResizableRoom
+                key={room.id}
+                room={room}
+                isSelected={room.id === selectedRoomId}
+                onSelect={setSelectedRoomId}
+                onMove={handleRoomMove}
+                onResize={handleRoomResize}
+                scale={zoom}
+                allRooms={rooms}
+              />
+            ))}
+          </div>
+
+          {/* Zoom indicator */}
+          <div className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm px-2 py-1 rounded text-xs text-muted-foreground border">
+            {Math.round(zoom * 100)}%
+          </div>
+
+          {/* Help text */}
+          <div className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm px-2 py-1 rounded text-xs text-muted-foreground border">
+            Scroll to pan • Ctrl+Scroll to zoom • Space+drag to pan
           </div>
         </div>
 

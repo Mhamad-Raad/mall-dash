@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ROOM_TEMPLATES, type RoomTemplate } from './types';
-import { ZoomIn, ZoomOut, RotateCcw, DoorOpen } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, DoorOpen, Maximize } from 'lucide-react';
 
 interface DesignerToolbarProps {
   zoom: number;
@@ -16,6 +16,7 @@ interface DesignerToolbarProps {
   onAddDoor?: () => void;
   showGrid: boolean;
   onToggleGrid: () => void;
+  onFitView?: () => void;
 }
 
 export function DesignerToolbar({
@@ -24,6 +25,7 @@ export function DesignerToolbar({
   onReset,
   onAddRoom,
   onAddDoor,
+  onFitView,
 }: DesignerToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shrink-0">
@@ -114,6 +116,23 @@ export function DesignerToolbar({
               <TooltipContent>Zoom In</TooltipContent>
             </Tooltip>
           </div>
+
+          {/* Fit View */}
+          {onFitView && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-primary/10"
+                  onClick={onFitView}
+                >
+                  <Maximize className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Fit to View</TooltipContent>
+            </Tooltip>
+          )}
 
           {/* Reset */}
           <Tooltip>

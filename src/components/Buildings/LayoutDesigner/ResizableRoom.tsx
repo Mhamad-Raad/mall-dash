@@ -11,9 +11,8 @@ interface ResizableRoomProps {
   onSelect: (id: string) => void;
   onMove: (id: string, x: number, y: number) => void;
   onResize: (id: string, width: number, height: number, x: number, y: number) => void;
-  zoom: number;
-  canvasWidth: number;
-  canvasHeight: number;
+  /** Current zoom level for proper drag/resize calculations */
+  scale: number;
   /** Pass ALL rooms so collision can be checked against current positions */
   allRooms: DroppedRoom[];
 }
@@ -115,9 +114,7 @@ function ResizableRoomInner({
   onSelect,
   onMove,
   onResize,
-  zoom,
-  canvasWidth,
-  canvasHeight,
+  scale,
   allRooms,
 }: ResizableRoomProps) {
   const cellSize = GRID_CELL_SIZE;
@@ -171,21 +168,18 @@ function ResizableRoomInner({
     lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
   }, [room.x, room.y, room.width, room.height]);
 
-  // Handle drag - track valid positions and show collision feedback
+  // Handle drag - track valid positions and show collision feedback (no bounds clamping for infinite canvas)
   const handleDrag: RndDragCallback = useCallback((_e, d) => {
     const gridX = Math.round((d.x / cellSize) * 1000) / 1000;
     const gridY = Math.round((d.y / cellSize) * 1000) / 1000;
 
-    const clampedX = Math.max(0, Math.min(gridX, canvasWidth - room.width));
-    const clampedY = Math.max(0, Math.min(gridY, canvasHeight - room.height));
-
-    const hasCollision = checkCollision(clampedX, clampedY);
+    const hasCollision = checkCollision(gridX, gridY);
     setIsColliding(hasCollision);
     
     if (!hasCollision) {
-      lastValidPosRef.current = { ...lastValidPosRef.current, x: clampedX, y: clampedY };
+      lastValidPosRef.current = { ...lastValidPosRef.current, x: gridX, y: gridY };
     }
-  }, [room.width, room.height, cellSize, canvasWidth, canvasHeight, checkCollision]);
+  }, [cellSize, checkCollision]);
 
   // Handle drag stop - NOW update parent state with smart positioning
   const handleDragStop: RndDragCallback = useCallback((_e, d) => {
@@ -195,24 +189,18 @@ function ResizableRoomInner({
     const gridX = Math.round((d.x / cellSize) * 1000) / 1000;
     const gridY = Math.round((d.y / cellSize) * 1000) / 1000;
 
-    const clampedX = Math.max(0, Math.min(gridX, canvasWidth - room.width));
-    const clampedY = Math.max(0, Math.min(gridY, canvasHeight - room.height));
-
     // Use smart positioning to find the best valid spot
     const currentRooms = allRoomsRef.current;
-    const movingRoom: DroppedRoom = { ...room, x: clampedX, y: clampedY };
-    const result = findBestValidPosition(movingRoom, clampedX, clampedY, currentRooms, 8);
+    const movingRoom: DroppedRoom = { ...room, x: gridX, y: gridY };
+    const result = findBestValidPosition(movingRoom, gridX, gridY, currentRooms, 8);
 
     if (!result.hasCollision) {
-      // Clamp result to canvas bounds
-      const finalX = Math.max(0, Math.min(result.x, canvasWidth - room.width));
-      const finalY = Math.max(0, Math.min(result.y, canvasHeight - room.height));
-      onMove(room.id, finalX, finalY);
+      onMove(room.id, result.x, result.y);
     } else {
       // No valid position found - rollback to last valid
       onMove(room.id, lastValidPosRef.current.x, lastValidPosRef.current.y);
     }
-  }, [room, cellSize, canvasWidth, canvasHeight, onMove]);
+  }, [room, cellSize, onMove]);
 
   // Handle resize start
   const handleResizeStart = useCallback(() => {
@@ -308,7 +296,7 @@ function ResizableRoomInner({
         x: room.x * cellSize,
         y: room.y * cellSize,
       }}
-      scale={zoom}
+      scale={scale}
       onDragStart={handleDragStart}
       onDrag={handleDrag}
       onDragStop={handleDragStop}
@@ -319,7 +307,6 @@ function ResizableRoomInner({
       minHeight={MIN_ROOM_SIZE * cellSize}
       maxWidth={MAX_ROOM_SIZE * cellSize}
       maxHeight={MAX_ROOM_SIZE * cellSize}
-      bounds="parent"
       resizeGrid={[1, 1]}
       dragGrid={[1, 1]}
       enableResizing={{
@@ -333,7 +320,7 @@ function ResizableRoomInner({
         topLeft: true,
       }}
       className={cn(
-        'group',
+        'group absolute',
         isDragging && 'z-50',
         isResizing && 'z-50',
         isSelected && !isDragging && !isResizing && 'z-10'
@@ -370,8 +357,6 @@ export const ResizableRoom = memo(ResizableRoomInner, (prevProps, nextProps) => 
     prevProps.room.name === nextProps.room.name &&
     prevProps.room.type === nextProps.room.type &&
     prevProps.isSelected === nextProps.isSelected &&
-    prevProps.zoom === nextProps.zoom &&
-    prevProps.canvasWidth === nextProps.canvasWidth &&
-    prevProps.canvasHeight === nextProps.canvasHeight
+    prevProps.scale === nextProps.scale
   );
 });
