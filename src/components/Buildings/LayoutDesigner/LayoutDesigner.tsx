@@ -17,7 +17,7 @@ import { DesignerToolbar } from './DesignerToolbar';
 import { DragOverlayContent } from './DragOverlayContent';
 import type { DroppedRoom, RoomTemplate } from './types';
 import { GRID_CELL_SIZE, GRID_PRECISION, ROOM_TEMPLATES } from './types';
-import { wouldCollide, findNearestValidPosition } from './collisionDetection';
+import { wouldCollide, findBestValidPosition } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
 import { toast } from 'sonner';
 
@@ -188,16 +188,17 @@ export function LayoutDesigner({
           return { ...room, x: room.x + shiftX, y: room.y + shiftY };
         });
 
-        // Check for collision and find nearest valid position
-        const validPosition = findNearestValidPosition(
+        // Find the best valid position (snaps to edges of nearby rooms)
+        const validPosition = findBestValidPosition(
           draggedRoom,
           targetX + shiftX,
           targetY + shiftY,
-          shiftedRooms
+          shiftedRooms,
+          15 // Search within 15 units for best snap position
         );
 
         if (validPosition.hasCollision) {
-          toast.warning('Cannot place room here - collision detected');
+          toast.warning('Cannot place room here - no valid position found');
           return prev; // Don't move if no valid position found
         }
 
@@ -311,12 +312,13 @@ export function LayoutDesigner({
     const room = rooms.find((r) => r.id === id);
     if (!room) return;
 
-    // Find a valid position for the duplicate (offset from original)
-    const validPosition = findNearestValidPosition(
+    // Find a valid position for the duplicate (snaps to best nearby position)
+    const validPosition = findBestValidPosition(
       room,
       room.x + 1,
       room.y + 1,
-      rooms
+      rooms,
+      15 // Search within 15 units
     );
 
     const newRoom: DroppedRoom = {
