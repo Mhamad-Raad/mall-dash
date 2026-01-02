@@ -1,5 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { DroppedRoom } from './types';
 import { GRID_CELL_SIZE, ROOM_TEMPLATES, GRID_PRECISION, MIN_ROOM_SIZE, MAX_ROOM_SIZE } from './types';
 import { cn } from '@/lib/utils';
@@ -23,16 +23,6 @@ export function ResizableRoom({
   gridSize,
   zoom,
 }: ResizableRoomProps) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: room.id,
-    data: {
-      type: 'room',
-      room,
-      isNew: false,
-    },
-    disabled: false, // Will be controlled by not passing listeners when resizing
-  });
-
   const [isResizing, setIsResizing] = useState(false);
   const [resizeEdge, setResizeEdge] = useState<ResizeEdge | null>(null);
   const resizeStartRef = useRef<{ 
@@ -43,14 +33,25 @@ export function ResizableRoom({
     roomX: number; 
     roomY: number 
   } | null>(null);
+  const lastResizeTimeRef = useRef<number>(0);
+  const resizeThrottleMs = 16; // ~60fps
 
-  const cellSize = GRID_CELL_SIZE * gridSize;
-  const template = ROOM_TEMPLATES.find((t) => t.type === room.type);
-  const borderColor = room.borderColor || template?.borderColor || '#666';
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: room.id,
+    data: {
+      type: 'room',
+      room,
+      isNew: false,
+    },
+  });
+
+  const cellSize = useMemo(() => GRID_CELL_SIZE * gridSize, [gridSize]);
+  const template = useMemo(() => ROOM_TEMPLATES.find((t) => t.type === room.type), [room.type]);
+  const borderColor = useMemo(() => room.borderColor || template?.borderColor || '#666', [room.borderColor, template]);
   
-  const area = room.width * room.height;
+  const area = useMemo(() => room.width * room.height, [room.width, room.height]);
 
-  const style = {
+  const style = useMemo(() => ({
     position: 'absolute' as const,
     left: room.x * cellSize,
     top: room.y * cellSize,
@@ -59,7 +60,7 @@ export function ResizableRoom({
     borderColor: borderColor,
     zIndex: isSelected ? 10 : 1,
     opacity: isDragging ? 0 : 1,
-  };
+  }), [room.x, room.y, room.width, room.height, cellSize, borderColor, isSelected, isDragging]);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -88,6 +89,13 @@ export function ResizableRoom({
     const handleMouseMove = (e: MouseEvent) => {
       const start = resizeStartRef.current;
       if (!start) return;
+
+      // Throttle resize updates to prevent excessive re-renders
+      const now = Date.now();
+      if (now - lastResizeTimeRef.current < resizeThrottleMs) {
+        return;
+      }
+      lastResizeTimeRef.current = now;
 
       // Calculate delta from the START position (not current room position)
       // Divide by zoom because the canvas is scaled
@@ -152,6 +160,7 @@ export function ResizableRoom({
       setIsResizing(false);
       setResizeEdge(null);
       resizeStartRef.current = null;
+      lastResizeTimeRef.current = 0;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -170,19 +179,20 @@ export function ResizableRoom({
         isResizing && resizeEdge === edge && 'opacity-100',
         className
       )}
+      style={{ pointerEvents: 'auto' }}
       onMouseDown={(e) => handleResizeStart(e, edge)}
+      onPointerDown={(e) => {
+        // Prevent dnd-kit from capturing this event
+        e.stopPropagation();
+      }}
     />
   );
-
-  // Only apply drag listeners when NOT resizing
-  const dragProps = isResizing ? {} : { ...listeners, ...attributes };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       onClick={handleClick}
-      {...dragProps}
       className={cn(
         'group relative rounded-md border',
         !isResizing && 'cursor-grab active:cursor-grabbing',
@@ -212,23 +222,31 @@ export function ResizableRoom({
         </>
       )}
 
-      {/* Room Icon */}
-      {template?.icon && (
-        <template.icon className="w-4 h-4 opacity-90" style={{ color: borderColor }} />
-      )}
-      
-      {/* Room Name */}
-      <span 
-        className="text-[11px] font-semibold text-center px-1 truncate max-w-full leading-none"
-        style={{ color: borderColor }}
+      {/* Draggable content area - only this area can initiate drag */}
+      <div
+        {...listeners}
+        {...attributes}
+        className="absolute inset-0 flex flex-col items-center justify-center gap-1"
+        style={{ pointerEvents: isResizing ? 'none' : 'auto', zIndex: 1 }}
       >
-        {room.name}
-      </span>
+        {/* Room Icon */}
+        {template?.icon && (
+          <template.icon className="w-4 h-4 opacity-90" style={{ color: borderColor }} />
+        )}
+        
+        {/* Room Name */}
+        <span 
+          className="text-[11px] font-semibold text-center px-1 truncate max-w-full leading-none"
+          style={{ color: borderColor }}
+        >
+          {room.name}
+        </span>
+      </div>
 
       {/* Area indicator */}
       <span 
         className="absolute bottom-1 right-1 text-[10px] opacity-80 tabular-nums"
-        style={{ color: borderColor }}
+        style={{ color: borderColor, zIndex: 2 }}
       >
         {area.toFixed(3)}m²
       </span>
