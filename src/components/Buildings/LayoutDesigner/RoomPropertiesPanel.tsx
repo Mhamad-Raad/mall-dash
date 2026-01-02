@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,177 @@ interface RoomPropertiesPanelProps {
   onDeleteRoom: (id: string) => void;
 }
 
+// Throttled input component - updates periodically during interaction, not just at end
+function DebouncedNumberInput({
+  value,
+  onChange,
+  min,
+  max,
+  step = 0.1,
+  throttleMs = 150,
+  className,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  throttleMs?: number;
+  className?: string;
+}) {
+  const [localValue, setLocalValue] = useState(value.toString());
+  const lastCommitTimeRef = useRef(0);
+  const pendingCommitRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCommittedRef = useRef(value);
+
+  // Sync local value when external value changes (from other sources like drag resize)
+  useEffect(() => {
+    if (value !== lastCommittedRef.current) {
+      setLocalValue(value.toString());
+      lastCommittedRef.current = value;
+    }
+  }, [value]);
+
+  const commitValue = useCallback((strValue: string, force = false) => {
+    const numValue = parseFloat(strValue);
+    if (isNaN(numValue)) return;
+    
+    let clamped = numValue;
+    if (min !== undefined) clamped = Math.max(min, clamped);
+    if (max !== undefined) clamped = Math.min(max, clamped);
+    
+    const now = Date.now();
+    const timeSinceLastCommit = now - lastCommitTimeRef.current;
+    
+    // Clear any pending commit
+    if (pendingCommitRef.current) {
+      clearTimeout(pendingCommitRef.current);
+      pendingCommitRef.current = null;
+    }
+    
+    // Throttle: only commit if enough time has passed, or if forced (on blur)
+    if (force || timeSinceLastCommit >= throttleMs) {
+      if (clamped !== lastCommittedRef.current) {
+        lastCommittedRef.current = clamped;
+        lastCommitTimeRef.current = now;
+        onChange(clamped);
+      }
+    } else {
+      // Schedule a commit for when the throttle period ends
+      const remaining = throttleMs - timeSinceLastCommit;
+      pendingCommitRef.current = setTimeout(() => {
+        if (clamped !== lastCommittedRef.current) {
+          lastCommittedRef.current = clamped;
+          lastCommitTimeRef.current = Date.now();
+          onChange(clamped);
+        }
+        pendingCommitRef.current = null;
+      }, remaining);
+    }
+  }, [min, max, throttleMs, onChange]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    commitValue(newValue);
+  };
+
+  const handleBlur = () => {
+    // Commit immediately on blur and sync display
+    commitValue(localValue, true);
+    const numValue = parseFloat(localValue);
+    if (!isNaN(numValue)) {
+      let clamped = numValue;
+      if (min !== undefined) clamped = Math.max(min, clamped);
+      if (max !== undefined) clamped = Math.min(max, clamped);
+      setLocalValue(clamped.toString());
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pendingCommitRef.current) {
+        clearTimeout(pendingCommitRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Input
+      type="number"
+      min={min}
+      max={max}
+      step={step}
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      className={`${className} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+    />
+  );
+}
+
+// Debounced text input for name
+function DebouncedTextInput({
+  value,
+  onChange,
+  debounceMs = 300,
+  className,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  debounceMs?: number;
+  className?: string;
+}) {
+  const [localValue, setLocalValue] = useState(value);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync local value when external value changes
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      onChange(newValue);
+      timeoutRef.current = null;
+    }, debounceMs);
+  };
+
+  const handleBlur = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    onChange(localValue);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Input
+      type="text"
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      className={className}
+    />
+  );
+}
+
 export function RoomSummaryPanel({
   rooms,
   doors,
@@ -40,26 +212,36 @@ export function RoomSummaryPanel({
 
   const totalArea = rooms.reduce((sum, r) => sum + r.width * r.height, 0);
 
-  const handleNameChange = (value: string) => {
+  // Handlers that update parent state
+  const handleNameChange = useCallback((value: string) => {
     if (selectedRoom) {
       onUpdateRoom(selectedRoom.id, { name: value });
     }
-  };
+  }, [selectedRoom, onUpdateRoom]);
 
-  const handleDimensionChange = (dimension: 'width' | 'height', value: string) => {
-    if (!selectedRoom) return;
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) return;
-    const clampedValue = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, numValue));
-    onUpdateRoom(selectedRoom.id, { [dimension]: clampedValue });
-  };
+  const handleWidthChange = useCallback((value: number) => {
+    if (selectedRoom) {
+      onUpdateRoom(selectedRoom.id, { width: value });
+    }
+  }, [selectedRoom, onUpdateRoom]);
 
-  const handlePositionChange = (axis: 'x' | 'y', value: string) => {
-    if (!selectedRoom) return;
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) return;
-    onUpdateRoom(selectedRoom.id, { [axis]: Math.max(0, numValue) });
-  };
+  const handleHeightChange = useCallback((value: number) => {
+    if (selectedRoom) {
+      onUpdateRoom(selectedRoom.id, { height: value });
+    }
+  }, [selectedRoom, onUpdateRoom]);
+
+  const handleXChange = useCallback((value: number) => {
+    if (selectedRoom) {
+      onUpdateRoom(selectedRoom.id, { x: value });
+    }
+  }, [selectedRoom, onUpdateRoom]);
+
+  const handleYChange = useCallback((value: number) => {
+    if (selectedRoom) {
+      onUpdateRoom(selectedRoom.id, { y: value });
+    }
+  }, [selectedRoom, onUpdateRoom]);
 
   return (
     <div className="w-64 shrink-0 border-l overflow-auto bg-background flex flex-col">
@@ -88,9 +270,9 @@ export function RoomSummaryPanel({
               <Type className="w-3 h-3" />
               Name
             </Label>
-            <Input
+            <DebouncedTextInput
               value={selectedRoom.name}
-              onChange={(e) => handleNameChange(e.target.value)}
+              onChange={handleNameChange}
               className="h-8 text-sm"
             />
           </div>
@@ -104,25 +286,23 @@ export function RoomSummaryPanel({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-[10px] text-muted-foreground">Width</Label>
-                <Input
-                  type="number"
+                <DebouncedNumberInput
                   min={MIN_ROOM_SIZE}
                   max={MAX_ROOM_SIZE}
-                  step={0.1}
+                  step={0.25}
                   value={selectedRoom.width}
-                  onChange={(e) => handleDimensionChange('width', e.target.value)}
+                  onChange={handleWidthChange}
                   className="h-8 text-sm"
                 />
               </div>
               <div>
                 <Label className="text-[10px] text-muted-foreground">Height</Label>
-                <Input
-                  type="number"
+                <DebouncedNumberInput
                   min={MIN_ROOM_SIZE}
                   max={MAX_ROOM_SIZE}
-                  step={0.1}
+                  step={0.25}
                   value={selectedRoom.height}
-                  onChange={(e) => handleDimensionChange('height', e.target.value)}
+                  onChange={handleHeightChange}
                   className="h-8 text-sm"
                 />
               </div>
@@ -138,23 +318,21 @@ export function RoomSummaryPanel({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-[10px] text-muted-foreground">X</Label>
-                <Input
-                  type="number"
+                <DebouncedNumberInput
                   min={0}
-                  step={0.1}
+                  step={0.25}
                   value={selectedRoom.x}
-                  onChange={(e) => handlePositionChange('x', e.target.value)}
+                  onChange={handleXChange}
                   className="h-8 text-sm"
                 />
               </div>
               <div>
                 <Label className="text-[10px] text-muted-foreground">Y</Label>
-                <Input
-                  type="number"
+                <DebouncedNumberInput
                   min={0}
-                  step={0.1}
+                  step={0.25}
                   value={selectedRoom.y}
-                  onChange={(e) => handlePositionChange('y', e.target.value)}
+                  onChange={handleYChange}
                   className="h-8 text-sm"
                 />
               </div>
