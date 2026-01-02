@@ -117,25 +117,7 @@ export function DesignerToolbar({
               <TooltipContent>Zoom In</TooltipContent>
             </Tooltip>
           </div>
-
-          {/* Grid Toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-8 w-8 hover:bg-primary/10",
-                  showGrid && "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
-                onClick={onToggleGrid}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle Grid</TooltipContent>
-          </Tooltip>
-
+          
           {/* Reset */}
           <Tooltip>
             <TooltipTrigger asChild>

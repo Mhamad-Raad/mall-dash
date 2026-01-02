@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { DroppableCanvas } from './DroppableCanvas';
-import { DraggableRoom } from './DraggableRoom';
+import { ResizableRoom } from './ResizableRoom';
 import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
 import { DragOverlayContent } from './DragOverlayContent';
@@ -19,7 +19,6 @@ import type { DroppedRoom, RoomTemplate } from './types';
 import { GRID_CELL_SIZE, GRID_PRECISION, ROOM_TEMPLATES } from './types';
 import { wouldCollide, findBestValidPosition } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
-import { toast } from 'sonner';
 
 interface LayoutDesignerProps {
   initialLayout?: ApartmentLayout;
@@ -198,7 +197,6 @@ export function LayoutDesigner({
         );
 
         if (validPosition.hasCollision) {
-          toast.warning('Cannot place room here - no valid position found');
           return prev; // Don't move if no valid position found
         }
 
@@ -295,7 +293,6 @@ export function LayoutDesigner({
 
       // Check if rotation would cause collision
       if (wouldCollide(rotatedRoom, rotatedRoom.x, rotatedRoom.y, otherRooms)) {
-        toast.warning('Cannot rotate - would cause collision');
         return prev;
       }
 
@@ -334,6 +331,60 @@ export function LayoutDesigner({
     setSelectedRoomId(newRoom.id);
   }, [rooms, recalculateCanvasSize]);
 
+  // Handle room resize from edge dragging - receives absolute new values
+  const handleResizeRoom = useCallback((id: string, width: number, height: number, newX: number, newY: number) => {
+    setRooms((prev) => {
+      const roomToResize = prev.find((r) => r.id === id);
+      if (!roomToResize) return prev;
+
+      // Check if new dimensions would collide
+      const resizedRoom = { ...roomToResize, width, height, x: newX, y: newY };
+      const otherRooms = prev.filter((r) => r.id !== id);
+
+      if (wouldCollide(resizedRoom, newX, newY, otherRooms)) {
+        return prev; // Don't resize if it would cause collision
+      }
+
+      const updated = prev.map((room) => {
+        if (room.id === id) {
+          return { ...room, width, height, x: newX, y: newY };
+        }
+        return room;
+      });
+
+      recalculateCanvasSize(updated);
+      return updated;
+    });
+  }, [recalculateCanvasSize]);
+
+  // Handle room updates from the properties panel
+  const handleUpdateRoom = useCallback((id: string, updates: Partial<DroppedRoom>) => {
+    setRooms((prev) => {
+      const roomToUpdate = prev.find((r) => r.id === id);
+      if (!roomToUpdate) return prev;
+
+      const updatedRoom = { ...roomToUpdate, ...updates };
+      const otherRooms = prev.filter((r) => r.id !== id);
+
+      // If position or size changed, check for collisions
+      if (updates.x !== undefined || updates.y !== undefined || updates.width !== undefined || updates.height !== undefined) {
+        if (wouldCollide(updatedRoom, updatedRoom.x, updatedRoom.y, otherRooms)) {
+          return prev;
+        }
+      }
+
+      const updated = prev.map((room) => {
+        if (room.id === id) {
+          return updatedRoom;
+        }
+        return room;
+      });
+
+      recalculateCanvasSize(updated);
+      return updated;
+    });
+  }, [recalculateCanvasSize]);
+
   const handleCanvasClick = useCallback(() => {
     setSelectedRoomId(null);
   }, []);
@@ -344,7 +395,6 @@ export function LayoutDesigner({
     setSelectedRoomId(null);
     setCanvasWidth(MIN_CANVAS_WIDTH);
     setCanvasHeight(MIN_CANVAS_HEIGHT);
-    toast.info('Layout reset');
   }, []);
 
   return (
@@ -382,22 +432,29 @@ export function LayoutDesigner({
                 onCanvasClick={handleCanvasClick}
               >
                 {rooms.map((room) => (
-                  <DraggableRoom
+                  <ResizableRoom
                     key={room.id}
                     room={room}
                     isSelected={room.id === selectedRoomId}
                     onSelect={setSelectedRoomId}
+                    onResize={handleResizeRoom}
                     gridSize={1}
+                    zoom={zoom}
                   />
                 ))}
               </DroppableCanvas>
             </div>
           </div>
 
-          {/* Right Summary Panel */}
+          {/* Right Properties Panel */}
           <RoomSummaryPanel
             rooms={rooms}
             doors={doors.length}
+            selectedRoom={rooms.find((r) => r.id === selectedRoomId) || null}
+            onUpdateRoom={handleUpdateRoom}
+            onRotateRoom={handleRotateRoom}
+            onDuplicateRoom={handleDuplicateRoom}
+            onDeleteRoom={handleDeleteRoom}
           />
         </div>
       </div>
