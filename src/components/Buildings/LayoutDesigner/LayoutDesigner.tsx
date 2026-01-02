@@ -103,7 +103,7 @@ export function LayoutDesigner({
           height: room.height,
         })),
         doors,
-        gridSize: zoom,
+        gridSize: 1, // Grid size is always 1 meter per cell
         width: Math.ceil(canvasBounds.maxX - canvasBounds.minX + 2),
         height: Math.ceil(canvasBounds.maxY - canvasBounds.minY + 2),
       };

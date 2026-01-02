@@ -135,16 +135,16 @@ function ResizableRoomInner({
   const handleDragStop: RndDragCallback = useCallback((_e, d) => {
     setIsDragging(false);
 
-    // d.x and d.y are in pixels (affected by scale), convert to grid coordinates
-    const rawGridX = d.x / (cellSize * scale);
-    const rawGridY = d.y / (cellSize * scale);
+    // d.x and d.y are position values (not screen pixels), convert to grid coordinates
+    const rawGridX = d.x / cellSize;
+    const rawGridY = d.y / cellSize;
     
     // Clamp to canvas bounds (accounting for room size)
     const gridX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, rawGridX));
     const gridY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, rawGridY));
 
     onMove(room.id, gridX, gridY);
-  }, [room, cellSize, scale, onMove]);
+  }, [room, cellSize, onMove]);
 
   // Handle resize start
   const handleResizeStart = useCallback(() => {
@@ -157,9 +157,10 @@ function ResizableRoomInner({
     const newPixelWidth = ref.offsetWidth;
     const newPixelHeight = ref.offsetHeight;
 
-    // Convert pixels to grid coordinates (accounting for scale)
-    const newWidth = newPixelWidth / (cellSize * scale);
-    const newHeight = newPixelHeight / (cellSize * scale);
+    // Convert pixels to grid coordinates (ref.offsetWidth is actual DOM pixels, affected by scale)
+    // Divide by scale to get the CSS pixels, then by cellSize to get grid units
+    const newWidth = newPixelWidth / scale / cellSize;
+    const newHeight = newPixelHeight / scale / cellSize;
 
     // Clamp size to room limits
     const clampedWidth = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newWidth));
@@ -177,11 +178,13 @@ function ResizableRoomInner({
     const newPixelWidth = ref.offsetWidth;
     const newPixelHeight = ref.offsetHeight;
     
-    // Convert pixels to grid coordinates (accounting for scale)
-    const newWidth = newPixelWidth / (cellSize * scale);
-    const newHeight = newPixelHeight / (cellSize * scale);
-    const newX = position.x / (cellSize * scale);
-    const newY = position.y / (cellSize * scale);
+    // ref.offsetWidth/Height are actual DOM pixels (affected by scale)
+    // Divide by scale to get CSS pixels, then by cellSize to get grid units
+    const newWidth = newPixelWidth / scale / cellSize;
+    const newHeight = newPixelHeight / scale / cellSize;
+    // position.x/y are position values (not affected by scale)
+    const newX = position.x / cellSize;
+    const newY = position.y / cellSize;
 
     // Clamp size to room limits
     const clampedWidth = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newWidth));
