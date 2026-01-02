@@ -17,6 +17,7 @@ import { DesignerToolbar } from './DesignerToolbar';
 import { DragOverlayContent } from './DragOverlayContent';
 import type { DroppedRoom, RoomTemplate } from './types';
 import { GRID_CELL_SIZE, GRID_PRECISION, ROOM_TEMPLATES } from './types';
+import { wouldCollide, findNearestValidPosition } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
 import { toast } from 'sonner';
 
@@ -151,7 +152,7 @@ export function LayoutDesigner({
       if (!data?.room) return;
 
       // Move existing room - divide delta by zoom to compensate for canvas scaling
-      // Round to GRID_PRECISION increments (e.g., 0.1 = 10cm precision)
+      // Round to GRID_PRECISION increments (e.g., 0.001 = 1mm precision)
       const cellSize = GRID_CELL_SIZE;
       const rawDeltaX = delta.x / zoom / cellSize;
       const rawDeltaY = delta.y / zoom / cellSize;
@@ -165,24 +166,45 @@ export function LayoutDesigner({
         const draggedRoom = prev.find((r) => r.id === active.id);
         if (!draggedRoom) return prev;
 
-        const newX = draggedRoom.x + deltaX;
-        const newY = draggedRoom.y + deltaY;
+        let targetX = draggedRoom.x + deltaX;
+        let targetY = draggedRoom.y + deltaY;
 
         // Check if we need to shift all rooms (expanding left or top)
         let shiftX = 0;
         let shiftY = 0;
 
-        if (newX < 0) {
-          shiftX = -newX; // Shift everything right to make room
+        if (targetX < 0) {
+          shiftX = -targetX; // Shift everything right to make room
+          targetX = 0;
         }
-        if (newY < 0) {
-          shiftY = -newY; // Shift everything down to make room
+        if (targetY < 0) {
+          shiftY = -targetY; // Shift everything down to make room
+          targetY = 0;
+        }
+
+        // Apply shift to all other rooms first to check collision in new positions
+        const shiftedRooms = prev.map((room) => {
+          if (room.id === active.id) return room; // Don't shift the dragged room yet
+          return { ...room, x: room.x + shiftX, y: room.y + shiftY };
+        });
+
+        // Check for collision and find nearest valid position
+        const validPosition = findNearestValidPosition(
+          draggedRoom,
+          targetX + shiftX,
+          targetY + shiftY,
+          shiftedRooms
+        );
+
+        if (validPosition.hasCollision) {
+          toast.warning('Cannot place room here - collision detected');
+          return prev; // Don't move if no valid position found
         }
 
         // Update all rooms with the shift, and apply the move to the dragged room
         const updated = prev.map((room) => {
           if (room.id === active.id) {
-            return { ...room, x: newX + shiftX, y: newY + shiftY };
+            return { ...room, x: validPosition.x, y: validPosition.y };
           }
           return { ...room, x: room.x + shiftX, y: room.y + shiftY };
         });
@@ -198,23 +220,26 @@ export function LayoutDesigner({
 
   // Add room from toolbar click
   const handleAddRoom = useCallback((template: RoomTemplate) => {
-    // Find a free position for the new room
-    let x = 1;
-    let y = 1;
-
-    // Simple placement: try to find a spot that doesn't overlap
-    const isOverlapping = (testX: number, testY: number, w: number, h: number) => {
-      return rooms.some((room) => {
-        return !(testX + w <= room.x || testX >= room.x + room.width ||
-                 testY + h <= room.y || testY >= room.y + room.height);
-      });
+    // Create a temporary room object to check collisions
+    const tempRoom: DroppedRoom = {
+      id: 'temp',
+      type: template.type,
+      name: template.name,
+      x: 0,
+      y: 0,
+      width: template.defaultWidth,
+      height: template.defaultHeight,
+      borderColor: template.borderColor,
     };
 
     // Find first available position within current canvas
+    let x = 1;
+    let y = 1;
     let found = false;
+
     outer: for (let ty = 1; ty < canvasHeight - template.defaultHeight; ty++) {
       for (let tx = 1; tx < canvasWidth - template.defaultWidth; tx++) {
-        if (!isOverlapping(tx, ty, template.defaultWidth, template.defaultHeight)) {
+        if (!wouldCollide({ ...tempRoom, x: tx, y: ty }, tx, ty, rooms)) {
           x = tx;
           y = ty;
           found = true;
@@ -226,7 +251,7 @@ export function LayoutDesigner({
     // If no space found, place at end and expand canvas
     if (!found) {
       x = 1;
-      y = canvasHeight - 1;
+      y = canvasHeight;
     }
 
     const newRoom: DroppedRoom = {
@@ -255,31 +280,50 @@ export function LayoutDesigner({
   }, [rooms, recalculateCanvasSize]);
 
   const handleRotateRoom = useCallback((id: string) => {
-    setRooms((prev) =>
-      prev.map((room) => {
+    setRooms((prev) => {
+      const roomToRotate = prev.find((r) => r.id === id);
+      if (!roomToRotate) return prev;
+
+      // Swap width and height
+      const newWidth = roomToRotate.height;
+      const newHeight = roomToRotate.width;
+
+      // Create rotated room to check collision
+      const rotatedRoom = { ...roomToRotate, width: newWidth, height: newHeight };
+      const otherRooms = prev.filter((r) => r.id !== id);
+
+      // Check if rotation would cause collision
+      if (wouldCollide(rotatedRoom, rotatedRoom.x, rotatedRoom.y, otherRooms)) {
+        toast.warning('Cannot rotate - would cause collision');
+        return prev;
+      }
+
+      return prev.map((room) => {
         if (room.id === id) {
-          // Swap width and height
-          const newWidth = room.height;
-          const newHeight = room.width;
           return { ...room, width: newWidth, height: newHeight };
         }
         return room;
-      })
-    );
+      });
+    });
   }, []);
 
   const handleDuplicateRoom = useCallback((id: string) => {
     const room = rooms.find((r) => r.id === id);
     if (!room) return;
 
-    const newX = room.x + 1;
-    const newY = room.y + 1;
+    // Find a valid position for the duplicate (offset from original)
+    const validPosition = findNearestValidPosition(
+      room,
+      room.x + 1,
+      room.y + 1,
+      rooms
+    );
 
     const newRoom: DroppedRoom = {
       ...room,
       id: `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      x: newX,
-      y: newY,
+      x: validPosition.x,
+      y: validPosition.y,
     };
 
     const updatedRooms = [...rooms, newRoom];
