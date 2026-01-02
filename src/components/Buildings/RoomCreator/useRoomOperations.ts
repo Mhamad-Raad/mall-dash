@@ -79,16 +79,20 @@ export const useRoomOperations = ({
 
   const deleteRoom = useCallback(
     (id: string) => {
+      // Use current values at deletion time, not captured values
       // Also remove any doors connected to this room
       const updatedDoors = doors.filter(
         (d) => d.roomId !== id && d.connectedRoomId !== id
       );
       
+      const updatedRooms = layout.rooms.filter((r) => r.id !== id);
+      
       onLayoutChange({
         ...layout,
-        rooms: layout.rooms.filter((r) => r.id !== id),
+        rooms: updatedRooms,
         doors: updatedDoors,
       });
+      
       if (selectedRoomId === id) {
         onSelectRoom(null);
       }

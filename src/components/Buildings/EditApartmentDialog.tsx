@@ -56,16 +56,17 @@ const EditApartmentDialog = ({
   const [layout, setLayout] = useState<ApartmentLayout>(DEFAULT_LAYOUT);
 
   useEffect(() => {
-    setApartmentName(apartment?.apartmentName ?? '');
-    setPendingOccupant(apartment?.occupant ? null : 'remove');
-    setLayout(apartment?.layout ?? DEFAULT_LAYOUT);
+    // Only reset layout when apartment changes or dialog opens
+    // Don't reset when apartment.layout changes (to prevent overwriting user edits)
+    if (isOpen && apartment) {
+      setApartmentName(apartment.apartmentName ?? '');
+      setPendingOccupant(apartment.occupant ? null : 'remove');
+      setLayout(apartment.layout ?? DEFAULT_LAYOUT);
+    }
   }, [
-    apartment?.apartmentName,
     apartment?.id,
     setApartmentName,
     isOpen,
-    apartment?.occupant,
-    apartment?.layout,
   ]);
 
   // Cleanup memory when dialog closes

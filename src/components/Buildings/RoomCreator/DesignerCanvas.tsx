@@ -7,49 +7,13 @@ import {
   PointerSensor,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent, DragMoveEvent } from '@dnd-kit/core';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 import { RoomBox } from './RoomBox';
 import { DoorMarker } from './DoorMarker';
 import { cn } from '@/lib/utils';
-import { getRoomConfig, ROOM_TYPES } from './types';
+import { getRoomConfig } from './types';
 import type { RoomType, ApartmentLayout, Door } from './types';
 import type { SharedEdge } from './doorUtils';
 import { getEdgeAtPoint } from './doorUtils';
-import {
-  Bed,
-  Bath,
-  CookingPot,
-  Sofa,
-  Utensils,
-  Fence,
-  Archive,
-  Briefcase,
-  MoveHorizontal,
-  DoorOpen,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-
-const ROOM_ICON_MAP: Record<string, LucideIcon> = {
-  bed: Bed,
-  bath: Bath,
-  'cooking-pot': CookingPot,
-  sofa: Sofa,
-  utensils: Utensils,
-  fence: Fence,
-  archive: Archive,
-  briefcase: Briefcase,
-  'move-horizontal': MoveHorizontal,
-  'door-open': DoorOpen,
-};
 
 interface DesignerCanvasProps {
   layout: ApartmentLayout;
@@ -75,12 +39,9 @@ interface DesignerCanvasProps {
   onSelectRoom: (id: string | null) => void;
   onSelectDoor: (id: string | null) => void;
   onSelectType: (type: RoomType | null) => void;
-  onDoorModeChange: (enabled: boolean) => void;
   onAddRoomAtPosition: (type: RoomType, x: number, y: number) => void;
   onAddDoor: (edge: SharedEdge, position: number) => void;
-  onDeleteRoom: (id: string) => void;
   onDeleteDoor: (id: string) => void;
-  onDuplicateRoom: (id: string) => void;
   onResizeRoom: (id: string, width: number, height: number, deltaX?: number, deltaY?: number, isResizing?: boolean) => void;
 }
 
@@ -108,16 +69,12 @@ export const DesignerCanvas = ({
   onSelectRoom,
   onSelectDoor,
   onSelectType,
-  onDoorModeChange,
   onAddRoomAtPosition,
   onAddDoor,
-  onDeleteRoom,
   onDeleteDoor,
-  onDuplicateRoom,
   onResizeRoom,
 }: DesignerCanvasProps) => {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const contextMenuPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -137,36 +94,24 @@ export const DesignerCanvas = ({
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
       >
-        <ContextMenu modal={false}>
-          <ContextMenuTrigger asChild>
-            <div
-              ref={canvasRef}
-              className={cn(
-                'relative overflow-hidden bg-background',
-                'transition-colors',
-                selectedType && 'cursor-crosshair',
-                doorMode && 'cursor-pointer'
-              )}
-              style={{
-                width: gridCols * cellSize,
-                height: gridRows * cellSize,
-                minWidth: '100%',
-                minHeight: '100%',
-              }}
-              onPointerDown={(e) => {
-                // Capture position on any pointer down (including right-click)
-                // This will fire before the context menu opens
-                if (e.button === 2) { // Right mouse button
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = (e.clientX - rect.left) / cellSize - offsetX;
-                  const y = (e.clientY - rect.top) / cellSize - offsetY;
-                  contextMenuPosRef.current = { x, y };
-                }
-              }}
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const clickY = e.clientY - rect.top;
+        <div
+          ref={canvasRef}
+          className={cn(
+            'relative overflow-hidden bg-background',
+            'transition-colors',
+            selectedType && 'cursor-crosshair',
+            doorMode && 'cursor-pointer'
+          )}
+          style={{
+            width: gridCols * cellSize,
+            height: gridRows * cellSize,
+            minWidth: '100%',
+            minHeight: '100%',
+          }}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
 
                 if (doorMode) {
                   const adjustedClickX = clickX - offsetX * cellSize;
@@ -289,8 +234,6 @@ export const DesignerCanvas = ({
                     onSelectRoom(id);
                     onSelectDoor(null);
                   }}
-                  onDelete={onDeleteRoom}
-                  onDuplicate={onDuplicateRoom}
                   onResize={onResizeRoom}
                 />
               ))}
@@ -363,45 +306,6 @@ export const DesignerCanvas = ({
                 </div>
               )}
             </div>
-          </ContextMenuTrigger>
-          <ContextMenuContent className="w-56">
-            <ContextMenuSub>
-              <ContextMenuSubTrigger>
-                <span>Add Room</span>
-              </ContextMenuSubTrigger>
-              <ContextMenuSubContent className="w-48">
-                {ROOM_TYPES.map((roomType) => {
-                  const config = getRoomConfig(roomType.type);
-                  const IconComponent = ROOM_ICON_MAP[config.icon];
-                  return (
-                    <ContextMenuItem
-                      key={roomType.type}
-                      onSelect={() => {
-                        const { x, y } = contextMenuPosRef.current;
-                        onAddRoomAtPosition(roomType.type, x, y);
-                      }}
-                    >
-                      {IconComponent && (
-                        <IconComponent 
-                          className="mr-2 h-4 w-4" 
-                          style={{ color: config.color }}
-                        />
-                      )}
-                      {roomType.label}
-                    </ContextMenuItem>
-                  );
-                })}
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-            <ContextMenuSeparator />
-            <ContextMenuItem
-              onSelect={() => onDoorModeChange(!doorMode)}
-            >
-              <DoorOpen className="mr-2 h-4 w-4" />
-              {doorMode ? 'Exit Door Mode' : 'Add Doors'}
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
 
         <DragOverlay>
           {activeRoom && (
@@ -430,19 +334,11 @@ export const DesignerCanvas = ({
               <div className='flex-1 flex flex-col items-center justify-center p-1 min-h-0 relative'>
                 {(() => {
                   const config = getRoomConfig(activeRoom.type);
-                  const IconComponent = ROOM_ICON_MAP[config.icon];
                   const isVerySmall = activeRoom.width * cellSize < 80 || activeRoom.height * cellSize < 60;
                   const isSmall = activeRoom.width * cellSize < 120 || activeRoom.height * cellSize < 80;
                   
                   return (
                     <>
-                      {IconComponent && (
-                        <div style={{ color: config.color }}>
-                          <IconComponent className={cn(
-                            isVerySmall ? 'w-4 h-4' : isSmall ? 'w-5 h-5' : 'w-6 h-6'
-                          )} />
-                        </div>
-                      )}
                       {!isVerySmall && (
                         <span
                           className={cn(

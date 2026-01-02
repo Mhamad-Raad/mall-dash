@@ -12,19 +12,10 @@ import {
   Briefcase,
   MoveHorizontal,
   DoorOpen,
-  Trash2,
-  Copy,
 } from 'lucide-react';
 import type { Room } from './types';
 import { getRoomConfig } from './types';
 import { cn } from '@/lib/utils';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   bed: Bed,
@@ -51,8 +42,6 @@ interface RoomBoxProps {
   offsetX?: number;
   offsetY?: number;
   onSelect: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDuplicate: (id: string) => void;
   onResize: (id: string, width: number, height: number, deltaX?: number, deltaY?: number, isResizing?: boolean) => void;
 }
 
@@ -100,8 +89,6 @@ export const RoomBox = memo(function RoomBox({
   offsetX = 0,
   offsetY = 0,
   onSelect,
-  onDelete,
-  onDuplicate,
   onResize,
 }: RoomBoxProps) {
   const [isResizing, setIsResizing] = useState(false);
@@ -265,19 +252,17 @@ export const RoomBox = memo(function RoomBox({
   };
 
   return (
-    <ContextMenu modal={false}>
-      <ContextMenuTrigger asChild disabled={isDragging || isResizing}>
-        <div
-          ref={setNodeRef}
-          style={style}
-          className={cn(
-            'rounded-lg group overflow-hidden',
-            'flex flex-col border',
-            !isDragging && !isResizing && 'transition-colors transition-shadow transition-opacity duration-150',
-            isDragging && 'opacity-90 shadow-2xl cursor-grabbing scale-[1.02]',
-            !isDragging && !isResizing && 'cursor-grab hover:shadow-lg',
-            isResizing && 'cursor-nwse-resize',
-            isSelected && 'ring-2 ring-primary ring-offset-2 shadow-lg',
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'rounded-lg group overflow-hidden',
+        'flex flex-col border',
+        !isDragging && !isResizing && 'transition-colors transition-shadow transition-opacity duration-150',
+        isDragging && 'opacity-90 shadow-2xl cursor-grabbing scale-[1.02]',
+        !isDragging && !isResizing && 'cursor-grab hover:shadow-lg',
+        isResizing && 'cursor-nwse-resize',
+        isSelected && 'ring-2 ring-primary ring-offset-2 shadow-lg',
             isOverlapping 
               ? 'border-red-500 bg-destructive/10 shadow-red-500/20' 
               : 'border-border/50 bg-card shadow-sm'
@@ -396,22 +381,6 @@ export const RoomBox = memo(function RoomBox({
           />
         </>
       )}
-        </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="w-48">
-        <ContextMenuItem onSelect={() => onDuplicate(room.id)}>
-          <Copy className="mr-2 h-4 w-4" />
-          Duplicate
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem 
-          variant="destructive" 
-          onSelect={() => onDelete(room.id)}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete Room
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+    </div>
   );
 }, arePropsEqual);

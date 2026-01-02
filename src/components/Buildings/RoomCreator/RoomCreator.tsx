@@ -255,10 +255,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             setSelectedRoomId(null);
           }}
           onSelectType={setSelectedType}
-          onDoorModeChange={setDoorMode}
-          onDeleteRoom={deleteRoom}
           onDeleteDoor={deleteDoor}
-          onDuplicateRoom={duplicateRoom}
           onResizeRoom={resizeRoom}
           onAddRoomAtPosition={addRoomAtPosition}
           onAddDoor={addDoor}
