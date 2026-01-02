@@ -6,8 +6,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ROOM_TEMPLATES, type RoomTemplate } from './types';
-import { ZoomIn, ZoomOut, RotateCcw, Grid3X3, DoorOpen } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ZoomIn, ZoomOut, RotateCcw, DoorOpen } from 'lucide-react';
 
 interface DesignerToolbarProps {
   zoom: number;
@@ -25,8 +24,6 @@ export function DesignerToolbar({
   onReset,
   onAddRoom,
   onAddDoor,
-  showGrid,
-  onToggleGrid,
 }: DesignerToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shrink-0">
@@ -117,7 +114,7 @@ export function DesignerToolbar({
               <TooltipContent>Zoom In</TooltipContent>
             </Tooltip>
           </div>
-          
+
           {/* Reset */}
           <Tooltip>
             <TooltipTrigger asChild>
