@@ -41,6 +41,8 @@ export interface ApartmentLayout {
   rooms: RoomLayout[];
   doors: Door[];
   gridSize: number;
+  width?: number;
+  height?: number;
 }
 
 export interface Apartment {

@@ -24,8 +24,8 @@ export function DroppableCanvas({
   });
 
   const cellSize = GRID_CELL_SIZE * gridSize;
-  const pixelWidth = canvasWidth * cellSize;
-  const pixelHeight = canvasHeight * cellSize;
+  const minPixelWidth = canvasWidth * cellSize;
+  const minPixelHeight = canvasHeight * cellSize;
 
   return (
     <div
@@ -33,12 +33,12 @@ export function DroppableCanvas({
       onClick={onCanvasClick}
       data-droppable="canvas"
       className={cn(
-        'relative rounded-lg transition-colors',
+        'relative rounded-lg transition-colors w-full h-full',
         isOver && 'ring-2 ring-primary/50'
       )}
       style={{
-        width: pixelWidth,
-        height: pixelHeight,
+        minWidth: minPixelWidth,
+        minHeight: minPixelHeight,
         backgroundColor: 'transparent',
         backgroundImage: showGrid
           ? `

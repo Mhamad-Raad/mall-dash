@@ -1,5 +1,4 @@
 import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import type { DroppedRoom } from './types';
 import { GRID_CELL_SIZE, ROOM_TEMPLATES } from './types';
 import { cn } from '@/lib/utils';
@@ -17,7 +16,7 @@ export function DraggableRoom({
   onSelect,
   gridSize,
 }: DraggableRoomProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: room.id,
     data: {
       type: 'room',
