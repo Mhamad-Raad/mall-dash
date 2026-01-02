@@ -1,4 +1,5 @@
 import type { RoomType, RoomLayout, Door, DoorEdge } from '@/interfaces/Building.interface';
+import type { LucideIcon } from 'lucide-react';
 
 export interface LayoutItem extends RoomLayout {
   color: string;
@@ -32,24 +33,37 @@ export interface DesignerState {
 export interface RoomTemplate {
   type: RoomType;
   name: string;
-  icon: string;
+  icon: LucideIcon;
   defaultWidth: number;
   defaultHeight: number;
   borderColor: string;
 }
 
+import {
+  Bed,
+  Bath,
+  UtensilsCrossed,
+  Sofa,
+  Pizza,
+  TreeDeciduous,
+  Package,
+  Briefcase,
+  MoveHorizontal,
+  DoorOpen
+} from 'lucide-react';
+
 // Border colors matching the reference design
 export const ROOM_TEMPLATES: RoomTemplate[] = [
-  { type: 'bedroom', name: 'Bedroom', icon: '🛏️', defaultWidth: 4, defaultHeight: 3, borderColor: '#A855F7' },    // Purple
-  { type: 'bathroom', name: 'Bathroom', icon: '🚿', defaultWidth: 2, defaultHeight: 2, borderColor: '#22D3EE' },  // Cyan
-  { type: 'kitchen', name: 'Kitchen', icon: '🍳', defaultWidth: 3, defaultHeight: 2, borderColor: '#F59E0B' },    // Orange/Amber
-  { type: 'living', name: 'Living Room', icon: '🛋️', defaultWidth: 5, defaultHeight: 4, borderColor: '#22C55E' }, // Green
-  { type: 'dining', name: 'Dining', icon: '🍽️', defaultWidth: 4, defaultHeight: 3, borderColor: '#EC4899' },      // Pink
-  { type: 'balcony', name: 'Balcony', icon: '🌿', defaultWidth: 3, defaultHeight: 2, borderColor: '#84CC16' },    // Lime
-  { type: 'storage', name: 'Storage', icon: '📦', defaultWidth: 2, defaultHeight: 2, borderColor: '#64748B' },    // Slate
-  { type: 'office', name: 'Office', icon: '💼', defaultWidth: 3, defaultHeight: 3, borderColor: '#6366F1' },      // Indigo
-  { type: 'hallway', name: 'Hallway', icon: '↔️', defaultWidth: 3, defaultHeight: 2, borderColor: '#EAB308' },    // Yellow
-  { type: 'entrance', name: 'Entrance', icon: '🚪', defaultWidth: 2, defaultHeight: 2, borderColor: '#F97316' },  // Orange
+  { type: 'bedroom', name: 'Bedroom', icon: Bed, defaultWidth: 4, defaultHeight: 3, borderColor: '#A855F7' },    // Purple
+  { type: 'bathroom', name: 'Bathroom', icon: Bath, defaultWidth: 2, defaultHeight: 2, borderColor: '#22D3EE' },  // Cyan
+  { type: 'kitchen', name: 'Kitchen', icon: UtensilsCrossed, defaultWidth: 3, defaultHeight: 2, borderColor: '#F59E0B' },    // Orange/Amber
+  { type: 'living', name: 'Living Room', icon: Sofa, defaultWidth: 5, defaultHeight: 4, borderColor: '#22C55E' }, // Green
+  { type: 'dining', name: 'Dining', icon: Pizza, defaultWidth: 4, defaultHeight: 3, borderColor: '#EC4899' },      // Pink
+  { type: 'balcony', name: 'Balcony', icon: TreeDeciduous, defaultWidth: 3, defaultHeight: 2, borderColor: '#84CC16' },    // Lime
+  { type: 'storage', name: 'Storage', icon: Package, defaultWidth: 2, defaultHeight: 2, borderColor: '#64748B' },    // Slate
+  { type: 'office', name: 'Office', icon: Briefcase, defaultWidth: 3, defaultHeight: 3, borderColor: '#6366F1' },      // Indigo
+  { type: 'hallway', name: 'Hallway', icon: MoveHorizontal, defaultWidth: 3, defaultHeight: 2, borderColor: '#EAB308' },    // Yellow
+  { type: 'entrance', name: 'Entrance', icon: DoorOpen, defaultWidth: 2, defaultHeight: 2, borderColor: '#F97316' },  // Orange
 ];
 
 export const DOOR_EDGES: { value: DoorEdge; label: string }[] = [

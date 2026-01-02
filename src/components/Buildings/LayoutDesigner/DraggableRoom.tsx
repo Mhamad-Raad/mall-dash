@@ -56,21 +56,23 @@ export function DraggableRoom({
       {...listeners}
       {...attributes}
       className={cn(
-        'rounded-sm border-2 bg-transparent cursor-grab active:cursor-grabbing',
-        'flex flex-col items-center justify-center gap-0.5',
-        'select-none touch-none',
-        isDragging && 'shadow-xl opacity-80',
-        isSelected && 'ring-2 ring-white/50'
+        'relative rounded-md border cursor-grab active:cursor-grabbing',
+        'bg-background/[0.06] backdrop-blur-sm',
+        'flex flex-col items-center justify-center gap-1',
+        'select-none touch-none transition',
+        'hover:bg-background/[0.10] hover:shadow-md',
+        isDragging && 'shadow-lg',
+        isSelected && 'ring-2 ring-primary/40'
       )}
     >
       {/* Room Icon */}
-      <span className="text-base opacity-80" style={{ color: borderColor }}>
-        {template?.icon || '📦'}
-      </span>
+      {template?.icon && (
+        <template.icon className="w-4 h-4 opacity-90" style={{ color: borderColor }} />
+      )}
       
       {/* Room Name */}
       <span 
-        className="text-[10px] font-medium text-center px-1 truncate max-w-full"
+        className="text-[11px] font-semibold text-center px-1 truncate max-w-full leading-none"
         style={{ color: borderColor }}
       >
         {room.name}
@@ -78,7 +80,7 @@ export function DraggableRoom({
 
       {/* Area indicator - positioned at bottom right */}
       <span 
-        className="absolute bottom-1 right-1 text-[9px] opacity-70"
+        className="absolute bottom-1 right-1 text-[10px] opacity-80 tabular-nums"
         style={{ color: borderColor }}
       >
         {area.toFixed(3)}m²
