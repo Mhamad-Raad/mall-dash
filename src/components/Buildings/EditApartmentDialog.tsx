@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { Apartment, Occupant } from '@/interfaces/Building.interface';
+import type { Apartment, Occupant, ApartmentLayout } from '@/interfaces/Building.interface';
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
+import { LayoutDesigner } from './LayoutDesigner';
 
 export interface UserResult {
   id: number | string;
@@ -26,7 +27,7 @@ export interface EditApartmentDialogProps {
   apartment: Apartment | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (occupant: any, name: string) => void;
+  onSave: (occupant: any, name: string, layout?: ApartmentLayout) => void;
   onDelete?: (apartmentId: number) => void;
   apartmentName: string;
   setApartmentName: (name: string) => void;
@@ -46,6 +47,7 @@ const EditApartmentDialog = ({
   const [pendingOccupant, setPendingOccupant] = useState<
     UserResult | null | 'remove'
   >(null);
+  const [layout, setLayout] = useState<ApartmentLayout | undefined>(undefined);
 
   useEffect(() => {
     // Only reset layout when apartment changes or dialog opens
@@ -53,6 +55,7 @@ const EditApartmentDialog = ({
     if (isOpen && apartment) {
       setApartmentName(apartment.apartmentName ?? '');
       setPendingOccupant(apartment.occupant ? null : 'remove');
+      setLayout(apartment.layout);
     }
   }, [
     apartment?.id,
@@ -113,6 +116,7 @@ const EditApartmentDialog = ({
     } else if (apartment?.occupant) {
       userId = apartment.occupant.id;
     }
+    onSave(userId, apartmentName, layout);
   };
 
   return (
@@ -208,6 +212,16 @@ const EditApartmentDialog = ({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Right side - Floor Plan Designer */}
+          <div className='flex-1 p-4 overflow-hidden'>
+            <LayoutDesigner
+              initialLayout={layout}
+              onSave={setLayout}
+              apartmentName={apartmentName || apartment?.apartmentName || 'Apartment'}
+              embedded
+            />
           </div>
         </div>
 
