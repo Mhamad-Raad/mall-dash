@@ -10,7 +10,6 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { DroppableCanvas } from './DroppableCanvas';
 import { DraggableRoom } from './DraggableRoom';
@@ -238,7 +237,6 @@ export function LayoutDesigner({
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      modifiers={[restrictToWindowEdges]}
     >
       <div className="flex flex-col h-full">
         {/* Toolbar with room buttons */}
@@ -292,7 +290,7 @@ export function LayoutDesigner({
       </div>
 
       {/* Drag Overlay - follows the cursor smoothly */}
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeRoom ? (
           <DragOverlayContent room={activeRoom} gridSize={1} />
         ) : null}

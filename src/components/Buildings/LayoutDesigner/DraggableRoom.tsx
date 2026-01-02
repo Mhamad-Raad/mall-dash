@@ -41,7 +41,7 @@ export function DraggableRoom({
     height: room.height * cellSize,
     borderColor: borderColor,
     zIndex: isSelected ? 10 : 1,
-    opacity: isDragging ? 0.3 : 1,
+    opacity: isDragging ? 0 : 1,
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -57,7 +57,7 @@ export function DraggableRoom({
       {...listeners}
       {...attributes}
       className={cn(
-        'rounded-sm border-2 bg-transparent transition-all cursor-grab active:cursor-grabbing',
+        'rounded-sm border-2 bg-transparent cursor-grab active:cursor-grabbing',
         'flex flex-col items-center justify-center gap-0.5',
         'select-none touch-none',
         isDragging && 'shadow-xl opacity-80',
