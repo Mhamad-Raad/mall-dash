@@ -320,8 +320,8 @@ function ResizableRoomInner({
       maxWidth={MAX_ROOM_SIZE * cellSize}
       maxHeight={MAX_ROOM_SIZE * cellSize}
       bounds="parent"
-      resizeGrid={[cellSize / 4, cellSize / 4]}
-      dragGrid={[cellSize / 4, cellSize / 4]}
+      resizeGrid={[1, 1]}
+      dragGrid={[1, 1]}
       enableResizing={{
         top: true,
         right: true,
