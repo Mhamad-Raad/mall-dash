@@ -1,4 +1,4 @@
-import { useState, useCallback, useId, useEffect, useRef } from 'react';
+import { useState, useCallback, useId, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +11,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { DroppableCanvas } from './DroppableCanvas';
-import { ResizableRoom } from './ResizableRoom';
+import { DraggableRoom } from './DraggableRoom';
 import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
 import { DragOverlayContent } from './DragOverlayContent';
@@ -56,9 +56,6 @@ export function LayoutDesigner({
   const [activeRoom, setActiveRoom] = useState<DroppedRoom | null>(null);
   const [canvasWidth, setCanvasWidth] = useState(initialLayout?.width || MIN_CANVAS_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(initialLayout?.height || MIN_CANVAS_HEIGHT);
-  
-  // Ref to debounce canvas size recalculation during resize
-  const recalculateTimeoutRef = useRef<number | null>(null);
 
   // Calculate required canvas size based on room positions
   const recalculateCanvasSize = useCallback((currentRooms: DroppedRoom[]) => {
@@ -84,16 +81,6 @@ export function LayoutDesigner({
     setCanvasHeight(neededHeight);
   }, []);
 
-  // Debounced version for resize operations
-  const recalculateCanvasSizeDebounced = useCallback((currentRooms: DroppedRoom[]) => {
-    if (recalculateTimeoutRef.current) {
-      clearTimeout(recalculateTimeoutRef.current);
-    }
-    recalculateTimeoutRef.current = setTimeout(() => {
-      recalculateCanvasSize(currentRooms);
-    }, 100); // Debounce by 100ms
-  }, [recalculateCanvasSize]);
-
   // Configure sensors for smooth dragging
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -103,15 +90,6 @@ export function LayoutDesigner({
     }),
     useSensor(KeyboardSensor)
   );
-
-  // Cleanup debounce timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (recalculateTimeoutRef.current) {
-        clearTimeout(recalculateTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Auto-save layout whenever rooms or doors change (for embedded mode)
   useEffect(() => {
@@ -353,33 +331,6 @@ export function LayoutDesigner({
     setSelectedRoomId(newRoom.id);
   }, [rooms, recalculateCanvasSize]);
 
-  // Handle room resize from edge dragging - receives absolute new values
-  const handleResizeRoom = useCallback((id: string, width: number, height: number, newX: number, newY: number) => {
-    setRooms((prev) => {
-      const roomToResize = prev.find((r) => r.id === id);
-      if (!roomToResize) return prev;
-
-      // Check if new dimensions would collide
-      const resizedRoom = { ...roomToResize, width, height, x: newX, y: newY };
-      const otherRooms = prev.filter((r) => r.id !== id);
-
-      if (wouldCollide(resizedRoom, newX, newY, otherRooms)) {
-        return prev; // Don't resize if it would cause collision
-      }
-
-      const updated = prev.map((room) => {
-        if (room.id === id) {
-          return { ...room, width, height, x: newX, y: newY };
-        }
-        return room;
-      });
-
-      // Use debounced version to avoid excessive recalculations
-      recalculateCanvasSizeDebounced(updated);
-      return updated;
-    });
-  }, [recalculateCanvasSizeDebounced]);
-
   // Handle room updates from the properties panel
   const handleUpdateRoom = useCallback((id: string, updates: Partial<DroppedRoom>) => {
     setRooms((prev) => {
@@ -455,14 +406,12 @@ export function LayoutDesigner({
                 onCanvasClick={handleCanvasClick}
               >
                 {rooms.map((room) => (
-                  <ResizableRoom
+                  <DraggableRoom
                     key={room.id}
                     room={room}
                     isSelected={room.id === selectedRoomId}
                     onSelect={setSelectedRoomId}
-                    onResize={handleResizeRoom}
                     gridSize={1}
-                    zoom={zoom}
                   />
                 ))}
               </DroppableCanvas>
