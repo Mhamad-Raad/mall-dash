@@ -1,24 +1,12 @@
-import { useState, useCallback, useId, useEffect } from 'react';
-import {
-  DndContext,
-  DragOverlay,
-  useSensor,
-  useSensors,
-  PointerSensor,
-  KeyboardSensor,
-  closestCenter,
-  type DragStartEvent,
-  type DragEndEvent,
-} from '@dnd-kit/core';
-import { DroppableCanvas } from './DroppableCanvas';
-import { DraggableRoom } from './DraggableRoom';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { ResizableRoom } from './ResizableRoom';
 import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
-import { DragOverlayContent } from './DragOverlayContent';
 import type { DroppedRoom, RoomTemplate } from './types';
-import { GRID_CELL_SIZE, GRID_PRECISION, ROOM_TEMPLATES } from './types';
-import { wouldCollide, findBestValidPosition } from './collisionDetection';
+import { GRID_CELL_SIZE, ROOM_TEMPLATES } from './types';
+import { wouldCollide, wouldCollideWithSize } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
+import { cn } from '@/lib/utils';
 
 interface LayoutDesignerProps {
   initialLayout?: ApartmentLayout;
@@ -40,22 +28,25 @@ export function LayoutDesigner({
   onSave,
   embedded = false,
 }: LayoutDesignerProps) {
-  const dndContextId = useId();
-
   // Convert initial layout to DroppedRoom format
-  const initialRooms: DroppedRoom[] = initialLayout?.rooms.map((room) => ({
-    ...room,
-    borderColor: ROOM_TEMPLATES.find((t) => t.type === room.type)?.borderColor || '#666',
-  })) || [];
+  const initialRooms: DroppedRoom[] = useMemo(() => 
+    initialLayout?.rooms.map((room) => ({
+      ...room,
+      borderColor: ROOM_TEMPLATES.find((t) => t.type === room.type)?.borderColor || '#666',
+    })) || [],
+    [initialLayout]
+  );
 
   const [rooms, setRooms] = useState<DroppedRoom[]>(initialRooms);
   const [doors, setDoors] = useState<Door[]>(initialLayout?.doors || []);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
-  const [activeRoom, setActiveRoom] = useState<DroppedRoom | null>(null);
   const [canvasWidth, setCanvasWidth] = useState(initialLayout?.width || MIN_CANVAS_WIDTH);
   const [canvasHeight, setCanvasHeight] = useState(initialLayout?.height || MIN_CANVAS_HEIGHT);
+
+  // Ref to track if we need to save
+  const pendingSaveRef = useRef(false);
 
   // Calculate required canvas size based on room positions
   const recalculateCanvasSize = useCallback((currentRooms: DroppedRoom[]) => {
@@ -65,7 +56,6 @@ export function LayoutDesigner({
       return;
     }
 
-    // Find the furthest room edges
     let maxRight = 0;
     let maxBottom = 0;
     currentRooms.forEach((room) => {
@@ -73,7 +63,6 @@ export function LayoutDesigner({
       maxBottom = Math.max(maxBottom, room.y + room.height);
     });
 
-    // Add padding and clamp to min/max
     const neededWidth = Math.max(MIN_CANVAS_WIDTH, Math.min(maxRight + EXPAND_THRESHOLD + 2, MAX_CANVAS_WIDTH));
     const neededHeight = Math.max(MIN_CANVAS_HEIGHT, Math.min(maxBottom + EXPAND_THRESHOLD + 2, MAX_CANVAS_HEIGHT));
 
@@ -81,19 +70,35 @@ export function LayoutDesigner({
     setCanvasHeight(neededHeight);
   }, []);
 
-  // Configure sensors for smooth dragging
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor)
-  );
+  // Debounce helper for save operations
+  const debouncedSave = useMemo(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    
+    const debounced = (layout: ApartmentLayout) => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (onSave) {
+          onSave(layout);
+        }
+        pendingSaveRef.current = false;
+        timeoutId = null;
+      }, 300);
+    };
+    
+    debounced.cancel = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+    
+    return debounced;
+  }, [onSave]);
 
   // Auto-save layout whenever rooms or doors change (for embedded mode)
   useEffect(() => {
     if (embedded && onSave) {
+      pendingSaveRef.current = true;
       const layout: ApartmentLayout = {
         rooms: rooms.map((room): RoomLayout => ({
           id: room.id,
@@ -109,14 +114,19 @@ export function LayoutDesigner({
         width: canvasWidth,
         height: canvasHeight,
       };
-      onSave(layout);
+      debouncedSave(layout);
     }
-  }, [rooms, doors, zoom, canvasWidth, canvasHeight, embedded, onSave]);
+    
+    return () => debouncedSave.cancel();
+  }, [rooms, doors, zoom, canvasWidth, canvasHeight, embedded, onSave, debouncedSave]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedRoomId) return;
+      
+      // Don't handle if user is typing in an input
+      if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
@@ -127,6 +137,8 @@ export function LayoutDesigner({
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
         e.preventDefault();
         handleDuplicateRoom(selectedRoomId);
+      } else if (e.key === 'Escape') {
+        setSelectedRoomId(null);
       }
     };
 
@@ -134,88 +146,42 @@ export function LayoutDesigner({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedRoomId]);
 
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const room = rooms.find((r) => r.id === event.active.id);
-      setActiveRoom(room || null);
-    },
-    [rooms]
-  );
+  // Collision detection callback for ResizableRoom
+  const checkCollision = useCallback((
+    room: DroppedRoom,
+    newX: number,
+    newY: number,
+    newWidth?: number,
+    newHeight?: number
+  ): boolean => {
+    if (newWidth !== undefined && newHeight !== undefined) {
+      return wouldCollideWithSize(room, newX, newY, newWidth, newHeight, rooms);
+    }
+    return wouldCollide(room, newX, newY, rooms);
+  }, [rooms]);
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, delta } = event;
-      setActiveRoom(null);
+  // Handle room move from ResizableRoom
+  const handleRoomMove = useCallback((id: string, x: number, y: number) => {
+    setRooms((prev) => {
+      const updated = prev.map((room) => 
+        room.id === id ? { ...room, x, y } : room
+      );
+      // Defer canvas recalculation to avoid excessive updates
+      requestAnimationFrame(() => recalculateCanvasSize(updated));
+      return updated;
+    });
+  }, [recalculateCanvasSize]);
 
-      const data = active.data.current;
-      if (!data?.room) return;
-
-      // Move existing room - divide delta by zoom to compensate for canvas scaling
-      // Round to GRID_PRECISION increments (e.g., 0.001 = 1mm precision)
-      const cellSize = GRID_CELL_SIZE;
-      const rawDeltaX = delta.x / zoom / cellSize;
-      const rawDeltaY = delta.y / zoom / cellSize;
-      const deltaX = Math.round(rawDeltaX / GRID_PRECISION) * GRID_PRECISION;
-      const deltaY = Math.round(rawDeltaY / GRID_PRECISION) * GRID_PRECISION;
-
-      if (Math.abs(deltaX) < GRID_PRECISION && Math.abs(deltaY) < GRID_PRECISION) return;
-
-      setRooms((prev) => {
-        // First, calculate where the dragged room would end up
-        const draggedRoom = prev.find((r) => r.id === active.id);
-        if (!draggedRoom) return prev;
-
-        let targetX = draggedRoom.x + deltaX;
-        let targetY = draggedRoom.y + deltaY;
-
-        // Check if we need to shift all rooms (expanding left or top)
-        let shiftX = 0;
-        let shiftY = 0;
-
-        if (targetX < 0) {
-          shiftX = -targetX; // Shift everything right to make room
-          targetX = 0;
-        }
-        if (targetY < 0) {
-          shiftY = -targetY; // Shift everything down to make room
-          targetY = 0;
-        }
-
-        // Apply shift to all other rooms first to check collision in new positions
-        const shiftedRooms = prev.map((room) => {
-          if (room.id === active.id) return room; // Don't shift the dragged room yet
-          return { ...room, x: room.x + shiftX, y: room.y + shiftY };
-        });
-
-        // Find the best valid position (snaps to edges of nearby rooms)
-        const validPosition = findBestValidPosition(
-          draggedRoom,
-          targetX + shiftX,
-          targetY + shiftY,
-          shiftedRooms,
-          15 // Search within 15 units for best snap position
-        );
-
-        if (validPosition.hasCollision) {
-          return prev; // Don't move if no valid position found
-        }
-
-        // Update all rooms with the shift, and apply the move to the dragged room
-        const updated = prev.map((room) => {
-          if (room.id === active.id) {
-            return { ...room, x: validPosition.x, y: validPosition.y };
-          }
-          return { ...room, x: room.x + shiftX, y: room.y + shiftY };
-        });
-
-        // Recalculate canvas size (will expand or shrink as needed)
-        recalculateCanvasSize(updated);
-
-        return updated;
-      });
-    },
-    [zoom, recalculateCanvasSize]
-  );
+  // Handle room resize from ResizableRoom
+  const handleRoomResize = useCallback((id: string, width: number, height: number, x: number, y: number) => {
+    setRooms((prev) => {
+      const updated = prev.map((room) =>
+        room.id === id ? { ...room, width, height, x, y } : room
+      );
+      requestAnimationFrame(() => recalculateCanvasSize(updated));
+      return updated;
+    });
+  }, [recalculateCanvasSize]);
 
   // Add room from toolbar click
   const handleAddRoom = useCallback((template: RoomTemplate) => {
@@ -309,20 +275,31 @@ export function LayoutDesigner({
     const room = rooms.find((r) => r.id === id);
     if (!room) return;
 
-    // Find a valid position for the duplicate (snaps to best nearby position)
-    const validPosition = findBestValidPosition(
-      room,
-      room.x + 1,
-      room.y + 1,
-      rooms,
-      15 // Search within 15 units
-    );
+    // Find a valid position for the duplicate with simple spiral search
+    let newX = room.x + 1;
+    let newY = room.y + 1;
+    let found = false;
+    
+    const maxSearchRadius = 10;
+    for (let radius = 1; radius <= maxSearchRadius && !found; radius++) {
+      for (let dx = -radius; dx <= radius && !found; dx++) {
+        for (let dy = -radius; dy <= radius && !found; dy++) {
+          const testX = Math.max(0, room.x + dx);
+          const testY = Math.max(0, room.y + dy);
+          if (!wouldCollide({ ...room, x: testX, y: testY }, testX, testY, rooms)) {
+            newX = testX;
+            newY = testY;
+            found = true;
+          }
+        }
+      }
+    }
 
     const newRoom: DroppedRoom = {
       ...room,
       id: `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      x: validPosition.x,
-      y: validPosition.y,
+      x: newX,
+      y: newY,
     };
 
     const updatedRooms = [...rooms, newRoom];
@@ -371,72 +348,84 @@ export function LayoutDesigner({
     setCanvasHeight(MIN_CANVAS_HEIGHT);
   }, []);
 
-  return (
-    <DndContext
-      id={dndContextId}
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex flex-col h-full">
-        {/* Toolbar with room buttons */}
-        <DesignerToolbar
-          zoom={zoom}
-          onZoomChange={setZoom}
-          onReset={handleReset}
-          onAddRoom={handleAddRoom}
-          showGrid={showGrid}
-          onToggleGrid={() => setShowGrid(!showGrid)}
-        />
+  // Canvas dimensions in pixels
+  const cellSize = GRID_CELL_SIZE;
+  const canvasPixelWidth = canvasWidth * cellSize;
+  const canvasPixelHeight = canvasHeight * cellSize;
 
-        {/* Main Content */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
-          {/* Canvas Area */}
-          <div className="flex-1 flex overflow-auto">
+  return (
+    <div className="flex flex-col h-full">
+      {/* Toolbar with room buttons */}
+      <DesignerToolbar
+        zoom={zoom}
+        onZoomChange={setZoom}
+        onReset={handleReset}
+        onAddRoom={handleAddRoom}
+        showGrid={showGrid}
+        onToggleGrid={() => setShowGrid(!showGrid)}
+      />
+
+      {/* Main Content */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Canvas Area with scroll */}
+        <div className="flex-1 overflow-auto p-4">
+          <div
+            className="relative origin-top-left"
+            style={{
+              transform: `scale(${zoom})`,
+              width: canvasPixelWidth,
+              height: canvasPixelHeight,
+            }}
+          >
+            {/* Grid background */}
             <div
-              className="flex-1"
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-            >
-              <DroppableCanvas
-                gridSize={1}
-                canvasWidth={canvasWidth}
-                canvasHeight={canvasHeight}
-                showGrid={showGrid}
-                onCanvasClick={handleCanvasClick}
-              >
-                {rooms.map((room) => (
-                  <DraggableRoom
-                    key={room.id}
-                    room={room}
-                    isSelected={room.id === selectedRoomId}
-                    onSelect={setSelectedRoomId}
-                    gridSize={1}
-                  />
-                ))}
-              </DroppableCanvas>
+              onClick={handleCanvasClick}
+              className={cn(
+                'absolute inset-0 rounded-lg transition-colors',
+                'bg-muted/30'
+              )}
+              style={{
+                backgroundImage: showGrid
+                  ? `
+                    linear-gradient(to right, hsl(var(--border) / 0.3) 1px, transparent 1px),
+                    linear-gradient(to bottom, hsl(var(--border) / 0.3) 1px, transparent 1px)
+                  `
+                  : 'none',
+                backgroundSize: `${cellSize}px ${cellSize}px`,
+              }}
+            />
+
+            {/* Rooms container */}
+            <div className="absolute inset-0">
+              {rooms.map((room) => (
+                <ResizableRoom
+                  key={room.id}
+                  room={room}
+                  isSelected={room.id === selectedRoomId}
+                  onSelect={setSelectedRoomId}
+                  onMove={handleRoomMove}
+                  onResize={handleRoomResize}
+                  zoom={zoom}
+                  canvasWidth={canvasWidth}
+                  canvasHeight={canvasHeight}
+                  checkCollision={checkCollision}
+                />
+              ))}
             </div>
           </div>
-
-          {/* Right Properties Panel */}
-          <RoomSummaryPanel
-            rooms={rooms}
-            doors={doors.length}
-            selectedRoom={rooms.find((r) => r.id === selectedRoomId) || null}
-            onUpdateRoom={handleUpdateRoom}
-            onRotateRoom={handleRotateRoom}
-            onDuplicateRoom={handleDuplicateRoom}
-            onDeleteRoom={handleDeleteRoom}
-          />
         </div>
-      </div>
 
-      {/* Drag Overlay - follows the cursor smoothly */}
-      <DragOverlay dropAnimation={null}>
-        {activeRoom ? (
-          <DragOverlayContent room={activeRoom} gridSize={1} />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        {/* Right Properties Panel */}
+        <RoomSummaryPanel
+          rooms={rooms}
+          doors={doors.length}
+          selectedRoom={rooms.find((r) => r.id === selectedRoomId) || null}
+          onUpdateRoom={handleUpdateRoom}
+          onRotateRoom={handleRotateRoom}
+          onDuplicateRoom={handleDuplicateRoom}
+          onDeleteRoom={handleDeleteRoom}
+        />
+      </div>
+    </div>
   );
 }

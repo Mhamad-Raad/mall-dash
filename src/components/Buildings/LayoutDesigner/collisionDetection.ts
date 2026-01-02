@@ -65,6 +65,35 @@ export function wouldCollide(
 }
 
 /**
+ * Check if moving/resizing a room to a new position and size would cause a collision
+ */
+export function wouldCollideWithSize(
+  movingRoom: DroppedRoom,
+  newX: number,
+  newY: number,
+  newWidth: number,
+  newHeight: number,
+  allRooms: DroppedRoom[]
+): boolean {
+  const movedRoom = {
+    x: newX,
+    y: newY,
+    width: newWidth,
+    height: newHeight,
+  };
+
+  for (const room of allRooms) {
+    if (room.id === movingRoom.id) continue;
+
+    if (doRoomsOverlap(movedRoom, room)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Get all rooms that collide with a given room position
  */
 export function getCollidingRooms(
