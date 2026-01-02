@@ -4,7 +4,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { PasswordStrengthIndicator } from '@/components/ui/PasswordStrengthIndicator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Mail, Lock, Image as ImageIcon, X } from 'lucide-react';
+import roles from '@/constants/roles';
 
 type FieldErrors = {
   firstName?: string;
@@ -23,6 +31,7 @@ type CustomerFormProps = {
     password: string;
     confirmPassword: string;
     phoneNumber: string;
+    role: number;
     buildingId: string;
     floorId: string;
     apartmentId: string;
@@ -44,6 +53,17 @@ export default function CustomerForm({
 }: CustomerFormProps) {
   const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
+
+  const translateRole = (role: string): string => {
+    const roleMap: { [key: string]: string } = {
+      SuperAdmin: t('roles.superAdmin'),
+      Admin: t('roles.admin'),
+      Vendor: t('roles.vendor'),
+      Tenant: t('roles.tenant'),
+      Driver: t('roles.driver'), // Assuming driver is added to translation or fallback
+    };
+    return roleMap[role] || role;
+  };
 
   useEffect(() => {
     if (formData.photo instanceof File) {
@@ -129,6 +149,26 @@ export default function CustomerForm({
               aria-invalid={!!errors.lastName}
             />
             <FieldError message={errors.lastName} />
+          </div>
+          <div className='space-y-2'>
+            <Label htmlFor='customer-role' className='text-sm font-medium'>
+              {t('forms.userRole')} <span className='text-destructive'>*</span>
+            </Label>
+            <Select
+              value={formData.role.toString()}
+              onValueChange={(value) => onInputChange('role', parseInt(value))}
+            >
+              <SelectTrigger id='customer-role' className='h-11'>
+                <SelectValue placeholder={t('forms.selectRole')} />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.slice(3, 5).map((role, index) => (
+                  <SelectItem key={index + 3} value={(index + 3).toString()}>
+                    {translateRole(role)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {formData.photo && (
             <p className='text-xs text-muted-foreground'>
@@ -225,9 +265,9 @@ export default function CustomerForm({
             <FieldError message={errors.confirmPassword} />
           </div>
         </div>
-        
+
         {/* Password Strength Indicator */}
-        <PasswordStrengthIndicator 
+        <PasswordStrengthIndicator
           password={formData.password}
           className='mt-4'
         />

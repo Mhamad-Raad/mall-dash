@@ -154,7 +154,7 @@ export default function StaffForm({ formData, onInputChange, errors = {} }: Staf
                 <SelectValue placeholder={t('forms.selectRole')} />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role, index) => (
+                {roles.slice(0, 2).map((role, index) => (
                   <SelectItem key={index} value={index.toString()}>
                     {translateRole(role)}
                   </SelectItem>
