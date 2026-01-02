@@ -16,7 +16,7 @@ import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
 import { DragOverlayContent } from './DragOverlayContent';
 import type { DroppedRoom, RoomTemplate } from './types';
-import { GRID_CELL_SIZE, ROOM_TEMPLATES } from './types';
+import { GRID_CELL_SIZE, GRID_PRECISION, ROOM_TEMPLATES } from './types';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
 import { toast } from 'sonner';
 
@@ -151,11 +151,14 @@ export function LayoutDesigner({
       if (!data?.room) return;
 
       // Move existing room - divide delta by zoom to compensate for canvas scaling
+      // Round to GRID_PRECISION increments (e.g., 0.1 = 10cm precision)
       const cellSize = GRID_CELL_SIZE;
-      const deltaX = Math.round(delta.x / zoom / cellSize);
-      const deltaY = Math.round(delta.y / zoom / cellSize);
+      const rawDeltaX = delta.x / zoom / cellSize;
+      const rawDeltaY = delta.y / zoom / cellSize;
+      const deltaX = Math.round(rawDeltaX / GRID_PRECISION) * GRID_PRECISION;
+      const deltaY = Math.round(rawDeltaY / GRID_PRECISION) * GRID_PRECISION;
 
-      if (deltaX === 0 && deltaY === 0) return;
+      if (Math.abs(deltaX) < GRID_PRECISION && Math.abs(deltaY) < GRID_PRECISION) return;
 
       setRooms((prev) => {
         // First, calculate where the dragged room would end up

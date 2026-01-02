@@ -34,7 +34,7 @@ export function DragOverlayContent({ room, gridSize }: DragOverlayContentProps) 
         className="absolute bottom-1 right-1 text-[9px] opacity-70"
         style={{ color: borderColor }}
       >
-        {area.toFixed(1)}m²
+        {area.toFixed(3)}m²
       </span>
     </div>
   );

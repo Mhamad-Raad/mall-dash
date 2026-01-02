@@ -60,5 +60,6 @@ export const DOOR_EDGES: { value: DoorEdge; label: string }[] = [
 ];
 
 export const GRID_CELL_SIZE = 40; // pixels per grid cell
+export const GRID_PRECISION = 0.001; // snap to 0.001 increments (1mm precision)
 export const MIN_ROOM_SIZE = 1; // minimum 1 grid cell
 export const MAX_ROOM_SIZE = 10; // maximum 10 grid cells
