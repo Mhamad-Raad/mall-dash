@@ -116,16 +116,19 @@ export function LayoutDesigner({
 
   // === Pan & Zoom handlers (Draw.io style) ===
   
-  // Handle mouse wheel zoom
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      const delta = -Math.sign(e.deltaY) * ZOOM_STEP;
-      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + delta));
-      
-      // Zoom towards cursor position
-      if (viewportRef.current) {
-        const rect = viewportRef.current.getBoundingClientRect();
+  // Handle mouse wheel zoom - must use native listener with passive: false to preventDefault
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = -Math.sign(e.deltaY) * ZOOM_STEP;
+        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + delta));
+        
+        // Zoom towards cursor position
+        const rect = viewport.getBoundingClientRect();
         const cursorX = e.clientX - rect.left;
         const cursorY = e.clientY - rect.top;
         
@@ -138,16 +141,18 @@ export function LayoutDesigner({
         const newPanY = cursorY - canvasY * newZoom;
         
         setPanOffset({ x: newPanX, y: newPanY });
+        setZoom(newZoom);
+      } else if (!e.shiftKey) {
+        // Regular scroll = pan
+        setPanOffset((prev) => ({
+          x: prev.x - e.deltaX,
+          y: prev.y - e.deltaY,
+        }));
       }
-      
-      setZoom(newZoom);
-    } else if (!e.shiftKey) {
-      // Regular scroll = pan
-      setPanOffset((prev) => ({
-        x: prev.x - e.deltaX,
-        y: prev.y - e.deltaY,
-      }));
-    }
+    };
+
+    viewport.addEventListener('wheel', handleWheel, { passive: false });
+    return () => viewport.removeEventListener('wheel', handleWheel);
   }, [zoom, panOffset]);
 
   // Handle space key for pan mode
@@ -460,7 +465,6 @@ export function LayoutDesigner({
             isPanning && 'cursor-grabbing',
             isSpacePressed && !isPanning && 'cursor-grab'
           )}
-          onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
