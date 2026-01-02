@@ -1,8 +1,7 @@
-import { useCallback, useRef, useState, memo } from 'react';
+import { useCallback, useState, memo } from 'react';
 import { Rnd, type RndDragCallback, type RndResizeCallback } from 'react-rnd';
 import type { DroppedRoom } from './types';
 import { GRID_CELL_SIZE, ROOM_TEMPLATES, MIN_ROOM_SIZE, MAX_ROOM_SIZE, CANVAS_MIN_X, CANVAS_MAX_X, CANVAS_MIN_Y, CANVAS_MAX_Y } from './types';
-import { findBestValidPosition } from './collisionDetection';
 import { cn } from '@/lib/utils';
 
 interface ResizableRoomProps {
@@ -13,8 +12,6 @@ interface ResizableRoomProps {
   onResize: (id: string, width: number, height: number, x: number, y: number) => void;
   /** Current zoom level for proper drag/resize calculations */
   scale: number;
-  /** Pass ALL rooms so collision can be checked against current positions */
-  allRooms: DroppedRoom[];
 }
 
 // Memoized inner content to prevent re-renders during drag/resize
@@ -26,7 +23,6 @@ const RoomContent = memo(function RoomContent({
   isDragging,
   isResizing,
   liveSize,
-  isColliding,
   onClick,
 }: {
   room: DroppedRoom;
@@ -36,7 +32,6 @@ const RoomContent = memo(function RoomContent({
   isDragging: boolean;
   isResizing: boolean;
   liveSize: { width: number; height: number } | null;
-  isColliding: boolean;
   onClick: (e: React.MouseEvent) => void;
 }) {
   const displayWidth = liveSize?.width ?? room.width;
@@ -54,10 +49,9 @@ const RoomContent = memo(function RoomContent({
         'hover:bg-background/[0.10] hover:shadow-md',
         isDragging && 'shadow-2xl opacity-90',
         isResizing && 'shadow-2xl',
-        isSelected && 'ring-2 ring-primary/40 shadow-lg',
-        isColliding && 'ring-2 ring-destructive/60 bg-destructive/10'
+        isSelected && 'ring-2 ring-primary/40 shadow-lg'
       )}
-      style={{ borderColor: isColliding ? 'hsl(var(--destructive))' : borderColor }}
+      style={{ borderColor }}
     >
       {/* Room Icon */}
       {Icon && (
@@ -115,7 +109,6 @@ function ResizableRoomInner({
   onMove,
   onResize,
   scale,
-  allRooms,
 }: ResizableRoomProps) {
   const cellSize = GRID_CELL_SIZE;
   const template = ROOM_TEMPLATES.find((t) => t.type === room.type);
@@ -125,200 +118,80 @@ function ResizableRoomInner({
   // UI state for visual feedback only
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [isColliding, setIsColliding] = useState(false);
   // Live size display during resize (local state, doesn't trigger parent re-render)
   const [liveSize, setLiveSize] = useState<{ width: number; height: number } | null>(null);
-  // Ghost position for snap preview during drag
-  const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number } | null>(null);
-
-  // Track last valid position for rollback (refs don't cause re-renders)
-  const lastValidPosRef = useRef({ x: room.x, y: room.y, width: room.width, height: room.height });
-  // Keep allRooms in a ref so we always have current data
-  const allRoomsRef = useRef(allRooms);
-  allRoomsRef.current = allRooms;
-
-  // Local collision check that uses the ref for fresh data
-  const checkCollision = useCallback((
-    targetX: number,
-    targetY: number,
-    targetWidth: number = room.width,
-    targetHeight: number = room.height
-  ): boolean => {
-    const currentRooms = allRoomsRef.current;
-    const epsilon = 0.001;
-    
-    for (const other of currentRooms) {
-      if (other.id === room.id) continue;
-      
-      // Check rectangle overlap
-      const overlaps = !(
-        targetX + targetWidth <= other.x + epsilon ||
-        targetX >= other.x + other.width - epsilon ||
-        targetY + targetHeight <= other.y + epsilon ||
-        targetY >= other.y + other.height - epsilon
-      );
-      
-      if (overlaps) return true;
-    }
-    return false;
-  }, [room.id, room.width, room.height]);
 
   // Handle drag start - just set UI state
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
-    setIsColliding(false);
-    setGhostPosition(null);
-    lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
-  }, [room.x, room.y, room.width, room.height]);
+  }, []);
 
-  // Handle drag - track valid positions and show collision feedback with canvas bounds
-  const handleDrag: RndDragCallback = useCallback((_e, d) => {
-    const rawGridX = Math.round((d.x / cellSize) * 1000) / 1000;
-    const rawGridY = Math.round((d.y / cellSize) * 1000) / 1000;
-    
-    // Clamp to canvas bounds (accounting for room size)
-    const gridX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, rawGridX));
-    const gridY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, rawGridY));
+  // Handle drag - no-op, just for drag state
+  const handleDrag: RndDragCallback = useCallback(() => {
+    // Drag is handled by Rnd, we just track state
+  }, []);
 
-    const hasCollision = checkCollision(gridX, gridY);
-    setIsColliding(hasCollision);
-    
-    // Calculate ghost snap position (where the room will land)
-    const currentRooms = allRoomsRef.current;
-    const movingRoom: DroppedRoom = { ...room, x: gridX, y: gridY };
-    const result = findBestValidPosition(movingRoom, gridX, gridY, currentRooms, 8);
-    
-    if (!result.hasCollision) {
-      const snapX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, result.x));
-      const snapY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, result.y));
-      // Only show ghost if it's different from current drag position
-      if (Math.abs(snapX - gridX) > 0.01 || Math.abs(snapY - gridY) > 0.01) {
-        setGhostPosition({ x: snapX, y: snapY });
-      } else {
-        setGhostPosition(null);
-      }
-      lastValidPosRef.current = { ...lastValidPosRef.current, x: snapX, y: snapY };
-    } else {
-      setGhostPosition(null);
-      if (!hasCollision) {
-        lastValidPosRef.current = { ...lastValidPosRef.current, x: gridX, y: gridY };
-      }
-    }
-  }, [cellSize, checkCollision, room]);
-
-  // Handle drag stop - NOW update parent state with smart positioning
+  // Handle drag stop - update parent state with final position
   const handleDragStop: RndDragCallback = useCallback((_e, d) => {
     setIsDragging(false);
-    setIsColliding(false);
-    setGhostPosition(null);
 
-    const rawGridX = Math.round((d.x / cellSize) * 1000) / 1000;
-    const rawGridY = Math.round((d.y / cellSize) * 1000) / 1000;
+    // d.x and d.y are in pixels (affected by scale), convert to grid coordinates
+    const rawGridX = d.x / (cellSize * scale);
+    const rawGridY = d.y / (cellSize * scale);
     
     // Clamp to canvas bounds (accounting for room size)
     const gridX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, rawGridX));
     const gridY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, rawGridY));
 
-    // Use smart positioning to find the best valid spot
-    const currentRooms = allRoomsRef.current;
-    const movingRoom: DroppedRoom = { ...room, x: gridX, y: gridY };
-    const result = findBestValidPosition(movingRoom, gridX, gridY, currentRooms, 8);
-
-    // Clamp the result position to canvas bounds as well
-    const finalX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, result.x));
-    const finalY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, result.y));
-
-    if (!result.hasCollision) {
-      onMove(room.id, finalX, finalY);
-    } else {
-      // No valid position found - rollback to last valid
-      onMove(room.id, lastValidPosRef.current.x, lastValidPosRef.current.y);
-    }
-  }, [room, cellSize, onMove]);
+    onMove(room.id, gridX, gridY);
+  }, [room, cellSize, scale, onMove]);
 
   // Handle resize start
   const handleResizeStart = useCallback(() => {
     setIsResizing(true);
-    setIsColliding(false);
     setLiveSize({ width: room.width, height: room.height });
-    lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
-  }, [room.x, room.y, room.width, room.height]);
+  }, [room.width, room.height]);
 
-  // Handle resize - track valid positions and show collision feedback with canvas bounds
-  const handleResize: RndResizeCallback = useCallback((_e, _dir, ref, _delta, position) => {
+  // Handle resize - track live size for display
+  const handleResize: RndResizeCallback = useCallback((_e, _dir, ref) => {
     const newPixelWidth = ref.offsetWidth;
     const newPixelHeight = ref.offsetHeight;
 
-    const newWidth = Math.round((newPixelWidth / cellSize) * 1000) / 1000;
-    const newHeight = Math.round((newPixelHeight / cellSize) * 1000) / 1000;
-    const newX = Math.round((position.x / cellSize) * 1000) / 1000;
-    const newY = Math.round((position.y / cellSize) * 1000) / 1000;
+    // Convert pixels to grid coordinates (accounting for scale)
+    const newWidth = newPixelWidth / (cellSize * scale);
+    const newHeight = newPixelHeight / (cellSize * scale);
 
-    // Clamp size to room limits and canvas bounds
+    // Clamp size to room limits
     const clampedWidth = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newWidth));
     const clampedHeight = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newHeight));
-    // Clamp position to canvas bounds (accounting for room size)
-    const clampedX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - clampedWidth, newX));
-    const clampedY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - clampedHeight, newY));
 
     // Update local display state
     setLiveSize({ width: clampedWidth, height: clampedHeight });
+  }, [cellSize, scale]);
 
-    const hasCollision = checkCollision(clampedX, clampedY, clampedWidth, clampedHeight);
-    setIsColliding(hasCollision);
-    
-    if (!hasCollision) {
-      lastValidPosRef.current = { x: clampedX, y: clampedY, width: clampedWidth, height: clampedHeight };
-    }
-  }, [cellSize, checkCollision]);
-
-  // Handle resize stop - NOW update parent state with smart positioning with canvas bounds
+  // Handle resize stop - update parent state with final size and position
   const handleResizeStop: RndResizeCallback = useCallback((_e, _dir, ref, _delta, position) => {
     setIsResizing(false);
-    setIsColliding(false);
     setLiveSize(null);
 
     const newPixelWidth = ref.offsetWidth;
     const newPixelHeight = ref.offsetHeight;
-    const newWidth = Math.round((newPixelWidth / cellSize) * 1000) / 1000;
-    const newHeight = Math.round((newPixelHeight / cellSize) * 1000) / 1000;
-    const newX = Math.round((position.x / cellSize) * 1000) / 1000;
-    const newY = Math.round((position.y / cellSize) * 1000) / 1000;
+    
+    // Convert pixels to grid coordinates (accounting for scale)
+    const newWidth = newPixelWidth / (cellSize * scale);
+    const newHeight = newPixelHeight / (cellSize * scale);
+    const newX = position.x / (cellSize * scale);
+    const newY = position.y / (cellSize * scale);
 
-    // Clamp size to room limits and canvas bounds
+    // Clamp size to room limits
     const clampedWidth = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newWidth));
     const clampedHeight = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newHeight));
     // Clamp position to canvas bounds (accounting for room size)
     const clampedX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - clampedWidth, newX));
     const clampedY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - clampedHeight, newY));
 
-    // For resize, we use the new dimensions to find best position
-    const currentRooms = allRoomsRef.current;
-    const resizedRoom: DroppedRoom = {
-      ...room,
-      x: clampedX,
-      y: clampedY,
-      width: clampedWidth,
-      height: clampedHeight,
-    };
-    const result = findBestValidPosition(resizedRoom, clampedX, clampedY, currentRooms, 5);
-
-    if (!result.hasCollision) {
-      // Clamp final position to canvas bounds
-      const finalX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - clampedWidth, result.x));
-      const finalY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - clampedHeight, result.y));
-      onResize(room.id, clampedWidth, clampedHeight, finalX, finalY);
-    } else {
-      // No valid position found for this size - rollback
-      onResize(
-        room.id,
-        lastValidPosRef.current.width,
-        lastValidPosRef.current.height,
-        lastValidPosRef.current.x,
-        lastValidPosRef.current.y
-      );
-    }
-  }, [room, cellSize, onResize]);
+    onResize(room.id, clampedWidth, clampedHeight, clampedX, clampedY);
+  }, [room, cellSize, scale, onResize]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -327,30 +200,6 @@ function ResizableRoomInner({
 
   return (
     <>
-      {/* Ghost preview showing where the room will snap to */}
-      {isDragging && ghostPosition && (
-        <div
-          className="absolute pointer-events-none rounded-md border-2 border-dashed animate-pulse"
-          style={{
-            left: ghostPosition.x * cellSize,
-            top: ghostPosition.y * cellSize,
-            width: room.width * cellSize,
-            height: room.height * cellSize,
-            borderColor: borderColor,
-            backgroundColor: `${borderColor}15`,
-            zIndex: 40,
-          }}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span
-              className="text-[10px] font-medium opacity-70 bg-background/80 px-1.5 py-0.5 rounded"
-              style={{ color: borderColor }}
-            >
-              Drop here
-            </span>
-          </div>
-        </div>
-      )}
       <Rnd
         size={{
           width: room.width * cellSize,
@@ -401,7 +250,6 @@ function ResizableRoomInner({
           isDragging={isDragging}
           isResizing={isResizing}
           liveSize={liveSize}
-          isColliding={isColliding}
           onClick={handleClick}
         />
       </Rnd>
@@ -409,10 +257,9 @@ function ResizableRoomInner({
   );
 }
 
-// Memoize the entire component - but DON'T compare allRooms (we use ref for that)
+// Memoize the entire component
 export const ResizableRoom = memo(ResizableRoomInner, (prevProps, nextProps) => {
   // Only re-render if this room's data changed, or selection state changed
-  // allRooms is NOT compared because we use a ref to always have fresh data
   return (
     prevProps.room.id === nextProps.room.id &&
     prevProps.room.x === nextProps.room.x &&

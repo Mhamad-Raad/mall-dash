@@ -4,7 +4,6 @@ import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
 import type { DroppedRoom, RoomTemplate } from './types';
 import { GRID_CELL_SIZE, ROOM_TEMPLATES, CANVAS_MIN_X, CANVAS_MAX_X, CANVAS_MIN_Y, CANVAS_MAX_Y } from './types';
-import { wouldCollide } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
 import { cn } from '@/lib/utils';
 
@@ -281,44 +280,9 @@ export function LayoutDesigner({
     centerX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - template.defaultWidth, centerX));
     centerY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - template.defaultHeight, centerY));
 
-    // Create room at center position
-    const tempRoom: DroppedRoom = {
-      id: 'temp',
-      type: template.type,
-      name: template.name,
-      x: centerX,
-      y: centerY,
-      width: template.defaultWidth,
-      height: template.defaultHeight,
-      borderColor: template.borderColor,
-    };
-
-    // Find first available position with spiral search from center (within canvas bounds)
-    let x = centerX, y = centerY;
-    let found = !wouldCollide(tempRoom, x, y, rooms);
-
-    if (!found) {
-      const maxRadius = 20;
-      outer: for (let radius = 1; radius <= maxRadius; radius++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-          for (let dy = -radius; dy <= radius; dy++) {
-            const testX = centerX + dx;
-            const testY = centerY + dy;
-            // Check canvas bounds before testing collision
-            if (testX < CANVAS_MIN_X || testX + template.defaultWidth > CANVAS_MAX_X ||
-                testY < CANVAS_MIN_Y || testY + template.defaultHeight > CANVAS_MAX_Y) {
-              continue;
-            }
-            if (!wouldCollide({ ...tempRoom, x: testX, y: testY }, testX, testY, rooms)) {
-              x = testX;
-              y = testY;
-              found = true;
-              break outer;
-            }
-          }
-        }
-      }
-    }
+    // Place room at center (clamped to canvas bounds)
+    const x = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - template.defaultWidth, centerX));
+    const y = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - template.defaultHeight, centerY));
 
     const newRoom: DroppedRoom = {
       id: `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -350,15 +314,6 @@ export function LayoutDesigner({
       const newWidth = roomToRotate.height;
       const newHeight = roomToRotate.width;
 
-      // Create rotated room to check collision
-      const rotatedRoom = { ...roomToRotate, width: newWidth, height: newHeight };
-      const otherRooms = prev.filter((r) => r.id !== id);
-
-      // Check if rotation would cause collision
-      if (wouldCollide(rotatedRoom, rotatedRoom.x, rotatedRoom.y, otherRooms)) {
-        return prev;
-      }
-
       return prev.map((room) => {
         if (room.id === id) {
           return { ...room, width: newWidth, height: newHeight };
@@ -372,30 +327,9 @@ export function LayoutDesigner({
     const room = rooms.find((r) => r.id === id);
     if (!room) return;
 
-    // Find a valid position for the duplicate with simple spiral search (within canvas bounds)
-    let newX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, room.x + 1));
-    let newY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, room.y + 1));
-    let found = false;
-    
-    const maxSearchRadius = 10;
-    for (let radius = 1; radius <= maxSearchRadius && !found; radius++) {
-      for (let dx = -radius; dx <= radius && !found; dx++) {
-        for (let dy = -radius; dy <= radius && !found; dy++) {
-          const testX = room.x + dx;
-          const testY = room.y + dy;
-          // Check canvas bounds before testing collision
-          if (testX < CANVAS_MIN_X || testX + room.width > CANVAS_MAX_X ||
-              testY < CANVAS_MIN_Y || testY + room.height > CANVAS_MAX_Y) {
-            continue;
-          }
-          if (!wouldCollide({ ...room, x: testX, y: testY }, testX, testY, rooms)) {
-            newX = testX;
-            newY = testY;
-            found = true;
-          }
-        }
-      }
-    }
+    // Place duplicate slightly offset (clamped to canvas bounds)
+    const newX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, room.x + 1));
+    const newY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, room.y + 1));
 
     const newRoom: DroppedRoom = {
       ...room,
@@ -425,14 +359,6 @@ export function LayoutDesigner({
         : roomToUpdate.y;
 
       const updatedRoom = { ...roomToUpdate, ...updates, x: newX, y: newY, width: newWidth, height: newHeight };
-      const otherRooms = prev.filter((r) => r.id !== id);
-
-      // If position or size changed, check for collisions
-      if (updates.x !== undefined || updates.y !== undefined || updates.width !== undefined || updates.height !== undefined) {
-        if (wouldCollide(updatedRoom, updatedRoom.x, updatedRoom.y, otherRooms)) {
-          return prev;
-        }
-      }
 
       return prev.map((room) => room.id === id ? updatedRoom : room);
     });
@@ -543,7 +469,6 @@ export function LayoutDesigner({
                 onMove={handleRoomMove}
                 onResize={handleRoomResize}
                 scale={zoom}
-                allRooms={rooms}
               />
             ))}
           </div>
