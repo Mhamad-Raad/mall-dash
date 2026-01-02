@@ -3,7 +3,7 @@ import { ResizableRoom } from './ResizableRoom';
 import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
 import type { DroppedRoom, RoomTemplate } from './types';
-import { GRID_CELL_SIZE, ROOM_TEMPLATES } from './types';
+import { GRID_CELL_SIZE, ROOM_TEMPLATES, CANVAS_MIN_X, CANVAS_MAX_X, CANVAS_MIN_Y, CANVAS_MAX_Y } from './types';
 import { wouldCollide } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
 import { cn } from '@/lib/utils';
@@ -238,25 +238,36 @@ export function LayoutDesigner({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedRoomId]);
 
-  // Handle room move from ResizableRoom (no canvas bounds, infinite canvas)
+  // Handle room move from ResizableRoom (clamped to canvas bounds)
   const handleRoomMove = useCallback((id: string, x: number, y: number) => {
     setRooms((prev) =>
-      prev.map((room) => (room.id === id ? { ...room, x, y } : room))
+      prev.map((room) => {
+        if (room.id === id) {
+          // Clamp position to canvas bounds (accounting for room size)
+          const clampedX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, x));
+          const clampedY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, y));
+          return { ...room, x: clampedX, y: clampedY };
+        }
+        return room;
+      })
     );
   }, []);
 
-  // Handle room resize from ResizableRoom
+  // Handle room resize from ResizableRoom (clamped to canvas bounds)
   const handleRoomResize = useCallback((id: string, width: number, height: number, x: number, y: number) => {
+    // Clamp position to canvas bounds (accounting for new room size)
+    const clampedX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - width, x));
+    const clampedY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - height, y));
     setRooms((prev) =>
-      prev.map((room) => (room.id === id ? { ...room, width, height, x, y } : room))
+      prev.map((room) => (room.id === id ? { ...room, width, height, x: clampedX, y: clampedY } : room))
     );
   }, []);
 
-  // Add room - place in view center
+  // Add room - place in view center (within canvas bounds)
   const handleAddRoom = useCallback((template: RoomTemplate) => {
     // Calculate center of current viewport in grid coordinates
     const viewportRect = viewportRef.current?.getBoundingClientRect();
-    let centerX = 5, centerY = 5; // fallback
+    let centerX = 0, centerY = 0; // fallback to origin
     
     if (viewportRect) {
       const viewCenterX = viewportRect.width / 2;
@@ -265,6 +276,10 @@ export function LayoutDesigner({
       centerX = Math.round((viewCenterX - panOffset.x) / zoom / GRID_CELL_SIZE);
       centerY = Math.round((viewCenterY - panOffset.y) / zoom / GRID_CELL_SIZE);
     }
+
+    // Clamp center to canvas bounds (accounting for room size)
+    centerX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - template.defaultWidth, centerX));
+    centerY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - template.defaultHeight, centerY));
 
     // Create room at center position
     const tempRoom: DroppedRoom = {
@@ -278,7 +293,7 @@ export function LayoutDesigner({
       borderColor: template.borderColor,
     };
 
-    // Find first available position with spiral search from center
+    // Find first available position with spiral search from center (within canvas bounds)
     let x = centerX, y = centerY;
     let found = !wouldCollide(tempRoom, x, y, rooms);
 
@@ -289,6 +304,11 @@ export function LayoutDesigner({
           for (let dy = -radius; dy <= radius; dy++) {
             const testX = centerX + dx;
             const testY = centerY + dy;
+            // Check canvas bounds before testing collision
+            if (testX < CANVAS_MIN_X || testX + template.defaultWidth > CANVAS_MAX_X ||
+                testY < CANVAS_MIN_Y || testY + template.defaultHeight > CANVAS_MAX_Y) {
+              continue;
+            }
             if (!wouldCollide({ ...tempRoom, x: testX, y: testY }, testX, testY, rooms)) {
               x = testX;
               y = testY;
@@ -352,9 +372,9 @@ export function LayoutDesigner({
     const room = rooms.find((r) => r.id === id);
     if (!room) return;
 
-    // Find a valid position for the duplicate with simple spiral search
-    let newX = room.x + 1;
-    let newY = room.y + 1;
+    // Find a valid position for the duplicate with simple spiral search (within canvas bounds)
+    let newX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, room.x + 1));
+    let newY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, room.y + 1));
     let found = false;
     
     const maxSearchRadius = 10;
@@ -363,6 +383,11 @@ export function LayoutDesigner({
         for (let dy = -radius; dy <= radius && !found; dy++) {
           const testX = room.x + dx;
           const testY = room.y + dy;
+          // Check canvas bounds before testing collision
+          if (testX < CANVAS_MIN_X || testX + room.width > CANVAS_MAX_X ||
+              testY < CANVAS_MIN_Y || testY + room.height > CANVAS_MAX_Y) {
+            continue;
+          }
           if (!wouldCollide({ ...room, x: testX, y: testY }, testX, testY, rooms)) {
             newX = testX;
             newY = testY;
@@ -383,13 +408,23 @@ export function LayoutDesigner({
     setSelectedRoomId(newRoom.id);
   }, [rooms]);
 
-  // Handle room updates from the properties panel
+  // Handle room updates from the properties panel (with canvas bounds)
   const handleUpdateRoom = useCallback((id: string, updates: Partial<DroppedRoom>) => {
     setRooms((prev) => {
       const roomToUpdate = prev.find((r) => r.id === id);
       if (!roomToUpdate) return prev;
 
-      const updatedRoom = { ...roomToUpdate, ...updates };
+      // Merge updates and clamp position to canvas bounds
+      const newWidth = updates.width ?? roomToUpdate.width;
+      const newHeight = updates.height ?? roomToUpdate.height;
+      const newX = updates.x !== undefined 
+        ? Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - newWidth, updates.x))
+        : roomToUpdate.x;
+      const newY = updates.y !== undefined
+        ? Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - newHeight, updates.y))
+        : roomToUpdate.y;
+
+      const updatedRoom = { ...roomToUpdate, ...updates, x: newX, y: newY, width: newWidth, height: newHeight };
       const otherRooms = prev.filter((r) => r.id !== id);
 
       // If position or size changed, check for collisions

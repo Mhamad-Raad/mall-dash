@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState, memo } from 'react';
 import { Rnd, type RndDragCallback, type RndResizeCallback } from 'react-rnd';
 import type { DroppedRoom } from './types';
-import { GRID_CELL_SIZE, ROOM_TEMPLATES, MIN_ROOM_SIZE, MAX_ROOM_SIZE } from './types';
+import { GRID_CELL_SIZE, ROOM_TEMPLATES, MIN_ROOM_SIZE, MAX_ROOM_SIZE, CANVAS_MIN_X, CANVAS_MAX_X, CANVAS_MIN_Y, CANVAS_MAX_Y } from './types';
 import { findBestValidPosition } from './collisionDetection';
 import { cn } from '@/lib/utils';
 
@@ -168,10 +168,14 @@ function ResizableRoomInner({
     lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
   }, [room.x, room.y, room.width, room.height]);
 
-  // Handle drag - track valid positions and show collision feedback (no bounds clamping for infinite canvas)
+  // Handle drag - track valid positions and show collision feedback with canvas bounds
   const handleDrag: RndDragCallback = useCallback((_e, d) => {
-    const gridX = Math.round((d.x / cellSize) * 1000) / 1000;
-    const gridY = Math.round((d.y / cellSize) * 1000) / 1000;
+    const rawGridX = Math.round((d.x / cellSize) * 1000) / 1000;
+    const rawGridY = Math.round((d.y / cellSize) * 1000) / 1000;
+    
+    // Clamp to canvas bounds (accounting for room size)
+    const gridX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, rawGridX));
+    const gridY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, rawGridY));
 
     const hasCollision = checkCollision(gridX, gridY);
     setIsColliding(hasCollision);
@@ -179,23 +183,31 @@ function ResizableRoomInner({
     if (!hasCollision) {
       lastValidPosRef.current = { ...lastValidPosRef.current, x: gridX, y: gridY };
     }
-  }, [cellSize, checkCollision]);
+  }, [cellSize, checkCollision, room.width, room.height]);
 
   // Handle drag stop - NOW update parent state with smart positioning
   const handleDragStop: RndDragCallback = useCallback((_e, d) => {
     setIsDragging(false);
     setIsColliding(false);
 
-    const gridX = Math.round((d.x / cellSize) * 1000) / 1000;
-    const gridY = Math.round((d.y / cellSize) * 1000) / 1000;
+    const rawGridX = Math.round((d.x / cellSize) * 1000) / 1000;
+    const rawGridY = Math.round((d.y / cellSize) * 1000) / 1000;
+    
+    // Clamp to canvas bounds (accounting for room size)
+    const gridX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, rawGridX));
+    const gridY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, rawGridY));
 
     // Use smart positioning to find the best valid spot
     const currentRooms = allRoomsRef.current;
     const movingRoom: DroppedRoom = { ...room, x: gridX, y: gridY };
     const result = findBestValidPosition(movingRoom, gridX, gridY, currentRooms, 8);
 
+    // Clamp the result position to canvas bounds as well
+    const finalX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, result.x));
+    const finalY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, result.y));
+
     if (!result.hasCollision) {
-      onMove(room.id, result.x, result.y);
+      onMove(room.id, finalX, finalY);
     } else {
       // No valid position found - rollback to last valid
       onMove(room.id, lastValidPosRef.current.x, lastValidPosRef.current.y);
@@ -210,7 +222,7 @@ function ResizableRoomInner({
     lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
   }, [room.x, room.y, room.width, room.height]);
 
-  // Handle resize - track valid positions and show collision feedback
+  // Handle resize - track valid positions and show collision feedback with canvas bounds
   const handleResize: RndResizeCallback = useCallback((_e, _dir, ref, _delta, position) => {
     const newPixelWidth = ref.offsetWidth;
     const newPixelHeight = ref.offsetHeight;
@@ -220,10 +232,12 @@ function ResizableRoomInner({
     const newX = Math.round((position.x / cellSize) * 1000) / 1000;
     const newY = Math.round((position.y / cellSize) * 1000) / 1000;
 
+    // Clamp size to room limits and canvas bounds
     const clampedWidth = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newWidth));
     const clampedHeight = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newHeight));
-    const clampedX = Math.max(0, newX);
-    const clampedY = Math.max(0, newY);
+    // Clamp position to canvas bounds (accounting for room size)
+    const clampedX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - clampedWidth, newX));
+    const clampedY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - clampedHeight, newY));
 
     // Update local display state
     setLiveSize({ width: clampedWidth, height: clampedHeight });
@@ -236,7 +250,7 @@ function ResizableRoomInner({
     }
   }, [cellSize, checkCollision]);
 
-  // Handle resize stop - NOW update parent state with smart positioning
+  // Handle resize stop - NOW update parent state with smart positioning with canvas bounds
   const handleResizeStop: RndResizeCallback = useCallback((_e, _dir, ref, _delta, position) => {
     setIsResizing(false);
     setIsColliding(false);
@@ -249,10 +263,12 @@ function ResizableRoomInner({
     const newX = Math.round((position.x / cellSize) * 1000) / 1000;
     const newY = Math.round((position.y / cellSize) * 1000) / 1000;
 
+    // Clamp size to room limits and canvas bounds
     const clampedWidth = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newWidth));
     const clampedHeight = Math.max(MIN_ROOM_SIZE, Math.min(MAX_ROOM_SIZE, newHeight));
-    const clampedX = Math.max(0, newX);
-    const clampedY = Math.max(0, newY);
+    // Clamp position to canvas bounds (accounting for room size)
+    const clampedX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - clampedWidth, newX));
+    const clampedY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - clampedHeight, newY));
 
     // For resize, we use the new dimensions to find best position
     const currentRooms = allRoomsRef.current;
@@ -266,8 +282,9 @@ function ResizableRoomInner({
     const result = findBestValidPosition(resizedRoom, clampedX, clampedY, currentRooms, 5);
 
     if (!result.hasCollision) {
-      const finalX = Math.max(0, result.x);
-      const finalY = Math.max(0, result.y);
+      // Clamp final position to canvas bounds
+      const finalX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - clampedWidth, result.x));
+      const finalY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - clampedHeight, result.y));
       onResize(room.id, clampedWidth, clampedHeight, finalX, finalY);
     } else {
       // No valid position found for this size - rollback

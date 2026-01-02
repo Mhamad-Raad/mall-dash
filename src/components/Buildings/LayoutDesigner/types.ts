@@ -77,3 +77,9 @@ export const GRID_CELL_SIZE = 40; // pixels per grid cell
 export const GRID_PRECISION = 0.001; // snap to 0.001 increments (1mm precision)
 export const MIN_ROOM_SIZE = 1; // minimum 1 grid cell
 export const MAX_ROOM_SIZE = 50; // maximum 50 grid cells
+
+// Canvas bounds - rooms can be placed from -100 to 100 on both axes
+export const CANVAS_MIN_X = -100;
+export const CANVAS_MAX_X = 100;
+export const CANVAS_MIN_Y = -100;
+export const CANVAS_MAX_Y = 100;
