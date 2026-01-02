@@ -268,14 +268,17 @@ export const RoomBox = memo(function RoomBox({
               : 'border-border/50 bg-card shadow-sm'
           )}
           title={`${room.name}\n${room.width}m × ${room.height}m\nArea: ${(room.width * room.height).toFixed(2)}m²`}
+          onClick={(e) => {
+            // Select room on click
+            if (!isResizing && !isDragging) {
+              e.stopPropagation();
+              onSelect(room.id);
+            }
+          }}
         >
           {/* Drag overlay - captures drag events */}
           <div
             className='absolute inset-0 z-10'
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(room.id);
-            }}
             {...attributes}
             {...listeners}
           />
