@@ -10,12 +10,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { Apartment, Occupant } from '@/interfaces/Building.interface';
-import type { ApartmentLayout } from './RoomCreator/types';
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
-import { RoomCreator } from './RoomCreator';
 
 export interface UserResult {
   id: number | string;
@@ -28,17 +26,12 @@ export interface EditApartmentDialogProps {
   apartment: Apartment | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (occupant: any, name: string, layout?: ApartmentLayout) => void;
+  onSave: (occupant: any, name: string) => void;
   onDelete?: (apartmentId: number) => void;
   apartmentName: string;
   setApartmentName: (name: string) => void;
 }
 
-const DEFAULT_LAYOUT: ApartmentLayout = {
-  rooms: [],
-  doors: [],
-  gridSize: 48,
-};
 
 const EditApartmentDialog = ({
   apartment,
@@ -53,7 +46,6 @@ const EditApartmentDialog = ({
   const [pendingOccupant, setPendingOccupant] = useState<
     UserResult | null | 'remove'
   >(null);
-  const [layout, setLayout] = useState<ApartmentLayout>(DEFAULT_LAYOUT);
 
   useEffect(() => {
     // Only reset layout when apartment changes or dialog opens
@@ -61,7 +53,6 @@ const EditApartmentDialog = ({
     if (isOpen && apartment) {
       setApartmentName(apartment.apartmentName ?? '');
       setPendingOccupant(apartment.occupant ? null : 'remove');
-      setLayout(apartment.layout ?? DEFAULT_LAYOUT);
     }
   }, [
     apartment?.id,
@@ -74,7 +65,6 @@ const EditApartmentDialog = ({
     if (!isOpen) {
       // Reset layout to release memory from large room/door arrays
       const cleanupTimer = setTimeout(() => {
-        setLayout(DEFAULT_LAYOUT);
         setPendingOccupant(null);
       }, 300); // Small delay to allow closing animation
 
@@ -123,7 +113,6 @@ const EditApartmentDialog = ({
     } else if (apartment?.occupant) {
       userId = apartment.occupant.id;
     }
-    onSave(userId, apartmentName, layout);
   };
 
   return (
@@ -219,11 +208,6 @@ const EditApartmentDialog = ({
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Right area - Floor Plan Designer */}
-          <div className='flex-1 p-4 overflow-auto'>
-            <RoomCreator layout={layout} onLayoutChange={setLayout} />
           </div>
         </div>
 
