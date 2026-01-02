@@ -399,14 +399,14 @@ export const RoomBox = memo(function RoomBox({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-48">
-        <ContextMenuItem onClick={() => onDuplicate(room.id)}>
+        <ContextMenuItem onSelect={() => onDuplicate(room.id)}>
           <Copy className="mr-2 h-4 w-4" />
           Duplicate
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem 
           variant="destructive" 
-          onClick={() => onDelete(room.id)}
+          onSelect={() => onDelete(room.id)}
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete Room

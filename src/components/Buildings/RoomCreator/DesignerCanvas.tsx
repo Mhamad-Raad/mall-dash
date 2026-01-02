@@ -76,7 +76,6 @@ interface DesignerCanvasProps {
   onSelectDoor: (id: string | null) => void;
   onSelectType: (type: RoomType | null) => void;
   onDoorModeChange: (enabled: boolean) => void;
-  onContextMenu: (x: number, y: number) => void;
   onAddRoomAtPosition: (type: RoomType, x: number, y: number) => void;
   onAddDoor: (edge: SharedEdge, position: number) => void;
   onDeleteRoom: (id: string) => void;
@@ -110,7 +109,6 @@ export const DesignerCanvas = ({
   onSelectDoor,
   onSelectType,
   onDoorModeChange,
-  onContextMenu,
   onAddRoomAtPosition,
   onAddDoor,
   onDeleteRoom,
@@ -119,6 +117,7 @@ export const DesignerCanvas = ({
   onResizeRoom,
 }: DesignerCanvasProps) => {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const contextMenuPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -154,11 +153,15 @@ export const DesignerCanvas = ({
                 minWidth: '100%',
                 minHeight: '100%',
               }}
-              onContextMenu={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / cellSize - offsetX;
-                const y = (e.clientY - rect.top) / cellSize - offsetY;
-                onContextMenu(x, y);
+              onPointerDown={(e) => {
+                // Capture position on any pointer down (including right-click)
+                // This will fire before the context menu opens
+                if (e.button === 2) { // Right mouse button
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = (e.clientX - rect.left) / cellSize - offsetX;
+                  const y = (e.clientY - rect.top) / cellSize - offsetY;
+                  contextMenuPosRef.current = { x, y };
+                }
               }}
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -373,8 +376,9 @@ export const DesignerCanvas = ({
                   return (
                     <ContextMenuItem
                       key={roomType.type}
-                      onClick={() => {
-                        // Context menu position is handled by parent
+                      onSelect={() => {
+                        const { x, y } = contextMenuPosRef.current;
+                        onAddRoomAtPosition(roomType.type, x, y);
                       }}
                     >
                       {IconComponent && (
@@ -391,7 +395,7 @@ export const DesignerCanvas = ({
             </ContextMenuSub>
             <ContextMenuSeparator />
             <ContextMenuItem
-              onClick={() => onDoorModeChange(!doorMode)}
+              onSelect={() => onDoorModeChange(!doorMode)}
             >
               <DoorOpen className="mr-2 h-4 w-4" />
               {doorMode ? 'Exit Door Mode' : 'Add Doors'}

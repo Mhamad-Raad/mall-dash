@@ -278,7 +278,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           activeId={activeId}
           overlappingRoomIds={overlappingRoomIds}
           sharedEdges={sharedEdges}
-          onContextMenu={() => {}} 
           onSelectRoom={(id) => {
             setSelectedRoomId(id);
             setSelectedDoorId(null);
