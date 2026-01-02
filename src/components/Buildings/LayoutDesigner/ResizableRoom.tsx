@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, memo } from 'react';
 import { Rnd, type RndDragCallback, type RndResizeCallback } from 'react-rnd';
 import type { DroppedRoom } from './types';
 import { GRID_CELL_SIZE, ROOM_TEMPLATES, MIN_ROOM_SIZE, MAX_ROOM_SIZE } from './types';
+import { findBestValidPosition } from './collisionDetection';
 import { cn } from '@/lib/utils';
 
 interface ResizableRoomProps {
@@ -13,7 +14,8 @@ interface ResizableRoomProps {
   zoom: number;
   canvasWidth: number;
   canvasHeight: number;
-  checkCollision: (room: DroppedRoom, newX: number, newY: number, newWidth?: number, newHeight?: number) => boolean;
+  /** Pass ALL rooms so collision can be checked against current positions */
+  allRooms: DroppedRoom[];
 }
 
 // Memoized inner content to prevent re-renders during drag/resize
@@ -25,6 +27,7 @@ const RoomContent = memo(function RoomContent({
   isDragging,
   isResizing,
   liveSize,
+  isColliding,
   onClick,
 }: {
   room: DroppedRoom;
@@ -34,6 +37,7 @@ const RoomContent = memo(function RoomContent({
   isDragging: boolean;
   isResizing: boolean;
   liveSize: { width: number; height: number } | null;
+  isColliding: boolean;
   onClick: (e: React.MouseEvent) => void;
 }) {
   const displayWidth = liveSize?.width ?? room.width;
@@ -51,9 +55,10 @@ const RoomContent = memo(function RoomContent({
         'hover:bg-background/[0.10] hover:shadow-md',
         isDragging && 'shadow-2xl opacity-90',
         isResizing && 'shadow-2xl',
-        isSelected && 'ring-2 ring-primary/40 shadow-lg'
+        isSelected && 'ring-2 ring-primary/40 shadow-lg',
+        isColliding && 'ring-2 ring-destructive/60 bg-destructive/10'
       )}
-      style={{ borderColor }}
+      style={{ borderColor: isColliding ? 'hsl(var(--destructive))' : borderColor }}
     >
       {/* Room Icon */}
       {Icon && (
@@ -113,7 +118,7 @@ function ResizableRoomInner({
   zoom,
   canvasWidth,
   canvasHeight,
-  checkCollision,
+  allRooms,
 }: ResizableRoomProps) {
   const cellSize = GRID_CELL_SIZE;
   const template = ROOM_TEMPLATES.find((t) => t.type === room.type);
@@ -123,19 +128,50 @@ function ResizableRoomInner({
   // UI state for visual feedback only
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [isColliding, setIsColliding] = useState(false);
   // Live size display during resize (local state, doesn't trigger parent re-render)
   const [liveSize, setLiveSize] = useState<{ width: number; height: number } | null>(null);
 
   // Track last valid position for rollback (refs don't cause re-renders)
   const lastValidPosRef = useRef({ x: room.x, y: room.y, width: room.width, height: room.height });
+  // Keep allRooms in a ref so we always have current data
+  const allRoomsRef = useRef(allRooms);
+  allRoomsRef.current = allRooms;
+
+  // Local collision check that uses the ref for fresh data
+  const checkCollision = useCallback((
+    targetX: number,
+    targetY: number,
+    targetWidth: number = room.width,
+    targetHeight: number = room.height
+  ): boolean => {
+    const currentRooms = allRoomsRef.current;
+    const epsilon = 0.001;
+    
+    for (const other of currentRooms) {
+      if (other.id === room.id) continue;
+      
+      // Check rectangle overlap
+      const overlaps = !(
+        targetX + targetWidth <= other.x + epsilon ||
+        targetX >= other.x + other.width - epsilon ||
+        targetY + targetHeight <= other.y + epsilon ||
+        targetY >= other.y + other.height - epsilon
+      );
+      
+      if (overlaps) return true;
+    }
+    return false;
+  }, [room.id, room.width, room.height]);
 
   // Handle drag start - just set UI state
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
+    setIsColliding(false);
     lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
   }, [room.x, room.y, room.width, room.height]);
 
-  // Handle drag - NO STATE UPDATES, just track valid positions in ref
+  // Handle drag - track valid positions and show collision feedback
   const handleDrag: RndDragCallback = useCallback((_e, d) => {
     const gridX = Math.round((d.x / cellSize) * 1000) / 1000;
     const gridY = Math.round((d.y / cellSize) * 1000) / 1000;
@@ -143,15 +179,18 @@ function ResizableRoomInner({
     const clampedX = Math.max(0, Math.min(gridX, canvasWidth - room.width));
     const clampedY = Math.max(0, Math.min(gridY, canvasHeight - room.height));
 
-    // Only update ref if no collision - no React state update!
-    if (!checkCollision(room, clampedX, clampedY)) {
+    const hasCollision = checkCollision(clampedX, clampedY);
+    setIsColliding(hasCollision);
+    
+    if (!hasCollision) {
       lastValidPosRef.current = { ...lastValidPosRef.current, x: clampedX, y: clampedY };
     }
-  }, [room, cellSize, canvasWidth, canvasHeight, checkCollision]);
+  }, [room.width, room.height, cellSize, canvasWidth, canvasHeight, checkCollision]);
 
-  // Handle drag stop - NOW update parent state
+  // Handle drag stop - NOW update parent state with smart positioning
   const handleDragStop: RndDragCallback = useCallback((_e, d) => {
     setIsDragging(false);
+    setIsColliding(false);
 
     const gridX = Math.round((d.x / cellSize) * 1000) / 1000;
     const gridY = Math.round((d.y / cellSize) * 1000) / 1000;
@@ -159,22 +198,31 @@ function ResizableRoomInner({
     const clampedX = Math.max(0, Math.min(gridX, canvasWidth - room.width));
     const clampedY = Math.max(0, Math.min(gridY, canvasHeight - room.height));
 
-    if (!checkCollision(room, clampedX, clampedY)) {
-      onMove(room.id, clampedX, clampedY);
+    // Use smart positioning to find the best valid spot
+    const currentRooms = allRoomsRef.current;
+    const movingRoom: DroppedRoom = { ...room, x: clampedX, y: clampedY };
+    const result = findBestValidPosition(movingRoom, clampedX, clampedY, currentRooms, 8);
+
+    if (!result.hasCollision) {
+      // Clamp result to canvas bounds
+      const finalX = Math.max(0, Math.min(result.x, canvasWidth - room.width));
+      const finalY = Math.max(0, Math.min(result.y, canvasHeight - room.height));
+      onMove(room.id, finalX, finalY);
     } else {
-      // Rollback to last valid position
+      // No valid position found - rollback to last valid
       onMove(room.id, lastValidPosRef.current.x, lastValidPosRef.current.y);
     }
-  }, [room, cellSize, canvasWidth, canvasHeight, checkCollision, onMove]);
+  }, [room, cellSize, canvasWidth, canvasHeight, onMove]);
 
   // Handle resize start
   const handleResizeStart = useCallback(() => {
     setIsResizing(true);
+    setIsColliding(false);
     setLiveSize({ width: room.width, height: room.height });
     lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
   }, [room.x, room.y, room.width, room.height]);
 
-  // Handle resize - only update LOCAL liveSize for display, track valid in ref
+  // Handle resize - track valid positions and show collision feedback
   const handleResize: RndResizeCallback = useCallback((_e, _dir, ref, _delta, position) => {
     const newPixelWidth = ref.offsetWidth;
     const newPixelHeight = ref.offsetHeight;
@@ -189,18 +237,21 @@ function ResizableRoomInner({
     const clampedX = Math.max(0, newX);
     const clampedY = Math.max(0, newY);
 
-    // Update local display state (lightweight, only affects this component)
+    // Update local display state
     setLiveSize({ width: clampedWidth, height: clampedHeight });
 
-    // Track valid position in ref - no parent re-render
-    if (!checkCollision(room, clampedX, clampedY, clampedWidth, clampedHeight)) {
+    const hasCollision = checkCollision(clampedX, clampedY, clampedWidth, clampedHeight);
+    setIsColliding(hasCollision);
+    
+    if (!hasCollision) {
       lastValidPosRef.current = { x: clampedX, y: clampedY, width: clampedWidth, height: clampedHeight };
     }
-  }, [room, cellSize, checkCollision]);
+  }, [cellSize, checkCollision]);
 
-  // Handle resize stop - NOW update parent state
+  // Handle resize stop - NOW update parent state with smart positioning
   const handleResizeStop: RndResizeCallback = useCallback((_e, _dir, ref, _delta, position) => {
     setIsResizing(false);
+    setIsColliding(false);
     setLiveSize(null);
 
     const newPixelWidth = ref.offsetWidth;
@@ -215,10 +266,23 @@ function ResizableRoomInner({
     const clampedX = Math.max(0, newX);
     const clampedY = Math.max(0, newY);
 
-    if (!checkCollision(room, clampedX, clampedY, clampedWidth, clampedHeight)) {
-      onResize(room.id, clampedWidth, clampedHeight, clampedX, clampedY);
+    // For resize, we use the new dimensions to find best position
+    const currentRooms = allRoomsRef.current;
+    const resizedRoom: DroppedRoom = {
+      ...room,
+      x: clampedX,
+      y: clampedY,
+      width: clampedWidth,
+      height: clampedHeight,
+    };
+    const result = findBestValidPosition(resizedRoom, clampedX, clampedY, currentRooms, 5);
+
+    if (!result.hasCollision) {
+      const finalX = Math.max(0, result.x);
+      const finalY = Math.max(0, result.y);
+      onResize(room.id, clampedWidth, clampedHeight, finalX, finalY);
     } else {
-      // Rollback to last valid state
+      // No valid position found for this size - rollback
       onResize(
         room.id,
         lastValidPosRef.current.width,
@@ -227,7 +291,7 @@ function ResizableRoomInner({
         lastValidPosRef.current.y
       );
     }
-  }, [room, cellSize, checkCollision, onResize]);
+  }, [room, cellSize, onResize]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -286,15 +350,17 @@ function ResizableRoomInner({
         isDragging={isDragging}
         isResizing={isResizing}
         liveSize={liveSize}
+        isColliding={isColliding}
         onClick={handleClick}
       />
     </Rnd>
   );
 }
 
-// Memoize the entire component to prevent re-renders when other rooms change
+// Memoize the entire component - but DON'T compare allRooms (we use ref for that)
 export const ResizableRoom = memo(ResizableRoomInner, (prevProps, nextProps) => {
   // Only re-render if this room's data changed, or selection state changed
+  // allRooms is NOT compared because we use a ref to always have fresh data
   return (
     prevProps.room.id === nextProps.room.id &&
     prevProps.room.x === nextProps.room.x &&

@@ -1,21 +1,43 @@
 import type { DroppedRoom } from './types';
-import { GRID_CELL_SIZE, GRID_PRECISION } from './types';
+import { GRID_CELL_SIZE } from './types';
+
+const EPSILON = 0.01;
 
 /**
  * Check if two rooms overlap (rectangles intersection)
+ * Uses epsilon shrinking to avoid floating point errors and allow rooms to touch edges
  */
 export function doRoomsOverlap(
-  room1: { x: number; y: number; width: number; height: number },
-  room2: { x: number; y: number; width: number; height: number }
+  room1: { id?: string; x: number; y: number; width: number; height: number },
+  room2: { id?: string; x: number; y: number; width: number; height: number }
 ): boolean {
-  // Check if rectangles overlap (with small epsilon for floating point precision)
-  const epsilon = 0.0001;
-  return !(
-    room1.x + room1.width <= room2.x + epsilon ||  // room1 is to the left of room2
-    room1.x >= room2.x + room2.width - epsilon ||  // room1 is to the right of room2
-    room1.y + room1.height <= room2.y + epsilon || // room1 is above room2
-    room1.y >= room2.y + room2.height - epsilon    // room1 is below room2
-  );
+  // Don't check against self
+  if (room1.id && room2.id && room1.id === room2.id) return false;
+
+  // Shrink room1's bounding box slightly to avoid floating point errors
+  // and allow rooms to touch edges without counting as overlap
+  const r1Left = room1.x + EPSILON;
+  const r1Right = room1.x + room1.width - EPSILON;
+  const r1Top = room1.y + EPSILON;
+  const r1Bottom = room1.y + room1.height - EPSILON;
+
+  const r2Left = room2.x;
+  const r2Right = room2.x + room2.width;
+  const r2Top = room2.y;
+  const r2Bottom = room2.y + room2.height;
+
+  // Check if they don't overlap
+  if (r1Right <= r2Left || r2Right <= r1Left) return false;
+  if (r1Bottom <= r2Top || r2Bottom <= r1Top) return false;
+
+  return true;
+}
+
+/**
+ * Check if a room overlaps with any other rooms
+ */
+export function roomOverlapsAny(room: DroppedRoom, allRooms: DroppedRoom[]): boolean {
+  return allRooms.some((r) => doRoomsOverlap(room, r));
 }
 
 /**
@@ -46,6 +68,7 @@ export function wouldCollide(
   allRooms: DroppedRoom[]
 ): boolean {
   const movedRoom = {
+    id: movingRoom.id,
     x: newX,
     y: newY,
     width: movingRoom.width,
@@ -53,38 +76,7 @@ export function wouldCollide(
   };
 
   for (const room of allRooms) {
-    // Skip the room being moved
     if (room.id === movingRoom.id) continue;
-
-    if (doRoomsOverlap(movedRoom, room)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-/**
- * Check if moving/resizing a room to a new position and size would cause a collision
- */
-export function wouldCollideWithSize(
-  movingRoom: DroppedRoom,
-  newX: number,
-  newY: number,
-  newWidth: number,
-  newHeight: number,
-  allRooms: DroppedRoom[]
-): boolean {
-  const movedRoom = {
-    x: newX,
-    y: newY,
-    width: newWidth,
-    height: newHeight,
-  };
-
-  for (const room of allRooms) {
-    if (room.id === movingRoom.id) continue;
-
     if (doRoomsOverlap(movedRoom, room)) {
       return true;
     }
@@ -103,6 +95,7 @@ export function getCollidingRooms(
   allRooms: DroppedRoom[]
 ): DroppedRoom[] {
   const movedRoom = {
+    id: movingRoom.id,
     x: newX,
     y: newY,
     width: movingRoom.width,
@@ -116,213 +109,191 @@ export function getCollidingRooms(
 }
 
 /**
- * Round to grid precision
+ * Round to grid precision (0.01 = 1cm)
  */
 function roundToPrecision(value: number): number {
-  return Math.round(value / GRID_PRECISION) * GRID_PRECISION;
+  return Math.round(value * 100) / 100;
 }
 
 /**
- * Calculate distance between two points
+ * Calculate distance from a point (with dimensions) to a room's center
  */
-function distance(x1: number, y1: number, x2: number, y2: number): number {
-  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-}
-
-/**
- * Generate smart snap positions based on edges of nearby rooms
- * This creates positions that align with or are adjacent to existing rooms
- */
-function generateSnapPositions(
-  movingRoom: DroppedRoom,
-  targetX: number,
-  targetY: number,
-  allRooms: DroppedRoom[],
-  searchRadius: number = 10
-): Array<{ x: number; y: number; score: number }> {
-  const positions: Array<{ x: number; y: number; score: number }> = [];
-  const otherRooms = allRooms.filter((r) => r.id !== movingRoom.id);
-
-  // Always include the target position
-  positions.push({ x: targetX, y: targetY, score: 0 });
-
-  // For each nearby room, generate snap positions at their edges
-  for (const room of otherRooms) {
-    // Only consider rooms within search radius
-    const centerX = room.x + room.width / 2;
-    const centerY = room.y + room.height / 2;
-    if (distance(targetX, targetY, centerX, centerY) > searchRadius + Math.max(movingRoom.width, movingRoom.height)) {
-      continue;
-    }
-
-    // Snap to right edge of this room
-    const rightSnap = { 
-      x: roundToPrecision(room.x + room.width), 
-      y: roundToPrecision(room.y),
-      score: 1 // Bonus for edge alignment
-    };
-    positions.push(rightSnap);
-
-    // Snap to left edge of this room
-    const leftSnap = { 
-      x: roundToPrecision(room.x - movingRoom.width), 
-      y: roundToPrecision(room.y),
-      score: 1
-    };
-    positions.push(leftSnap);
-
-    // Snap to bottom edge of this room
-    const bottomSnap = { 
-      x: roundToPrecision(room.x), 
-      y: roundToPrecision(room.y + room.height),
-      score: 1
-    };
-    positions.push(bottomSnap);
-
-    // Snap to top edge of this room
-    const topSnap = { 
-      x: roundToPrecision(room.x), 
-      y: roundToPrecision(room.y - movingRoom.height),
-      score: 1
-    };
-    positions.push(topSnap);
-
-    // Align horizontally with room (same Y, adjacent X)
-    positions.push({ 
-      x: roundToPrecision(room.x + room.width), 
-      y: roundToPrecision(targetY),
-      score: 0.5
-    });
-    positions.push({ 
-      x: roundToPrecision(room.x - movingRoom.width), 
-      y: roundToPrecision(targetY),
-      score: 0.5
-    });
-
-    // Align vertically with room (same X, adjacent Y)
-    positions.push({ 
-      x: roundToPrecision(targetX), 
-      y: roundToPrecision(room.y + room.height),
-      score: 0.5
-    });
-    positions.push({ 
-      x: roundToPrecision(targetX), 
-      y: roundToPrecision(room.y - movingRoom.height),
-      score: 0.5
-    });
-
-    // Corner alignments (useful for L-shaped layouts)
-    // Top-right of other room
-    positions.push({
-      x: roundToPrecision(room.x + room.width),
-      y: roundToPrecision(room.y - movingRoom.height),
-      score: 0.8
-    });
-    // Bottom-right of other room
-    positions.push({
-      x: roundToPrecision(room.x + room.width),
-      y: roundToPrecision(room.y + room.height),
-      score: 0.8
-    });
-    // Top-left of other room
-    positions.push({
-      x: roundToPrecision(room.x - movingRoom.width),
-      y: roundToPrecision(room.y - movingRoom.height),
-      score: 0.8
-    });
-    // Bottom-left of other room
-    positions.push({
-      x: roundToPrecision(room.x - movingRoom.width),
-      y: roundToPrecision(room.y + room.height),
-      score: 0.8
-    });
-  }
-
-  return positions;
+function distanceToRoom(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  room: DroppedRoom
+): number {
+  const roomCenterX = room.x + room.width / 2;
+  const roomCenterY = room.y + room.height / 2;
+  const movingCenterX = x + width / 2;
+  const movingCenterY = y + height / 2;
+  return Math.sqrt(
+    Math.pow(roomCenterX - movingCenterX, 2) + Math.pow(roomCenterY - movingCenterY, 2)
+  );
 }
 
 /**
  * Find the best valid position for a room based on:
- * 1. Proximity to target position
- * 2. Alignment with other room edges (snap points)
- * 3. No collisions
+ * 1. Priority: overlapping rooms first, then nearby, then far
+ * 2. Distance to target position
+ * 3. Smart snap points to room edges
  */
 export function findBestValidPosition(
   movingRoom: DroppedRoom,
   targetX: number,
   targetY: number,
   allRooms: DroppedRoom[],
-  maxSearchDistance: number = 10
+  _maxSearchDistance: number = 10
 ): { x: number; y: number; hasCollision: boolean } {
   const otherRooms = allRooms.filter((r) => r.id !== movingRoom.id);
 
-  // If target position is valid, use it
-  if (!wouldCollide(movingRoom, targetX, targetY, allRooms)) {
+  // Create a test room at the target position
+  const testRoom: DroppedRoom = { ...movingRoom, x: targetX, y: targetY };
+
+  // If no overlap, return the target position
+  if (!roomOverlapsAny(testRoom, otherRooms)) {
     return { x: targetX, y: targetY, hasCollision: false };
   }
 
-  // Generate smart snap positions
-  const snapPositions = generateSnapPositions(movingRoom, targetX, targetY, allRooms, maxSearchDistance);
+  // Find which rooms the target position overlaps with
+  const overlappingRooms = otherRooms.filter((r) => doRoomsOverlap(testRoom, r));
 
-  // Filter valid positions and score them
-  const validPositions: Array<{ x: number; y: number; score: number; distance: number }> = [];
+  // Sort other rooms by distance to target position (prioritize nearby rooms)
+  const roomsByDistance = [...otherRooms].sort((a, b) => {
+    const distA = distanceToRoom(targetX, targetY, movingRoom.width, movingRoom.height, a);
+    const distB = distanceToRoom(targetX, targetY, movingRoom.width, movingRoom.height, b);
+    return distA - distB;
+  });
 
-  for (const pos of snapPositions) {
-    // Skip positions outside canvas (negative coordinates will be handled by shift)
-    if (pos.x < -maxSearchDistance || pos.y < -maxSearchDistance) continue;
+  // Collect candidates with priority system
+  // Priority: 0 = overlapping (best), 1 = nearby, 2 = far
+  const candidates: { x: number; y: number; distance: number; priority: number }[] = [];
 
-    // Check if this position is valid (no collision)
-    if (!wouldCollide(movingRoom, pos.x, pos.y, otherRooms)) {
-      const dist = distance(targetX, targetY, pos.x, pos.y);
-      if (dist <= maxSearchDistance) {
-        validPositions.push({
-          x: pos.x,
-          y: pos.y,
-          score: pos.score,
-          distance: dist,
-        });
+  // Generate snap points from rooms, prioritizing overlapping ones
+  for (const other of roomsByDistance) {
+    const isOverlapping = overlappingRooms.some((r) => r.id === other.id);
+    const distToOther = distanceToRoom(
+      targetX,
+      targetY,
+      movingRoom.width,
+      movingRoom.height,
+      other
+    );
+    const priority = isOverlapping ? 0 : distToOther < 5 ? 1 : 2;
+
+    const snapPoints = [
+      // Snap to right edge of other room (3 Y positions)
+      { x: other.x + other.width, y: targetY },
+      { x: other.x + other.width, y: other.y },
+      { x: other.x + other.width, y: other.y + other.height - movingRoom.height },
+
+      // Snap to left edge of other room (3 Y positions)
+      { x: other.x - movingRoom.width, y: targetY },
+      { x: other.x - movingRoom.width, y: other.y },
+      { x: other.x - movingRoom.width, y: other.y + other.height - movingRoom.height },
+
+      // Snap to bottom edge of other room (3 X positions)
+      { x: targetX, y: other.y + other.height },
+      { x: other.x, y: other.y + other.height },
+      { x: other.x + other.width - movingRoom.width, y: other.y + other.height },
+
+      // Snap to top edge of other room (3 X positions)
+      { x: targetX, y: other.y - movingRoom.height },
+      { x: other.x, y: other.y - movingRoom.height },
+      { x: other.x + other.width - movingRoom.width, y: other.y - movingRoom.height },
+    ];
+
+    for (const point of snapPoints) {
+      const x = roundToPrecision(point.x);
+      const y = roundToPrecision(point.y);
+
+      // Check if this position is valid (no overlap with any room)
+      if (!roomOverlapsAny({ ...movingRoom, x, y }, otherRooms)) {
+        const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
+        candidates.push({ x, y, distance, priority });
       }
     }
   }
 
-  // If no snap positions work, try a fine grid search around the target
-  if (validPositions.length === 0) {
-    const step = 0.5;
-    for (let dy = -maxSearchDistance; dy <= maxSearchDistance; dy += step) {
-      for (let dx = -maxSearchDistance; dx <= maxSearchDistance; dx += step) {
-        const testX = roundToPrecision(targetX + dx);
-        const testY = roundToPrecision(targetY + dy);
-        
-        if (!wouldCollide(movingRoom, testX, testY, otherRooms)) {
-          const dist = distance(targetX, targetY, testX, testY);
-          validPositions.push({
-            x: testX,
-            y: testY,
-            score: 0,
-            distance: dist,
-          });
+  // Also try positions that align room edges
+  for (const other of roomsByDistance) {
+    const isOverlapping = overlappingRooms.some((r) => r.id === other.id);
+    const distToOther = distanceToRoom(
+      targetX,
+      targetY,
+      movingRoom.width,
+      movingRoom.height,
+      other
+    );
+    const priority = isOverlapping ? 0 : distToOther < 5 ? 1 : 2;
+
+    const alignPoints = [
+      // Corner alignments
+      { x: other.x + other.width, y: other.y },
+      { x: other.x + other.width, y: other.y + other.height - movingRoom.height },
+      { x: other.x - movingRoom.width, y: other.y },
+      { x: other.x - movingRoom.width, y: other.y + other.height - movingRoom.height },
+      { x: other.x, y: other.y + other.height },
+      { x: other.x + other.width - movingRoom.width, y: other.y + other.height },
+      { x: other.x, y: other.y - movingRoom.height },
+      { x: other.x + other.width - movingRoom.width, y: other.y - movingRoom.height },
+    ];
+
+    for (const point of alignPoints) {
+      const x = roundToPrecision(point.x);
+      const y = roundToPrecision(point.y);
+
+      if (!roomOverlapsAny({ ...movingRoom, x, y }, otherRooms)) {
+        const distance = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
+        // Avoid duplicates
+        if (!candidates.some((c) => c.x === x && c.y === y)) {
+          candidates.push({ x, y, distance, priority });
         }
       }
     }
   }
 
-  if (validPositions.length === 0) {
-    // No valid position found
-    return { x: movingRoom.x, y: movingRoom.y, hasCollision: true };
+  // If we found valid positions, return the best one
+  if (candidates.length > 0) {
+    // Sort by priority first (lower is better), then by distance
+    candidates.sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+      return a.distance - b.distance;
+    });
+    return { x: candidates[0].x, y: candidates[0].y, hasCollision: false };
   }
 
-  // Sort by: 
-  // 1. Prefer positions closer to target
-  // 2. Among similar distances, prefer snap positions (higher score)
-  validPositions.sort((a, b) => {
-    // Weight distance more heavily, but give bonus to snap positions
-    const aWeighted = a.distance - a.score * 0.5;
-    const bWeighted = b.distance - b.score * 0.5;
-    return aWeighted - bWeighted;
-  });
+  // Fallback: grid search around the target position
+  const searchRadius = 10; // meters
+  const step = 0.5; // meter steps
+  let bestPosition = { x: movingRoom.x, y: movingRoom.y };
+  let bestDistance = Infinity;
 
-  const best = validPositions[0];
-  return { x: best.x, y: best.y, hasCollision: false };
+  for (let dx = -searchRadius; dx <= searchRadius; dx += step) {
+    for (let dy = -searchRadius; dy <= searchRadius; dy += step) {
+      const x = roundToPrecision(targetX + dx);
+      const y = roundToPrecision(targetY + dy);
+
+      if (!roomOverlapsAny({ ...movingRoom, x, y }, otherRooms)) {
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestPosition = { x, y };
+        }
+      }
+    }
+  }
+
+  if (bestDistance < Infinity) {
+    return { x: bestPosition.x, y: bestPosition.y, hasCollision: false };
+  }
+
+  // No valid position found - return original position
+  return { x: movingRoom.x, y: movingRoom.y, hasCollision: true };
 }
 
 /**

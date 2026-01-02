@@ -4,7 +4,7 @@ import { RoomSummaryPanel } from './RoomPropertiesPanel';
 import { DesignerToolbar } from './DesignerToolbar';
 import type { DroppedRoom, RoomTemplate } from './types';
 import { GRID_CELL_SIZE, ROOM_TEMPLATES } from './types';
-import { wouldCollide, wouldCollideWithSize } from './collisionDetection';
+import { wouldCollide } from './collisionDetection';
 import type { ApartmentLayout, RoomLayout, Door } from '@/interfaces/Building.interface';
 import { cn } from '@/lib/utils';
 
@@ -145,20 +145,6 @@ export function LayoutDesigner({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedRoomId]);
-
-  // Collision detection callback for ResizableRoom
-  const checkCollision = useCallback((
-    room: DroppedRoom,
-    newX: number,
-    newY: number,
-    newWidth?: number,
-    newHeight?: number
-  ): boolean => {
-    if (newWidth !== undefined && newHeight !== undefined) {
-      return wouldCollideWithSize(room, newX, newY, newWidth, newHeight, rooms);
-    }
-    return wouldCollide(room, newX, newY, rooms);
-  }, [rooms]);
 
   // Handle room move from ResizableRoom
   const handleRoomMove = useCallback((id: string, x: number, y: number) => {
@@ -408,7 +394,7 @@ export function LayoutDesigner({
                   zoom={zoom}
                   canvasWidth={canvasWidth}
                   canvasHeight={canvasHeight}
-                  checkCollision={checkCollision}
+                  allRooms={rooms}
                 />
               ))}
             </div>
