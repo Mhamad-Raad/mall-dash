@@ -27,7 +27,7 @@ const RequestsPage = () => {
   }, [dispatch, searchParams, limit]);
 
   return (
-    <div className='flex flex-col gap-6 p-4 md:p-6 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500'>
+    <section className='w-full h-full flex flex-col gap-4 overflow-hidden'>
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-3xl font-bold tracking-tight'>Tenant Requests</h1>
@@ -38,8 +38,10 @@ const RequestsPage = () => {
       </div>
       
       <RequestsFilters />
-      <RequestsTable />
-    </div>
+      <div className='flex-1 min-h-0 flex flex-col'>
+        <RequestsTable />
+      </div>
+    </section>
   );
 };
 

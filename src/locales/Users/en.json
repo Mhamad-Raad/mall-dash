@@ -17,7 +17,8 @@
     "superAdmin": "SuperAdmin",
     "admin": "Admin",
     "vendor": "Vendor",
-    "tenant": "Tenant"
+    "tenant": "Tenant",
+    "driver": "Driver"
   },
   "emptyState": {
     "title": "No Users Found",

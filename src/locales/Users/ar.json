@@ -17,7 +17,8 @@
     "superAdmin": "مدير عام",
     "admin": "مدير",
     "vendor": "بائع",
-    "tenant": "مستأجر"
+    "tenant": "مستأجر",
+    "driver": "سائق"
   },
   "emptyState": {
     "title": "لم يتم العثور على مستخدمين",
