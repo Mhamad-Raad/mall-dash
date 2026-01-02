@@ -8,8 +8,6 @@ import {
   DoorOpen,
   Save,
   FolderOpen,
-  Undo,
-  Redo,
 } from 'lucide-react';
 import { RoomToolbar } from './RoomToolbar';
 import type { RoomType } from './types';
@@ -18,8 +16,6 @@ interface DesignerToolbarProps {
   selectedType: RoomType | null;
   doorMode: boolean;
   hasCollisions: boolean;
-  canUndo: boolean;
-  canRedo: boolean;
   cellSize: number;
   showGrid: boolean;
   hasRooms: boolean;
@@ -27,8 +23,6 @@ interface DesignerToolbarProps {
   onAddRoom: (type: RoomType) => void;
   onSelectType: (type: RoomType | null) => void;
   onDoorModeChange: (enabled: boolean) => void;
-  onUndo: () => void;
-  onRedo: () => void;
   onZoomOut: () => void;
   onZoomIn: () => void;
   onToggleGrid: () => void;
@@ -41,8 +35,6 @@ export const DesignerToolbar = ({
   selectedType,
   doorMode,
   hasCollisions,
-  canUndo,
-  canRedo,
   cellSize,
   showGrid,
   hasRooms,
@@ -50,8 +42,6 @@ export const DesignerToolbar = ({
   onAddRoom,
   onSelectType,
   onDoorModeChange,
-  onUndo,
-  onRedo,
   onZoomOut,
   onZoomIn,
   onToggleGrid,
@@ -92,27 +82,6 @@ export const DesignerToolbar = ({
       </div>
 
       <div className='flex items-center gap-0.5 shrink-0'>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='h-7 w-7'
-          onClick={onUndo}
-          disabled={!canUndo}
-          title='Undo (Ctrl+Z)'
-        >
-          <Undo className='w-3.5 h-3.5' />
-        </Button>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='h-7 w-7'
-          onClick={onRedo}
-          disabled={!canRedo}
-          title='Redo (Ctrl+Y)'
-        >
-          <Redo className='w-3.5 h-3.5' />
-        </Button>
-        <div className='w-px h-4 bg-border mx-0.5' />
         <Button
           variant='ghost'
           size='icon'

@@ -8,19 +8,26 @@ export function useHistory<T>(initialState: T) {
 
   const pushState = useCallback((newState: T) => {
     setHistory(prev => {
+      // Prevent duplicate entries - don't push if the state is identical
+      if (prev.length > 0 && JSON.stringify(prev[currentIndex]) === JSON.stringify(newState)) {
+        return prev;
+      }
+      
       const newHistory = prev.slice(0, currentIndex + 1);
       const updated = [...newHistory, newState];
       
       // Hard limit - remove oldest entries
       if (updated.length > MAX_HISTORY) {
         const trimmed = updated.slice(-MAX_HISTORY);
+        // Update index in the same update cycle
         setCurrentIndex(MAX_HISTORY - 1);
         return trimmed;
       }
       
+      // Update index in the same update cycle
+      setCurrentIndex(newHistory.length);
       return updated;
     });
-    setCurrentIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
   }, [currentIndex]);
 
   const undo = useCallback(() => {

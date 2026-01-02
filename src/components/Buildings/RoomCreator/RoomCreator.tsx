@@ -1,7 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { getRoomConfig } from './types';
 import type { Room, RoomType, ApartmentLayout } from './types';
-import { useHistory } from './useHistory';
 import { useLayoutTemplates } from './useLayoutTemplates';
 import { SaveTemplateDialog } from './SaveTemplateDialog';
 import { LoadTemplateDialog } from './LoadTemplateDialog';
@@ -37,31 +36,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const { templates, saveTemplate, deleteTemplate, applyTemplate } = useLayoutTemplates();
-
-  // History management
-  const { pushState, undo, redo, canUndo, canRedo } = useHistory(layout);
-  const skipHistoryRef = useRef(false); // Skip history during continuous operations
-
-  const handleLayoutChange = useCallback((newLayout: ApartmentLayout, skipHistory = false) => {
-    if (!skipHistory && !skipHistoryRef.current) {
-      pushState(newLayout);
-    }
-    onLayoutChange(newLayout);
-  }, [onLayoutChange, pushState]);
-
-  const handleUndo = useCallback(() => {
-    const previousLayout = undo();
-    if (previousLayout) {
-      onLayoutChange(previousLayout);
-    }
-  }, [undo, onLayoutChange]);
-
-  const handleRedo = useCallback(() => {
-    const nextLayout = redo();
-    if (nextLayout) {
-      onLayoutChange(nextLayout);
-    }
-  }, [redo, onLayoutChange]);
 
   // Ctrl+scroll zoom handler - needs non-passive event listener to prevent browser zoom
   // Attached to scroll container to capture wheel events in the entire area
@@ -125,7 +99,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     layout,
     doors,
     selectedRoomId,
-    onLayoutChange: handleLayoutChange,
+    onLayoutChange,
     onSelectRoom: setSelectedRoomId,
     onSelectType: setSelectedType,
   });
@@ -135,7 +109,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     layout,
     doors,
     selectedDoorId,
-    onLayoutChange: handleLayoutChange,
+    onLayoutChange,
     onSelectDoor: setSelectedDoorId,
     onDoorModeChange: setDoorMode,
   });
@@ -150,7 +124,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
   });
 
   const handleClearAll = () => {
-    handleLayoutChange({ ...layout, rooms: [], doors: [] });
+    onLayoutChange({ ...layout, rooms: [], doors: [] });
     setSelectedRoomId(null);
     setSelectedDoorId(null);
   };
@@ -160,8 +134,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     selectedRoomId,
     selectedDoorId,
     rooms: layout.rooms,
-    onUndo: handleUndo,
-    onRedo: handleRedo,
     onDeleteRoom: deleteRoom,
     onDeleteDoor: deleteDoor,
     onMoveRoom: moveRoom,
@@ -220,8 +192,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           selectedType={selectedType}
           doorMode={doorMode}
           hasCollisions={hasCollisions}
-          canUndo={canUndo}
-          canRedo={canRedo}
           cellSize={cellSize}
           showGrid={showGrid}
           hasRooms={layout.rooms.length > 0}
@@ -237,7 +207,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
               width: config.defaultWidth,
               height: config.defaultHeight,
             };
-            handleLayoutChange({
+            onLayoutChange({
               ...layout,
               rooms: [...layout.rooms, newRoom],
             });
@@ -246,8 +216,6 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
           }}
           onSelectType={setSelectedType}
           onDoorModeChange={setDoorMode}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
           onZoomOut={() => setCellSize((s) => Math.max(24, s - 8))}
           onZoomIn={() => setCellSize((s) => Math.min(96, s + 8))}
           onToggleGrid={() => setShowGrid(!showGrid)}
@@ -312,7 +280,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
             onRotateRoom={rotateRoom}
             onDeleteRoom={deleteRoom}
             onUpdateDoorWidth={(id, width) => {
-              handleLayoutChange({
+              onLayoutChange({
                 ...layout,
                 doors: doors.map(d => 
                   d.id === id ? { ...d, width } : d
@@ -339,7 +307,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
         templates={templates}
         onLoad={(template) => {
           const newLayout = applyTemplate(template);
-          handleLayoutChange(newLayout);
+          onLayoutChange(newLayout);
           setLoadTemplateOpen(false);
           setSelectedRoomId(null);
           setSelectedDoorId(null);

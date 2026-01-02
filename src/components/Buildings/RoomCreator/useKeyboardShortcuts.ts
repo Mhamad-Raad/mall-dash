@@ -4,8 +4,6 @@ interface UseKeyboardShortcutsProps {
   selectedRoomId: string | null;
   selectedDoorId: string | null;
   rooms: Array<{ id: string; x: number; y: number }>;
-  onUndo: () => void;
-  onRedo: () => void;
   onDeleteRoom: (id: string) => void;
   onDeleteDoor: (id: string) => void;
   onMoveRoom: (id: string, x: number, y: number) => void;
@@ -15,27 +13,12 @@ export const useKeyboardShortcuts = ({
   selectedRoomId,
   selectedDoorId,
   rooms,
-  onUndo,
-  onRedo,
   onDeleteRoom,
   onDeleteDoor,
   onMoveRoom,
 }: UseKeyboardShortcutsProps) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Undo/Redo
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) {
-          onRedo();
-        } else {
-          onUndo();
-        }
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-        e.preventDefault();
-        onRedo();
-      }
-      
       // Delete
       if (e.key === 'Delete' || e.key === 'Backspace') {
         // Only if not typing in an input
@@ -71,5 +54,5 @@ export const useKeyboardShortcuts = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedRoomId, selectedDoorId, rooms, onUndo, onRedo, onDeleteRoom, onDeleteDoor, onMoveRoom]);
+  }, [selectedRoomId, selectedDoorId, rooms, onDeleteRoom, onDeleteDoor, onMoveRoom]);
 };
