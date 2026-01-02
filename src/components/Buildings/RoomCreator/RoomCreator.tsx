@@ -626,6 +626,16 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
     [layout, handleLayoutChange]
   );
 
+  const handleRoomSelect = useCallback((id: string) => {
+    setSelectedRoomId(id);
+    setSelectedDoorId(null);
+  }, []);
+
+  const handleDoorSelect = useCallback((id: string) => {
+    setSelectedDoorId(id);
+    setSelectedRoomId(null);
+  }, []);
+
   const handleDragMove = (event: DragMoveEvent) => {
     const { active, delta } = event;
     const id = active.id as string;
@@ -1142,10 +1152,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                   isOverlapping={overlappingRoomIds.has(room.id)}
                   offsetX={offsetX}
                   offsetY={offsetY}
-                  onSelect={(id) => {
-                    setSelectedRoomId(id);
-                    setSelectedDoorId(null);
-                  }}
+                  onSelect={handleRoomSelect}
                   onResize={resizeRoom}
                 />
               ))}
@@ -1192,10 +1199,7 @@ export const RoomCreator = ({ layout, onLayoutChange }: RoomCreatorProps) => {
                     isSelected={selectedDoorId === door.id}
                     offsetX={offsetX}
                     offsetY={offsetY}
-                    onSelect={(id) => {
-                      setSelectedDoorId(id);
-                      setSelectedRoomId(null);
-                    }}
+                    onSelect={handleDoorSelect}
                     onDelete={deleteDoor}
                   />
                 );

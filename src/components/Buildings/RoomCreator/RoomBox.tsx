@@ -46,9 +46,7 @@ interface RoomBoxProps {
 }
 
 // Custom comparison to prevent unnecessary re-renders
-// Only re-render if room data, selection, or display properties change
 const arePropsEqual = (prevProps: RoomBoxProps, nextProps: RoomBoxProps): boolean => {
-  // Check room object properties individually (more efficient than deep compare)
   const prevRoom = prevProps.room;
   const nextRoom = nextProps.room;
   
@@ -64,7 +62,6 @@ const arePropsEqual = (prevProps: RoomBoxProps, nextProps: RoomBoxProps): boolea
     return false;
   }
   
-  // Check display properties
   if (
     prevProps.cellSize !== nextProps.cellSize ||
     prevProps.isSelected !== nextProps.isSelected ||
@@ -75,13 +72,11 @@ const arePropsEqual = (prevProps: RoomBoxProps, nextProps: RoomBoxProps): boolea
     return false;
   }
   
-  // Callbacks are compared by reference - if parent uses useCallback, they'll be stable
-  // We intentionally skip callback comparison since we'll stabilize them in the parent
-  
   return true;
 };
 
-export const RoomBox = memo(function RoomBox({
+// Pure visual component - isolated from DndContext
+const RoomBoxVisual = memo(function RoomBoxVisual({
   room,
   cellSize,
   isSelected,
@@ -90,7 +85,19 @@ export const RoomBox = memo(function RoomBox({
   offsetY = 0,
   onSelect,
   onResize,
-}: RoomBoxProps) {
+  dragRef,
+  dragListeners,
+  dragAttributes,
+  transform,
+  isDragging,
+}: RoomBoxProps & {
+  dragRef?: (node: HTMLElement | null) => void;
+  dragListeners?: Record<string, any>;
+  dragAttributes?: Record<string, any>;
+  transform?: { x: number; y: number } | null;
+  isDragging?: boolean;
+}) {
+  
   const [isResizing, setIsResizing] = useState(false);
   const config = getRoomConfig(room.type);
   const IconComponent = ICON_MAP[config.icon];
@@ -99,7 +106,6 @@ export const RoomBox = memo(function RoomBox({
     handleMouseUp: (() => void) | null;
   }>({ handleMouseMove: null, handleMouseUp: null });
 
-  // Cleanup event listeners on unmount
   useEffect(() => {
     return () => {
       if (mouseHandlersRef.current.handleMouseMove) {
@@ -111,36 +117,25 @@ export const RoomBox = memo(function RoomBox({
     };
   }, []);
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: room.id,
-      data: { room },
-      disabled: isResizing, // Disable drag while resizing
-    });
-
-  // Calculate pixel dimensions for responsive content
   const pixelWidth = room.width * cellSize;
   const pixelHeight = room.height * cellSize;
   const area = room.width * room.height;
   
-  // Determine what to show based on room size
   const isVerySmall = pixelWidth < 80 || pixelHeight < 60;
   const isSmall = pixelWidth < 120 || pixelHeight < 80;
 
-  // Only apply transform during active drag
   const style: React.CSSProperties = {
     position: 'absolute',
     left: (room.x + offsetX) * cellSize,
     top: (room.y + offsetY) * cellSize,
     width: pixelWidth,
     height: pixelHeight,
-    transform: isDragging ? CSS.Translate.toString(transform) : undefined,
+    transform: isDragging && transform ? CSS.Translate.toString({ ...transform, scaleX: 1, scaleY: 1 }) : undefined,
     opacity: isDragging ? 0 : 1,
     zIndex: isDragging ? 1000 : isSelected ? 100 : 1,
     touchAction: 'none',
   };
 
-  // Resize handler factory - supports all 8 directions
   const createResizeHandler = (direction: ResizeDirection) => (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -153,7 +148,6 @@ export const RoomBox = memo(function RoomBox({
     const startX = room.x;
     const startY = room.y;
     
-    // Track the last resize values for final save
     let lastWidth = startWidth;
     let lastHeight = startHeight;
     let lastDeltaX: number | undefined;
@@ -169,71 +163,53 @@ export const RoomBox = memo(function RoomBox({
       let positionDeltaX: number | undefined;
       let positionDeltaY: number | undefined;
       
-      // Handle horizontal resizing
       if (direction.includes('right')) {
-        // Expanding/shrinking from right - just change width
         newWidth = Math.max(0.5, Math.round((startWidth + mouseDeltaX / cellSize) * 10000) / 10000);
       } else if (direction.includes('left')) {
-        // Expanding/shrinking from left - change width and move position
         const widthChange = -mouseDeltaX / cellSize;
         newWidth = Math.max(0.5, Math.round((startWidth + widthChange) * 10000) / 10000);
-        // Position moves by the inverse of the width change
         const actualWidthChange = newWidth - startWidth;
         positionDeltaX = -actualWidthChange;
-        // Prevent moving past origin
         if (startX + positionDeltaX < 0) {
           positionDeltaX = -startX;
           newWidth = startWidth + startX;
         }
       }
       
-      // Handle vertical resizing
       if (direction.includes('bottom')) {
-        // Expanding/shrinking from bottom - just change height
         newHeight = Math.max(0.5, Math.round((startHeight + mouseDeltaY / cellSize) * 10000) / 10000);
       } else if (direction.includes('top')) {
-        // Expanding/shrinking from top - change height and move position
         const heightChange = -mouseDeltaY / cellSize;
         newHeight = Math.max(0.5, Math.round((startHeight + heightChange) * 10000) / 10000);
-        // Position moves by the inverse of the height change
         const actualHeightChange = newHeight - startHeight;
         positionDeltaY = -actualHeightChange;
-        // Prevent moving past origin
         if (startY + positionDeltaY < 0) {
           positionDeltaY = -startY;
           newHeight = startHeight + startY;
         }
       }
       
-      // Store for final save
       lastWidth = newWidth;
       lastHeight = newHeight;
       lastDeltaX = positionDeltaX;
       lastDeltaY = positionDeltaY;
       
-      onResize(room.id, newWidth, newHeight, positionDeltaX, positionDeltaY, true); // Mark as continuous resizing
+      onResize(room.id, newWidth, newHeight, positionDeltaX, positionDeltaY, true);
     };
 
     const handleMouseUp = () => {
       setIsResizing(false);
-      
-      // Final resize with last values - save to history
       onResize(room.id, lastWidth, lastHeight, lastDeltaX, lastDeltaY, false);
-      
-      // Clean up immediately - CRITICAL to prevent memory leak
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       mouseHandlersRef.current = { handleMouseMove: null, handleMouseUp: null };
     };
 
-    // Store references for cleanup
     mouseHandlersRef.current = { handleMouseMove, handleMouseUp };
-
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  // Get cursor style for resize direction
   const getCursor = (direction: ResizeDirection): string => {
     switch (direction) {
       case 'top':
@@ -253,36 +229,36 @@ export const RoomBox = memo(function RoomBox({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={dragRef}
       style={style}
       className={cn(
         'rounded-lg group overflow-hidden',
         'flex flex-col border',
-        !isDragging && !isResizing && 'transition-colors transition-shadow transition-opacity duration-150',
+        !isDragging && !isResizing && 'transition-all duration-150',
         isDragging && 'opacity-90 shadow-2xl cursor-grabbing scale-[1.02]',
         !isDragging && !isResizing && 'cursor-grab hover:shadow-lg',
         isResizing && 'cursor-nwse-resize',
         isSelected && 'ring-2 ring-primary ring-offset-2 shadow-lg',
-            isOverlapping 
-              ? 'border-red-500 bg-destructive/10 shadow-red-500/20' 
-              : 'border-border/50 bg-card shadow-sm'
-          )}
-          title={`${room.name}\n${room.width}m × ${room.height}m\nArea: ${(room.width * room.height).toFixed(2)}m²`}
-          onClick={(e) => {
-            // Select room on click
-            if (!isResizing && !isDragging) {
-              e.stopPropagation();
-              onSelect(room.id);
-            }
-          }}
-        >
-          {/* Drag overlay - captures drag events */}
-          <div
-            className='absolute inset-0 z-10'
-            {...attributes}
-            {...listeners}
-          />
-      {/* Color indicator bar with gradient */}
+        isOverlapping 
+          ? 'border-red-500 bg-destructive/10 shadow-red-500/20' 
+          : 'border-border/50 bg-card shadow-sm'
+      )}
+      title={`${room.name}\n${room.width}m × ${room.height}m\nArea: ${(room.width * room.height).toFixed(2)}m²`}
+      onClick={(e) => {
+        if (!isResizing && !isDragging) {
+          e.stopPropagation();
+          onSelect(room.id);
+        }
+      }}
+    >
+      {dragListeners && dragAttributes && (
+        <div
+          className='absolute inset-0 z-10'
+          {...dragAttributes}
+          {...dragListeners}
+        />
+      )}
+      
       <div 
         className='w-full shrink-0'
         style={{ 
@@ -293,9 +269,7 @@ export const RoomBox = memo(function RoomBox({
         }}
       />
       
-      {/* Main content */}
       <div className='flex-1 flex flex-col items-center justify-center p-1 min-h-0 relative'>
-        {/* Room icon - size based on room dimensions */}
         {IconComponent && (
           <div style={{ color: isOverlapping ? '#ef4444' : config.color }}>
             <IconComponent className={cn(
@@ -304,7 +278,6 @@ export const RoomBox = memo(function RoomBox({
           </div>
         )}
         
-        {/* Room name - hidden on very small rooms */}
         {!isVerySmall && (
           <span
             className={cn(
@@ -317,7 +290,6 @@ export const RoomBox = memo(function RoomBox({
         )}
       </div>
 
-      {/* Area footer - adapts to size */}
       <div 
         className={cn(
           'shrink-0 text-center font-medium border-t border-border',
@@ -328,55 +300,43 @@ export const RoomBox = memo(function RoomBox({
         {area.toFixed(2)}m²
       </div>
 
-      {/* Resize handles - only show when selected, z-index above drag overlay */}
       {isSelected && !isDragging && (
         <>
-          {/* Edge resize handles */}
-          {/* Top */}
           <div
             className={cn('absolute top-0 left-1/2 -translate-x-1/2 h-2 w-8 bg-primary/80 hover:bg-primary rounded-b z-20', getCursor('top'))}
             onMouseDown={createResizeHandler('top')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Bottom */}
           <div
             className={cn('absolute bottom-0 left-1/2 -translate-x-1/2 h-2 w-8 bg-primary/80 hover:bg-primary rounded-t z-20', getCursor('bottom'))}
             onMouseDown={createResizeHandler('bottom')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Left */}
           <div
             className={cn('absolute left-0 top-1/2 -translate-y-1/2 w-2 h-8 bg-primary/80 hover:bg-primary rounded-r z-20', getCursor('left'))}
             onMouseDown={createResizeHandler('left')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Right */}
           <div
             className={cn('absolute right-0 top-1/2 -translate-y-1/2 w-2 h-8 bg-primary/80 hover:bg-primary rounded-l z-20', getCursor('right'))}
             onMouseDown={createResizeHandler('right')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          
-          {/* Corner resize handles */}
-          {/* Top-Left */}
           <div
             className={cn('absolute top-0 left-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-br z-20', getCursor('top-left'))}
             onMouseDown={createResizeHandler('top-left')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Top-Right */}
           <div
             className={cn('absolute top-0 right-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-bl z-20', getCursor('top-right'))}
             onMouseDown={createResizeHandler('top-right')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Bottom-Left */}
           <div
             className={cn('absolute bottom-0 left-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-tr z-20', getCursor('bottom-left'))}
             onMouseDown={createResizeHandler('bottom-left')}
             onPointerDown={(e) => e.stopPropagation()}
           />
-          {/* Bottom-Right */}
           <div
             className={cn('absolute bottom-0 right-0 w-3 h-3 bg-primary hover:bg-primary/80 rounded-tl z-20', getCursor('bottom-right'))}
             onMouseDown={createResizeHandler('bottom-right')}
@@ -387,3 +347,26 @@ export const RoomBox = memo(function RoomBox({
     </div>
   );
 }, arePropsEqual);
+
+// Draggable wrapper - only this re-renders on drag events from DndContext
+// The visual component below stays pure and won't re-render unnecessarily
+export const RoomBox = function RoomBox(props: RoomBoxProps) {
+  const { room } = props;
+  
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: room.id,
+      data: { room },
+    });
+
+  return (
+    <RoomBoxVisual
+      {...props}
+      dragRef={setNodeRef}
+      dragListeners={listeners}
+      dragAttributes={attributes}
+      transform={transform}
+      isDragging={isDragging}
+    />
+  );
+};
