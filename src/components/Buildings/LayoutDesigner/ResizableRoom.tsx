@@ -128,6 +128,8 @@ function ResizableRoomInner({
   const [isColliding, setIsColliding] = useState(false);
   // Live size display during resize (local state, doesn't trigger parent re-render)
   const [liveSize, setLiveSize] = useState<{ width: number; height: number } | null>(null);
+  // Ghost position for snap preview during drag
+  const [ghostPosition, setGhostPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Track last valid position for rollback (refs don't cause re-renders)
   const lastValidPosRef = useRef({ x: room.x, y: room.y, width: room.width, height: room.height });
@@ -165,6 +167,7 @@ function ResizableRoomInner({
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
     setIsColliding(false);
+    setGhostPosition(null);
     lastValidPosRef.current = { x: room.x, y: room.y, width: room.width, height: room.height };
   }, [room.x, room.y, room.width, room.height]);
 
@@ -180,15 +183,34 @@ function ResizableRoomInner({
     const hasCollision = checkCollision(gridX, gridY);
     setIsColliding(hasCollision);
     
-    if (!hasCollision) {
-      lastValidPosRef.current = { ...lastValidPosRef.current, x: gridX, y: gridY };
+    // Calculate ghost snap position (where the room will land)
+    const currentRooms = allRoomsRef.current;
+    const movingRoom: DroppedRoom = { ...room, x: gridX, y: gridY };
+    const result = findBestValidPosition(movingRoom, gridX, gridY, currentRooms, 8);
+    
+    if (!result.hasCollision) {
+      const snapX = Math.max(CANVAS_MIN_X, Math.min(CANVAS_MAX_X - room.width, result.x));
+      const snapY = Math.max(CANVAS_MIN_Y, Math.min(CANVAS_MAX_Y - room.height, result.y));
+      // Only show ghost if it's different from current drag position
+      if (Math.abs(snapX - gridX) > 0.01 || Math.abs(snapY - gridY) > 0.01) {
+        setGhostPosition({ x: snapX, y: snapY });
+      } else {
+        setGhostPosition(null);
+      }
+      lastValidPosRef.current = { ...lastValidPosRef.current, x: snapX, y: snapY };
+    } else {
+      setGhostPosition(null);
+      if (!hasCollision) {
+        lastValidPosRef.current = { ...lastValidPosRef.current, x: gridX, y: gridY };
+      }
     }
-  }, [cellSize, checkCollision, room.width, room.height]);
+  }, [cellSize, checkCollision, room]);
 
   // Handle drag stop - NOW update parent state with smart positioning
   const handleDragStop: RndDragCallback = useCallback((_e, d) => {
     setIsDragging(false);
     setIsColliding(false);
+    setGhostPosition(null);
 
     const rawGridX = Math.round((d.x / cellSize) * 1000) / 1000;
     const rawGridY = Math.round((d.y / cellSize) * 1000) / 1000;
@@ -304,60 +326,86 @@ function ResizableRoomInner({
   }, [room.id, onSelect]);
 
   return (
-    <Rnd
-      size={{
-        width: room.width * cellSize,
-        height: room.height * cellSize,
-      }}
-      position={{
-        x: room.x * cellSize,
-        y: room.y * cellSize,
-      }}
-      scale={scale}
-      onDragStart={handleDragStart}
-      onDrag={handleDrag}
-      onDragStop={handleDragStop}
-      onResizeStart={handleResizeStart}
-      onResize={handleResize}
-      onResizeStop={handleResizeStop}
-      minWidth={MIN_ROOM_SIZE * cellSize}
-      minHeight={MIN_ROOM_SIZE * cellSize}
-      maxWidth={MAX_ROOM_SIZE * cellSize}
-      maxHeight={MAX_ROOM_SIZE * cellSize}
-      resizeGrid={[1, 1]}
-      dragGrid={[1, 1]}
-      enableResizing={{
-        top: true,
-        right: true,
-        bottom: true,
-        left: true,
-        topRight: true,
-        bottomRight: true,
-        bottomLeft: true,
-        topLeft: true,
-      }}
-      className={cn(
-        'group absolute',
-        isDragging && 'z-50',
-        isResizing && 'z-50',
-        isSelected && !isDragging && !isResizing && 'z-10'
+    <>
+      {/* Ghost preview showing where the room will snap to */}
+      {isDragging && ghostPosition && (
+        <div
+          className="absolute pointer-events-none rounded-md border-2 border-dashed animate-pulse"
+          style={{
+            left: ghostPosition.x * cellSize,
+            top: ghostPosition.y * cellSize,
+            width: room.width * cellSize,
+            height: room.height * cellSize,
+            borderColor: borderColor,
+            backgroundColor: `${borderColor}15`,
+            zIndex: 40,
+          }}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span
+              className="text-[10px] font-medium opacity-70 bg-background/80 px-1.5 py-0.5 rounded"
+              style={{ color: borderColor }}
+            >
+              Drop here
+            </span>
+          </div>
+        </div>
       )}
-      style={{
-        zIndex: isDragging || isResizing ? 50 : isSelected ? 10 : 1,
-      }}
-    >
-      <RoomContent
-        room={room}
-        borderColor={borderColor}
-        Icon={Icon}
-        isSelected={isSelected}
-        isDragging={isDragging}
-        isResizing={isResizing}
-        liveSize={liveSize}
-        isColliding={isColliding}
-        onClick={handleClick}
-      />
-    </Rnd>
+      <Rnd
+        size={{
+          width: room.width * cellSize,
+          height: room.height * cellSize,
+        }}
+        position={{
+          x: room.x * cellSize,
+          y: room.y * cellSize,
+        }}
+        scale={scale}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
+        onDragStop={handleDragStop}
+        onResizeStart={handleResizeStart}
+        onResize={handleResize}
+        onResizeStop={handleResizeStop}
+        minWidth={MIN_ROOM_SIZE * cellSize}
+        minHeight={MIN_ROOM_SIZE * cellSize}
+        maxWidth={MAX_ROOM_SIZE * cellSize}
+        maxHeight={MAX_ROOM_SIZE * cellSize}
+        resizeGrid={[1, 1]}
+        dragGrid={[1, 1]}
+        enableResizing={{
+          top: true,
+          right: true,
+          bottom: true,
+          left: true,
+          topRight: true,
+          bottomRight: true,
+          bottomLeft: true,
+          topLeft: true,
+        }}
+        className={cn(
+          'group absolute',
+          isDragging && 'z-50',
+          isResizing && 'z-50',
+          isSelected && !isDragging && !isResizing && 'z-10'
+        )}
+        style={{
+          zIndex: isDragging || isResizing ? 50 : isSelected ? 10 : 1,
+        }}
+      >
+        <RoomContent
+          room={room}
+          borderColor={borderColor}
+          Icon={Icon}
+          isSelected={isSelected}
+          isDragging={isDragging}
+          isResizing={isResizing}
+          liveSize={liveSize}
+          isColliding={isColliding}
+          onClick={handleClick}
+        />
+      </Rnd>
+    </>
   );
 }
 
