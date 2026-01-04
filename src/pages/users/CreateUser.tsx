@@ -153,14 +153,7 @@ export default function CreateUser() {
         ...(photo ? { ProfileImageUrl: photo } : {}),
       };
     } else if (type === 'Customer') {
-      const {
-        confirmPassword,
-        photo,
-        buildingId,
-        floorId,
-        apartmentId,
-        ...userData
-      } = customerFormData;
+      const { confirmPassword, photo, buildingId, floorId, apartmentId, ...userData } = customerFormData;
 
       userName = `${customerFormData.firstName} ${customerFormData.lastName}`;
       data = {
@@ -227,15 +220,12 @@ export default function CreateUser() {
           {/* Form Fields */}
           <Card>
             <CardHeader>
-              <CardTitle className='text-lg'>
-                {t('createUser.userInformation')}
-              </CardTitle>
+              <CardTitle className='text-lg'>{t('createUser.userInformation')}</CardTitle>
               <CardDescription>
-                {t('createUser.fillDetails', {
-                  type:
-                    type === 'Staff'
-                      ? t('createUser.userType.staff.title')
-                      : t('createUser.userType.customer.title'),
+                {t('createUser.fillDetails', { 
+                  type: type === 'Staff' 
+                    ? t('createUser.userType.staff.title')
+                    : t('createUser.userType.customer.title')
                 })}
               </CardDescription>
             </CardHeader>

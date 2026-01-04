@@ -8,7 +8,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { showValidationErrors } from '@/lib/utils';
 import type { AppDispatch, RootState } from '@/store/store';
-import { fetchVendorById,  updateVendor,  clearVendor,  deleteVendor } from '@/store/slices/vendorSlice';
+import {
+  fetchVendorById,
+  updateVendor,
+  clearVendor,
+  deleteVendor,
+} from '@/store/slices/vendorSlice';
 import { vendorTypes } from '@/constants/vendorTypes';
 import { convertToUTCFormat } from '@/lib/timeUtils';
 import ConfirmModal from '@/components/ui/Modals/ConfirmModal';
@@ -18,6 +23,7 @@ import VendorPhotoUpload from '@/components/Vendors/VendorPhotoUpload';
 import VendorBasicInfo from '@/components/Vendors/VendorBasicInfo';
 import VendorWorkingHours from '@/components/Vendors/VendorWorkingHours';
 import VendorUserAssignment from '@/components/Vendors/VendorUserAssignment';
+import { compressImage } from '@/lib/imageCompression';
 
 const VendorDetail = () => {
   const { id } = useParams();
@@ -25,9 +31,15 @@ const VendorDetail = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { t } = useTranslation('vendors');
 
-  const { vendor, loading, error, errors, updating, updateError, updateErrors } = useSelector(
-    (state: RootState) => state.vendor
-  );
+  const {
+    vendor,
+    loading,
+    error,
+    errors,
+    updating,
+    updateError,
+    updateErrors,
+  } = useSelector((state: RootState) => state.vendor);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -60,7 +72,8 @@ const VendorDetail = () => {
       vendor.description !== (formData.description || '') ||
       vendor.workingHours.open !== formData.openingTime ||
       vendor.workingHours.close !== formData.closeTime ||
-      String(vendorTypes.find((t) => t.label === vendor.type)?.value || '1') !== formData.type ||
+      String(vendorTypes.find((t) => t.label === vendor.type)?.value || '1') !==
+        formData.type ||
       (vendor.userId || '') !== formData.userId
     );
   }, [vendor, formData, preview]);
@@ -140,30 +153,45 @@ const VendorDetail = () => {
     }));
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFormData((prev) => ({ ...prev, photo: file }));
+    if (file) {
+      try {
+        const compressed = await compressImage(file);
+        setFormData((prev) => ({ ...prev, photo: compressed }));
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        setFormData((prev) => ({ ...prev, photo: file }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, photo: null }));
+    }
   };
 
   const handlePhotoRemove = () => {
     setFormData((prev) => ({ ...prev, photo: null }));
     setPreview('');
     // Reset the file input
-    const fileInput = document.getElementById('vendor-photo') as HTMLInputElement;
+    const fileInput = document.getElementById(
+      'vendor-photo'
+    ) as HTMLInputElement;
     if (fileInput) fileInput.value = '';
   };
 
-  const handleTimeChange = useCallback((type: 'open' | 'close', time: string) => {
-    setFormData((prev) => {
-      // Only update if the value actually changed
-      const currentTime = type === 'open' ? prev.openingTime : prev.closeTime;
-      if (currentTime === time) return prev;
-      
-      return type === 'open' 
-        ? { ...prev, openingTime: time }
-        : { ...prev, closeTime: time };
-    });
-  }, []);
+  const handleTimeChange = useCallback(
+    (type: 'open' | 'close', time: string) => {
+      setFormData((prev) => {
+        // Only update if the value actually changed
+        const currentTime = type === 'open' ? prev.openingTime : prev.closeTime;
+        if (currentTime === time) return prev;
+
+        return type === 'open'
+          ? { ...prev, openingTime: time }
+          : { ...prev, closeTime: time };
+      });
+    },
+    []
+  );
 
   const handleUserSelect = useCallback((userId: string, userName: string) => {
     setFormData((prev) => ({ ...prev, userId, userName }));
@@ -250,7 +278,9 @@ const VendorDetail = () => {
 
     if (updateVendor.fulfilled.match(result)) {
       toast.success(t('vendorDetail.success.updated'), {
-        description: t('vendorDetail.success.updatedDescription', { name: formData.name }),
+        description: t('vendorDetail.success.updatedDescription', {
+          name: formData.name,
+        }),
       });
       navigate('/vendors');
     }
@@ -265,7 +295,9 @@ const VendorDetail = () => {
     if (id) {
       const result = await dispatch(deleteVendor(id));
       if (deleteVendor.rejected.match(result)) {
-        const payload = result.payload as { error: string; errors: string[] } | undefined;
+        const payload = result.payload as
+          | { error: string; errors: string[] }
+          | undefined;
         showValidationErrors(
           t('vendorDetail.error.deleteFailed') || 'Failed to delete vendor',
           payload?.errors?.length ? payload.errors : payload?.error,
@@ -285,7 +317,12 @@ const VendorDetail = () => {
   }
 
   if (error || !vendor) {
-    return <VendorDetailError error={error || undefined} onBack={() => navigate(-1)} />;
+    return (
+      <VendorDetailError
+        error={error || undefined}
+        onBack={() => navigate(-1)}
+      />
+    );
   }
 
   return (
@@ -300,46 +337,46 @@ const VendorDetail = () => {
           </Button>
         </div>
 
-      {/* Vendor Information Card */}
-      <Card>
-        <CardContent className='p-6'>
-          <div className='flex flex-col md:flex-row gap-6'>
-            <VendorPhotoUpload
-              preview={preview}
-              onPhotoChange={handlePhotoChange}
-              onPhotoRemove={handlePhotoRemove}
-              disabled={updating}
-            />
-            <VendorBasicInfo
-              name={formData.name}
-              description={formData.description}
-              type={formData.type}
-              vendorId={vendor._id}
-              onInputChange={handleInputChange}
-              disabled={updating}
-            />
-          </div>
-        </CardContent>
-      </Card>
+        {/* Vendor Information Card */}
+        <Card>
+          <CardContent className='p-6'>
+            <div className='flex flex-col md:flex-row gap-6'>
+              <VendorPhotoUpload
+                preview={preview}
+                onPhotoChange={handlePhotoChange}
+                onPhotoRemove={handlePhotoRemove}
+                disabled={updating}
+              />
+              <VendorBasicInfo
+                name={formData.name}
+                description={formData.description}
+                type={formData.type}
+                vendorId={vendor._id}
+                onInputChange={handleInputChange}
+                disabled={updating}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Working Hours Card */}
-      <VendorWorkingHours
-        openingTime={formData.openingTime}
-        closeTime={formData.closeTime}
-        onInputChange={handleInputChange}
-        onTimeChange={handleTimeChange}
-        disabled={updating}
-      />
+        {/* Working Hours Card */}
+        <VendorWorkingHours
+          openingTime={formData.openingTime}
+          closeTime={formData.closeTime}
+          onInputChange={handleInputChange}
+          onTimeChange={handleTimeChange}
+          disabled={updating}
+        />
 
-      {/* User Assignment */}
-      <VendorUserAssignment
-        userId={formData.userId}
-        userName={formData.userName}
-        userEmail={vendor?.email}
-        userPhone={vendor?.phoneNumber}
-        userProfileImage={vendor?.userProfileImageUrl}
-        onUserSelect={handleUserSelect}
-      />
+        {/* User Assignment */}
+        <VendorUserAssignment
+          userId={formData.userId}
+          userName={formData.userName}
+          userEmail={vendor?.email}
+          userPhone={vendor?.phoneNumber}
+          userProfileImage={vendor?.userProfileImageUrl}
+          onUserSelect={handleUserSelect}
+        />
       </div>
 
       {/* Sticky Footer with Action Buttons */}
@@ -356,7 +393,9 @@ const VendorDetail = () => {
             disabled={!hasChanges || updating}
             className='px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {updating ? t('vendorDetail.actions.saving') : t('vendorDetail.actions.saveChanges')}
+            {updating
+              ? t('vendorDetail.actions.saving')
+              : t('vendorDetail.actions.saveChanges')}
           </button>
         </div>
       </div>

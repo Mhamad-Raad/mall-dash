@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -13,10 +19,14 @@ import {
 import roles from '@/constants/roles';
 import { Image as ImageIcon, X } from 'lucide-react';
 import type { UserFormData } from '@/interfaces/Users.interface';
+import { compressImage } from '@/lib/imageCompression';
 
 interface UserProfileCardProps {
   formData: UserFormData;
-  onInputChange: (field: keyof UserFormData, value: string | number | File) => void;
+  onInputChange: (
+    field: keyof UserFormData,
+    value: string | number | File
+  ) => void;
 }
 
 const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
@@ -25,10 +35,10 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
 
   const translateRole = (role: string): string => {
     const roleMap: { [key: string]: string } = {
-      SuperAdmin: t("roles.superAdmin"),
-      Admin: t("roles.admin"),
-      Vendor: t("roles.vendor"),
-      Tenant: t("roles.tenant"),
+      SuperAdmin: t('roles.superAdmin'),
+      Admin: t('roles.admin'),
+      Vendor: t('roles.vendor'),
+      Tenant: t('roles.tenant'),
     };
     return roleMap[role] || role;
   };
@@ -43,9 +53,17 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
     }
   }, [formData.imageFile, formData.profileImageUrl]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) onInputChange('imageFile', file);
+    if (file) {
+      try {
+        const compressed = await compressImage(file);
+        onInputChange('imageFile', compressed);
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        onInputChange('imageFile', file);
+      }
+    }
   };
 
   const handleRemoveImage = () => {
@@ -59,7 +77,9 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>{t('userDetails.userInformation')}</CardTitle>
+        <CardTitle className='text-lg'>
+          {t('userDetails.userInformation')}
+        </CardTitle>
         <CardDescription>
           {t('userDetails.userInformationDesc')}
         </CardDescription>
@@ -80,11 +100,17 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
               className='w-full h-full rounded-full bg-background flex items-center justify-center border-2 border-dashed border-muted-foreground/25 overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all group'
             >
               {preview ? (
-                <img src={preview} alt='Preview' className='w-full h-full object-cover' />
+                <img
+                  src={preview}
+                  alt='Preview'
+                  className='w-full h-full object-cover'
+                />
               ) : (
                 <div className='flex flex-col items-center gap-2'>
                   <ImageIcon className='size-12 text-muted-foreground/50 group-hover:text-primary/70 transition-colors' />
-                  <span className='text-xs text-muted-foreground'>{t('userDetails.uploadPhoto')}</span>
+                  <span className='text-xs text-muted-foreground'>
+                    {t('userDetails.uploadPhoto')}
+                  </span>
                 </div>
               )}
             </label>
@@ -104,7 +130,8 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
           <div className='flex-1 space-y-4 w-full'>
             <div className='space-y-2'>
               <Label htmlFor='firstName' className='text-sm font-medium'>
-                {t('forms.firstName')} <span className='text-destructive'>*</span>
+                {t('forms.firstName')}{' '}
+                <span className='text-destructive'>*</span>
               </Label>
               <Input
                 id='firstName'
@@ -116,7 +143,8 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
             </div>
             <div className='space-y-2'>
               <Label htmlFor='lastName' className='text-sm font-medium'>
-                {t('forms.lastName')} <span className='text-destructive'>*</span>
+                {t('forms.lastName')}{' '}
+                <span className='text-destructive'>*</span>
               </Label>
               <Input
                 id='lastName'
@@ -128,7 +156,8 @@ const UserProfileCard = ({ formData, onInputChange }: UserProfileCardProps) => {
             </div>
             <div className='space-y-2'>
               <Label htmlFor='userRole' className='text-sm font-medium'>
-                {t('forms.userRole')} <span className='text-destructive'>*</span>
+                {t('forms.userRole')}{' '}
+                <span className='text-destructive'>*</span>
               </Label>
               <Select
                 value={String(formData.role)}
