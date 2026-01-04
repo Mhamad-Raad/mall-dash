@@ -7,6 +7,7 @@ import { updateUser } from '@/data/Users';
 import { fetchMe } from '@/store/slices/meSlice';
 import ProfileOverviewCard from '@/components/Profile/ProfileOverviewCard';
 import EditProfileCard from '@/components/Profile/EditProfileCard';
+import { compressImage } from '@/lib/imageCompression';
 
 const Profile = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,15 +43,26 @@ const Profile = () => {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setImageFile(compressed);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(compressed);
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -141,25 +153,25 @@ const Profile = () => {
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0'>
-          <ProfileOverviewCard
-            user={me}
-            imagePreview={imagePreview}
-            imageFile={imageFile}
-            fileInputRef={fileInputRef}
-            onImageChange={handleImageChange}
-            onRemoveImage={handleRemoveImage}
-          />
+        <ProfileOverviewCard
+          user={me}
+          imagePreview={imagePreview}
+          imageFile={imageFile}
+          fileInputRef={fileInputRef}
+          onImageChange={handleImageChange}
+          onRemoveImage={handleRemoveImage}
+        />
 
-          <EditProfileCard
-            formData={formData}
-            loading={loading}
-            hasChanges={!!hasChanges}
-            onChange={handleChange}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        </div>
+        <EditProfileCard
+          formData={formData}
+          loading={loading}
+          hasChanges={!!hasChanges}
+          onChange={handleChange}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
       </div>
+    </div>
   );
 };
 

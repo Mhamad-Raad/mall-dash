@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Mail, Lock, Image as ImageIcon, X } from 'lucide-react';
 import roles from '@/constants/roles';
+import { compressImage } from '@/lib/imageCompression';
 
 type FieldErrors = {
   firstName?: string;
@@ -85,9 +86,20 @@ export default function CustomerForm({
             type='file'
             accept='image/*'
             className='hidden'
-            onChange={(e) =>
-              onInputChange('photo', e.target.files?.[0] || null)
-            }
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                try {
+                  const compressed = await compressImage(file);
+                  onInputChange('photo', compressed);
+                } catch (error) {
+                  console.error('Image compression failed:', error);
+                  onInputChange('photo', file);
+                }
+              } else {
+                onInputChange('photo', null);
+              }
+            }}
           />
           <label
             htmlFor='customer-photo'

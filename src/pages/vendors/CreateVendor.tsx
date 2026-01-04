@@ -22,6 +22,7 @@ import VendorUserAssignment from '@/components/Vendors/VendorUserAssignment';
 import { vendorTypes } from '@/constants/vendorTypes';
 import { createVendor } from '@/data/Vendor';
 import { convertToUTCFormat } from '@/lib/timeUtils';
+import { compressImage } from '@/lib/imageCompression';
 
 const CreateVendor = () => {
   const navigate = useNavigate();
@@ -64,9 +65,19 @@ const CreateVendor = () => {
     }));
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFormData((prev) => ({ ...prev, photo: file }));
+    if (file) {
+      try {
+        const compressed = await compressImage(file);
+        setFormData((prev) => ({ ...prev, photo: compressed }));
+      } catch (error) {
+        console.error('Image compression failed:', error);
+        setFormData((prev) => ({ ...prev, photo: file }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, photo: null }));
+    }
   };
 
   const handlePhotoRemove = () => {
@@ -151,7 +162,9 @@ const CreateVendor = () => {
         );
       } else {
         toast.success(t('createVendor.success.title'), {
-          description: t('createVendor.success.description', { name: formData.name }),
+          description: t('createVendor.success.description', {
+            name: formData.name,
+          }),
         });
         navigate('/vendors');
       }
@@ -185,9 +198,7 @@ const CreateVendor = () => {
           <h1 className='text-3xl font-bold tracking-tight'>
             {t('createVendor.title')}
           </h1>
-          <p className='text-muted-foreground'>
-            {t('createVendor.subtitle')}
-          </p>
+          <p className='text-muted-foreground'>{t('createVendor.subtitle')}</p>
         </div>
       </div>
 
@@ -218,7 +229,7 @@ const CreateVendor = () => {
                     name={formData.name}
                     description={formData.description}
                     type={formData.type}
-                    vendorId=""
+                    vendorId=''
                     onInputChange={handleInputChange}
                     disabled={isSubmitting}
                   />
@@ -227,13 +238,17 @@ const CreateVendor = () => {
             </Card>
 
             {/* Working Hours */}
-            <Card className="overflow-hidden">
-              <CardHeader className="border-b">
+            <Card className='overflow-hidden'>
+              <CardHeader className='border-b'>
                 <CardTitle className='flex items-center gap-2'>
                   <Clock className='h-5 w-5 text-primary' />
                   <div>
-                    <div className="text-lg font-semibold">{t('createVendor.workingHours.title')}</div>
-                    <div className="text-xs font-normal text-muted-foreground">{t('createVendor.workingHours.subtitle')}</div>
+                    <div className='text-lg font-semibold'>
+                      {t('createVendor.workingHours.title')}
+                    </div>
+                    <div className='text-xs font-normal text-muted-foreground'>
+                      {t('createVendor.workingHours.subtitle')}
+                    </div>
                   </div>
                 </CardTitle>
               </CardHeader>
@@ -241,15 +256,21 @@ const CreateVendor = () => {
                 {/* Time Inputs with Icons */}
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div className='space-y-2'>
-                    <Label htmlFor='openingTime' className='text-sm font-medium'>
-                      {t('createVendor.workingHours.openingTime')} <span className='text-destructive'>*</span>
+                    <Label
+                      htmlFor='openingTime'
+                      className='text-sm font-medium'
+                    >
+                      {t('createVendor.workingHours.openingTime')}{' '}
+                      <span className='text-destructive'>*</span>
                     </Label>
                     <div className='relative'>
                       <Input
                         id='openingTime'
                         type='time'
                         value={formData.openingTime}
-                        onChange={(e) => handleInputChange('openingTime', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange('openingTime', e.target.value)
+                        }
                         disabled={isSubmitting}
                         className='pl-10 h-11 text-base'
                         required
@@ -259,14 +280,17 @@ const CreateVendor = () => {
                   </div>
                   <div className='space-y-2'>
                     <Label htmlFor='closeTime' className='text-sm font-medium'>
-                      {t('createVendor.workingHours.closingTime')} <span className='text-destructive'>*</span>
+                      {t('createVendor.workingHours.closingTime')}{' '}
+                      <span className='text-destructive'>*</span>
                     </Label>
                     <div className='relative'>
                       <Input
                         id='closeTime'
                         type='time'
                         value={formData.closeTime}
-                        onChange={(e) => handleInputChange('closeTime', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange('closeTime', e.target.value)
+                        }
                         disabled={isSubmitting}
                         className='pl-10 h-11 text-base'
                         required
@@ -287,13 +311,15 @@ const CreateVendor = () => {
                 )}
 
                 {/* Validation message */}
-                {formData.openingTime && formData.closeTime && formData.openingTime >= formData.closeTime && (
-                  <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
-                    <p className='text-sm text-destructive font-medium'>
-                      {t('createVendor.workingHours.validationError')}
-                    </p>
-                  </div>
-                )}
+                {formData.openingTime &&
+                  formData.closeTime &&
+                  formData.openingTime >= formData.closeTime && (
+                    <div className='p-3 rounded-lg bg-destructive/10 border border-destructive/20'>
+                      <p className='text-sm text-destructive font-medium'>
+                        {t('createVendor.workingHours.validationError')}
+                      </p>
+                    </div>
+                  )}
               </CardContent>
             </Card>
 
@@ -336,8 +362,12 @@ const CreateVendor = () => {
                   </p>
                   <p className='text-sm'>
                     {(() => {
-                      const typeObj = vendorTypes.find((vt) => vt.value === parseInt(formData.type));
-                      return typeObj ? t(`types.${typeObj.label.toLowerCase()}`) : t('createVendor.preview.notSelected');
+                      const typeObj = vendorTypes.find(
+                        (vt) => vt.value === parseInt(formData.type)
+                      );
+                      return typeObj
+                        ? t(`types.${typeObj.label.toLowerCase()}`)
+                        : t('createVendor.preview.notSelected');
                     })()}
                   </p>
                 </div>
@@ -389,7 +419,9 @@ const CreateVendor = () => {
                   className='w-full'
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? t('createVendor.actions.creating') : t('createVendor.actions.create')}
+                  {isSubmitting
+                    ? t('createVendor.actions.creating')
+                    : t('createVendor.actions.create')}
                 </Button>
                 <Button
                   type='button'
@@ -407,7 +439,8 @@ const CreateVendor = () => {
             <Card className='bg-muted/50'>
               <CardContent className='pt-6'>
                 <p className='text-sm text-muted-foreground'>
-                  <span className='font-medium'>{t('createVendor.note')}</span> {t('createVendor.noteMessage')}
+                  <span className='font-medium'>{t('createVendor.note')}</span>{' '}
+                  {t('createVendor.noteMessage')}
                 </p>
               </CardContent>
             </Card>

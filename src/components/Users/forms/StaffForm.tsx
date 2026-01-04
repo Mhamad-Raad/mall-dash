@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Mail, Lock, Image as ImageIcon, X } from 'lucide-react';
 import roles from '@/constants/roles';
+import { compressImage } from '@/lib/imageCompression';
 
 type FieldErrors = {
   firstName?: string;
@@ -43,16 +44,20 @@ const FieldError = ({ message }: { message?: string }) => {
   return <p className='text-sm text-destructive mt-1'>{message}</p>;
 };
 
-export default function StaffForm({ formData, onInputChange, errors = {} }: StaffFormProps) {
+export default function StaffForm({
+  formData,
+  onInputChange,
+  errors = {},
+}: StaffFormProps) {
   const { t } = useTranslation('users');
   const [preview, setPreview] = useState<string>('');
 
   const translateRole = (role: string): string => {
     const roleMap: { [key: string]: string } = {
-      SuperAdmin: t("roles.superAdmin"),
-      Admin: t("roles.admin"),
-      Vendor: t("roles.vendor"),
-      Tenant: t("roles.tenant"),
+      SuperAdmin: t('roles.superAdmin'),
+      Admin: t('roles.admin'),
+      Vendor: t('roles.vendor'),
+      Tenant: t('roles.tenant'),
     };
     return roleMap[role] || role;
   };
@@ -77,9 +82,20 @@ export default function StaffForm({ formData, onInputChange, errors = {} }: Staf
             type='file'
             accept='image/*'
             className='hidden'
-            onChange={(e) =>
-              onInputChange('photo', e.target.files?.[0] || null)
-            }
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                try {
+                  const compressed = await compressImage(file);
+                  onInputChange('photo', compressed);
+                } catch (error) {
+                  console.error('Image compression failed:', error);
+                  onInputChange('photo', file);
+                }
+              } else {
+                onInputChange('photo', null);
+              }
+            }}
           />
           <label
             htmlFor='admin-photo'
@@ -176,12 +192,15 @@ export default function StaffForm({ formData, onInputChange, errors = {} }: Staf
       <div className='space-y-4'>
         <div className='flex items-center gap-2 pb-2'>
           <Mail className='size-5 text-primary' />
-          <h3 className='text-base font-semibold'>{t('forms.contactInformation')}</h3>
+          <h3 className='text-base font-semibold'>
+            {t('forms.contactInformation')}
+          </h3>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='admin-email' className='text-sm font-medium'>
-              {t('forms.emailAddress')} <span className='text-destructive'>*</span>
+              {t('forms.emailAddress')}{' '}
+              <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-email'
@@ -196,7 +215,8 @@ export default function StaffForm({ formData, onInputChange, errors = {} }: Staf
           </div>
           <div className='space-y-2'>
             <Label htmlFor='admin-phone' className='text-sm font-medium'>
-              {t('forms.phoneNumber')} <span className='text-destructive'>*</span>
+              {t('forms.phoneNumber')}{' '}
+              <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-phone'
@@ -241,7 +261,8 @@ export default function StaffForm({ formData, onInputChange, errors = {} }: Staf
               htmlFor='admin-confirm-password'
               className='text-sm font-medium'
             >
-              {t('forms.confirmPassword')} <span className='text-destructive'>*</span>
+              {t('forms.confirmPassword')}{' '}
+              <span className='text-destructive'>*</span>
             </Label>
             <Input
               id='admin-confirm-password'
@@ -255,9 +276,9 @@ export default function StaffForm({ formData, onInputChange, errors = {} }: Staf
             <FieldError message={errors.confirmPassword} />
           </div>
         </div>
-        
+
         {/* Password Strength Indicator */}
-        <PasswordStrengthIndicator 
+        <PasswordStrengthIndicator
           password={formData.password}
           className='mt-4'
         />
