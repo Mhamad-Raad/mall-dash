@@ -14,6 +14,7 @@ import notificationsReducer from './slices/notificationsSlice';
 import productsReducer from './slices/productsSlice';
 import auditReducer from './slices/auditSlice';
 import requestsReducer from './slices/requestsSlice';
+import ordersReducer from './slices/ordersSlice';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     notifications: notificationsReducer,
     audit: auditReducer,
     requests: requestsReducer,
+    orders: ordersReducer,
   },
 });
 

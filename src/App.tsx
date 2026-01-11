@@ -23,6 +23,7 @@ import HistoryPage from './pages/HistoryPage';
 import AuditDetailsPage from './pages/AuditDetailsPage';
 import RequestsPage from './pages/requests/Requests';
 import RequestDetailPage from './pages/requests/RequestDetail';
+import Orders from './pages/orders/Orders';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -99,6 +100,14 @@ const router = createBrowserRouter([
       {
         path: '/requests/:id',
         element: <RequestDetailPage />,
+      },
+      {
+        path: '/orders',
+        element: <Orders />,
+      },
+      {
+        path: '/orders/:id',
+        element: <Orders />,
       },
       {
         path: '/settings/themes',

@@ -108,7 +108,7 @@ export function ObjectAutoComplete<T>({
     setOptions([]);
     setSelectedIdx(-1);
     inputRef.current?.focus();
-    onSelectOption(undefined as unknown as T); // If you want to clear selection
+    onSelectOption(undefined as unknown as T); // Call onSelectOption with undefined to notify parent
   }
 
   return (
