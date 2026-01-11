@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, History, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, X, History, SlidersHorizontal, Sparkles } from 'lucide-react';
 
 const HistoryFilters = () => {
   const navigate = useNavigate();
@@ -69,6 +70,11 @@ const HistoryFilters = () => {
     setToDate('');
   };
 
+  const clearSearch = () => {
+    setTypedEntityName('');
+    setEntityName('');
+  };
+
   const hasActiveFilters = entityName || fromDate || toDate;
 
   return (
@@ -87,6 +93,7 @@ const HistoryFilters = () => {
               <h1 className='text-3xl font-bold tracking-tight'>
                 Audit History
               </h1>
+              <Sparkles className='size-5 text-amber-500' />
             </div>
             <p className='text-muted-foreground mt-0.5'>
               View system audit logs and history
@@ -96,62 +103,86 @@ const HistoryFilters = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className='flex flex-col md:flex-row items-start md:items-center gap-4 p-4 rounded-2xl border bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 relative z-30'>
-        <div className='flex items-center gap-2 text-muted-foreground w-full md:w-auto'>
-          <Filter className='size-4' />
+      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 rounded-2xl border bg-card/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-300 relative z-30'>
+        <div className='flex items-center gap-2 text-muted-foreground'>
+          <div className='p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors'>
+            <SlidersHorizontal className='size-4 text-primary' />
+          </div>
           <span className='text-sm font-medium'>Filters</span>
-          {hasActiveFilters && (
-            <div className='h-4 w-px bg-border mx-2 hidden md:block' />
-          )}
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-3 w-full md:w-auto flex-1'>
-          <div className='relative w-full lg:max-w-[240px]'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground' />
+        <div className='flex flex-col sm:flex-row flex-1 items-start sm:items-center gap-3 w-full transition-all duration-300'>
+          {/* Search Input */}
+          <div className='relative flex-1 min-w-0 w-full group'>
+            <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
             <Input
               placeholder='Search by Entity Name...'
               value={typedEntityName}
               onChange={(e) => setTypedEntityName(e.target.value)}
-              className='pl-9 h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 rounded-xl w-full'
+              className='pl-10 pr-10 h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:shadow-sm transition-all rounded-xl'
             />
+            {typedEntityName && (
+              <button
+                onClick={clearSearch}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded p-0.5 animate-in fade-in zoom-in duration-200'
+                title='Clear search'
+              >
+                <X className='size-4' />
+              </button>
+            )}
           </div>
 
-          <div className='flex items-center gap-2 w-full lg:w-auto'>
-            <span className='text-sm text-muted-foreground whitespace-nowrap min-w-[32px]'>
+          {/* Date Range Filters */}
+          <div className='flex items-center gap-2 w-full sm:w-auto sm:min-w-[200px]'>
+            <span className='text-sm text-muted-foreground whitespace-nowrap'>
               From:
             </span>
             <Input
               type='datetime-local'
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className='h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 rounded-xl w-full'
+              className='h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 transition-all rounded-xl'
             />
           </div>
 
-          <div className='flex items-center gap-2 w-full lg:w-auto'>
-            <span className='text-sm text-muted-foreground whitespace-nowrap min-w-[32px]'>
+          <div className='flex items-center gap-2 w-full sm:w-auto sm:min-w-[200px]'>
+            <span className='text-sm text-muted-foreground whitespace-nowrap'>
               To:
             </span>
             <Input
               type='datetime-local'
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className='h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 rounded-xl w-full'
+              className='h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 transition-all rounded-xl'
             />
           </div>
         </div>
 
-        {hasActiveFilters && (
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={clearFilters}
-            className='text-muted-foreground hover:text-foreground hover:bg-muted/50 w-full md:w-auto justify-center'
-          >
-            <X className='mr-2 size-3.5' />
-            Clear
-          </Button>
-        )}
+        {/* Active Filters Badge & Clear Button */}
+        <div
+          className={`flex items-center gap-2 overflow-hidden transition-all duration-300 ${
+            hasActiveFilters ? 'w-auto opacity-100' : 'w-0 opacity-0'
+          }`}
+        >
+          {hasActiveFilters && (
+            <>
+              <Badge variant='secondary' className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'>
+                <span className='size-1.5 rounded-full bg-primary animate-pulse' />
+                <span className='font-medium'>Filtered</span>
+              </Badge>
+              <Button
+                type='button'
+                variant='ghost'
+                size='sm'
+                onClick={clearFilters}
+                className='h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg shrink-0'
+                title='Clear all filters'
+              >
+                <X className='size-4' />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

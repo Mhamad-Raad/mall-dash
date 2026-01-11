@@ -108,7 +108,7 @@ export function ObjectAutoComplete<T>({
     setOptions([]);
     setSelectedIdx(-1);
     inputRef.current?.focus();
-    onSelectOption(undefined as unknown as T); // If you want to clear selection
+    onSelectOption(undefined as unknown as T); // Call onSelectOption with undefined to notify parent
   }
 
   return (
@@ -121,7 +121,7 @@ export function ObjectAutoComplete<T>({
         onFocus={() => setShowOptions(true)}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className='pr-10'
+        className='pr-10 h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:shadow-sm transition-all rounded-xl'
         autoComplete='off'
       />
       {input.length > 0 && (
