@@ -97,3 +97,28 @@ export const fetchSupportTicketById = async (
   }
 };
 
+export const updateSupportTicketStatus = async (
+  id: number,
+  body: { status: TicketStatus; adminNotes: string | null }
+): Promise<SupportTicketDetail | { error: string }> => {
+  try {
+    const response = await axiosInstance.put<SupportTicketDetail>(
+      `/SupportTicket/${id}/status`,
+      body,
+      {
+        headers: { key: API_KEY, value: API_VALUE },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      'Failed to update support ticket status';
+
+    return { error: message };
+  }
+};
+

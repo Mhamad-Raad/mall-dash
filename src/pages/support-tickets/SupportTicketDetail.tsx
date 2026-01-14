@@ -1,15 +1,36 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Mail, User, Clock, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import {
+  ArrowLeft,
+  Mail,
+  User,
+  Clock,
+  AlertCircle,
+  Image as ImageIcon,
+} from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import ConfirmModal, {
+  type ChangeDetail,
+} from '@/components/ui/Modals/ConfirmModal';
+import { toast } from 'sonner';
+import { showValidationErrors } from '@/lib/utils';
 
 import {
   fetchSupportTicketById,
+  updateSupportTicketStatus,
   type SupportTicketDetail,
 } from '@/data/SupportTickets';
 
@@ -44,6 +65,12 @@ const SupportTicketDetail = () => {
   const [ticket, setTicket] = useState<SupportTicketDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusDraft, setStatusDraft] = useState<TicketStatus | null>(null);
+  const [adminNotesDraft, setAdminNotesDraft] = useState('');
+  const [updating, setUpdating] = useState(false);
+  const [updatingError, setUpdatingError] = useState<string | null>(null);
+  const [updatingErrors, setUpdatingErrors] = useState<any[] | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,6 +95,8 @@ const SupportTicketDetail = () => {
       } else {
         setTicket(result);
         setError(null);
+        setStatusDraft(result.status);
+        setAdminNotesDraft(result.adminNotes ?? '');
       }
 
       setLoading(false);
@@ -75,6 +104,91 @@ const SupportTicketDetail = () => {
 
     fetchData();
   }, [id]);
+
+  const hasChanges = useMemo(() => {
+    if (!ticket) return false;
+    const statusChanged = statusDraft !== null && statusDraft !== ticket.status;
+    const notesChanged = (ticket.adminNotes ?? '') !== adminNotesDraft;
+    return statusChanged || notesChanged;
+  }, [ticket, statusDraft, adminNotesDraft]);
+
+  const changes = useMemo((): ChangeDetail[] => {
+    if (!ticket) return [];
+    const list: ChangeDetail[] = [];
+
+    if (statusDraft !== null && statusDraft !== ticket.status) {
+      list.push({
+        field: 'Status',
+        oldValue: getStatusText(ticket.status),
+        newValue: getStatusText(statusDraft),
+      });
+    }
+
+    if ((ticket.adminNotes ?? '') !== adminNotesDraft) {
+      list.push({
+        field: 'Admin notes',
+        oldValue:
+          ticket.adminNotes && ticket.adminNotes.trim().length > 0
+            ? 'Has notes'
+            : 'Empty',
+        newValue: adminNotesDraft.trim().length > 0 ? 'Has notes' : 'Empty',
+      });
+    }
+
+    return list;
+  }, [ticket, statusDraft, adminNotesDraft]);
+
+  const handleToggleUpdateModal = () => {
+    if (!hasChanges || !ticket) return;
+    setShowUpdateModal((v) => !v);
+    setUpdatingError(null);
+    setUpdatingErrors(null);
+  };
+
+  const handleUpdateTicket = async () => {
+    if (!ticket || !id || statusDraft === null) return;
+
+    setUpdating(true);
+    setUpdatingError(null);
+    setUpdatingErrors(null);
+
+    const body = {
+      status: statusDraft,
+      adminNotes: adminNotesDraft.trim().length > 0 ? adminNotesDraft : null,
+    };
+
+    const numericId = Number(id);
+
+    const result = await updateSupportTicketStatus(numericId, body);
+
+    if ('error' in result) {
+      setUpdatingError(result.error);
+      const errors = (result as any).errors;
+      if (errors && Array.isArray(errors)) {
+        setUpdatingErrors(errors);
+        showValidationErrors(
+          'Failed to update ticket',
+          errors,
+          'An error occurred while updating the ticket'
+        );
+      } else {
+        showValidationErrors(
+          'Failed to update ticket',
+          result.error,
+          'An error occurred while updating the ticket'
+        );
+      }
+      setUpdating(false);
+      return;
+    }
+
+    setTicket(result);
+    setStatusDraft(result.status);
+    setAdminNotesDraft(result.adminNotes ?? '');
+    setUpdating(false);
+    setShowUpdateModal(false);
+    toast.success('Ticket updated successfully!');
+  };
 
   if (loading) {
     return (
@@ -129,7 +243,10 @@ const SupportTicketDetail = () => {
               {error || 'Ticket not found or you do not have access.'}
             </p>
             <div className='mt-4 flex gap-2'>
-              <Button variant='outline' onClick={() => navigate('/support-tickets')}>
+              <Button
+                variant='outline'
+                onClick={() => navigate('/support-tickets')}
+              >
                 Back to tickets
               </Button>
               <Button variant='default' onClick={() => navigate(0)}>
@@ -164,14 +281,33 @@ const SupportTicketDetail = () => {
           </div>
         </div>
 
-        <Badge
-          variant='outline'
-          className={`text-xs font-medium px-3 py-1 ${getStatusBadgeClass(
-            ticket.status
-          )}`}
-        >
-          {getStatusText(ticket.status)}
-        </Badge>
+        <div className='flex items-center gap-2'>
+          <Select
+            value={String(statusDraft ?? ticket.status)}
+            onValueChange={(value) =>
+              setStatusDraft(Number(value) as TicketStatus)
+            }
+            disabled={updating}
+          >
+            <SelectTrigger className='w-[160px]'>
+              <SelectValue placeholder='Status' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='0'>Open</SelectItem>
+              <SelectItem value='1'>In Progress</SelectItem>
+              <SelectItem value='2'>Resolved</SelectItem>
+              <SelectItem value='3'>Closed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Badge
+            variant='outline'
+            className={`text-xs font-medium px-3 py-1 ${getStatusBadgeClass(
+              statusDraft ?? ticket.status
+            )}`}
+          >
+            {getStatusText(statusDraft ?? ticket.status)}
+          </Badge>
+        </div>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0'>
@@ -223,23 +359,25 @@ const SupportTicketDetail = () => {
                       Resolved at
                     </p>
                     <p className='text-sm'>
-                      {ticket.resolvedAt ? formatDateTime(ticket.resolvedAt) : 'Not resolved yet'}
+                      {ticket.resolvedAt
+                        ? formatDateTime(ticket.resolvedAt)
+                        : 'Not resolved yet'}
                     </p>
                   </div>
                 </div>
 
-                {ticket.adminNotes && ticket.adminNotes.trim().length > 0 && (
-                  <div>
-                    <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
-                      Admin notes
-                    </p>
-                    <div className='rounded-md border bg-blue-50/70 dark:bg-blue-950/30 p-3 text-sm space-y-1'>
-                      <p className='text-blue-900 dark:text-blue-100'>
-                        {ticket.adminNotes}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                <div>
+                  <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
+                    Admin notes
+                  </p>
+                  <Textarea
+                    value={adminNotesDraft}
+                    onChange={(e) => setAdminNotesDraft(e.target.value)}
+                    placeholder='Add internal notes about this ticket...'
+                    className='min-h-[100px] text-sm'
+                    disabled={updating}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -305,6 +443,33 @@ const SupportTicketDetail = () => {
           </Card>
         </div>
       </div>
+      <div className='flex justify-end gap-2 mt-2'>
+        <Button
+          variant='outline'
+          onClick={() => navigate('/support-tickets')}
+          disabled={updating}
+        >
+          Back
+        </Button>
+        <Button
+          onClick={handleToggleUpdateModal}
+          disabled={!hasChanges || updating}
+        >
+          Save changes
+        </Button>
+      </div>
+
+      <ConfirmModal
+        open={showUpdateModal}
+        onCancel={() => setShowUpdateModal(false)}
+        onConfirm={handleUpdateTicket}
+        title='Update ticket'
+        description='Are you sure you want to update this support ticket?'
+        confirmType='warning'
+        confirmLabel='Update ticket'
+        cancelLabel='Cancel'
+        changes={changes}
+      />
     </section>
   );
 };
