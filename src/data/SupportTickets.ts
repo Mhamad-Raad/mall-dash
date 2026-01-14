@@ -58,7 +58,7 @@ export const fetchSupportTickets = async (
   }
 };
 
-export interface SupportTicketDetail {
+export interface SupportTicketDetailInterface {
   id: number;
   ticketNumber: string;
   userId: string;
@@ -76,9 +76,9 @@ export interface SupportTicketDetail {
 
 export const fetchSupportTicketById = async (
   id: number
-): Promise<SupportTicketDetail | { error: string }> => {
+): Promise<SupportTicketDetailInterface | { error: string }> => {
   try {
-    const response = await axiosInstance.get<SupportTicketDetail>(
+    const response = await axiosInstance.get<SupportTicketDetailInterface>(
       `/SupportTicket/${id}`,
       {
         headers: { key: API_KEY, value: API_VALUE },
@@ -100,9 +100,9 @@ export const fetchSupportTicketById = async (
 export const updateSupportTicketStatus = async (
   id: number,
   body: { status: TicketStatus; adminNotes: string | null }
-): Promise<SupportTicketDetail | { error: string }> => {
+): Promise<SupportTicketDetailInterface | { error: string }> => {
   try {
-    const response = await axiosInstance.put<SupportTicketDetail>(
+    const response = await axiosInstance.put<SupportTicketDetailInterface>(
       `/SupportTicket/${id}/status`,
       body,
       {

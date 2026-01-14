@@ -31,8 +31,9 @@ import { showValidationErrors } from '@/lib/utils';
 import {
   fetchSupportTicketById,
   updateSupportTicketStatus,
-  type SupportTicketDetail,
 } from '@/data/SupportTickets';
+
+import type { SupportTicketDetailInterface } from '@/data/SupportTickets';
 
 import type { TicketStatus } from '@/interfaces/SupportTicket.interface';
 
@@ -62,7 +63,9 @@ const SupportTicketDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [ticket, setTicket] = useState<SupportTicketDetail | null>(null);
+  const [ticket, setTicket] = useState<SupportTicketDetailInterface | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusDraft, setStatusDraft] = useState<TicketStatus | null>(null);
