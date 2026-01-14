@@ -3,7 +3,6 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type {
   SupportTicket,
   SupportTicketsResponse,
-  TicketStatus,
 } from '@/interfaces/SupportTicket.interface';
 import {
   fetchSupportTickets as fetchSupportTicketsAPI,
@@ -32,19 +31,22 @@ export const fetchSupportTickets = createAsyncThunk<
   SupportTicketsResponse,
   FetchSupportTicketsParams | undefined,
   { rejectValue: string; signal: AbortSignal }
->('supportTickets/fetchSupportTickets', async (params = {}, { rejectWithValue, signal }) => {
-  try {
-    const data = await fetchSupportTicketsAPI(params, signal);
+>(
+  'supportTickets/fetchSupportTickets',
+  async (params = {}, { rejectWithValue, signal }) => {
+    try {
+      const data = await fetchSupportTicketsAPI(params, signal);
 
-    if ('error' in data) {
-      return rejectWithValue(data.error);
+      if ('error' in data) {
+        return rejectWithValue(data.error);
+      }
+
+      return data;
+    } catch {
+      return rejectWithValue('Failed to fetch support tickets');
     }
-
-    return data;
-  } catch {
-    return rejectWithValue('Failed to fetch support tickets');
   }
-});
+);
 
 const supportTicketsSlice = createSlice({
   name: 'supportTickets',

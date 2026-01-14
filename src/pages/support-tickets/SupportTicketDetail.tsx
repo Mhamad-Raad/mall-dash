@@ -68,8 +68,6 @@ const SupportTicketDetail = () => {
   const [statusDraft, setStatusDraft] = useState<TicketStatus | null>(null);
   const [adminNotesDraft, setAdminNotesDraft] = useState('');
   const [updating, setUpdating] = useState(false);
-  const [updatingError, setUpdatingError] = useState<string | null>(null);
-  const [updatingErrors, setUpdatingErrors] = useState<any[] | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   useEffect(() => {
@@ -141,16 +139,12 @@ const SupportTicketDetail = () => {
   const handleToggleUpdateModal = () => {
     if (!hasChanges || !ticket) return;
     setShowUpdateModal((v) => !v);
-    setUpdatingError(null);
-    setUpdatingErrors(null);
   };
 
   const handleUpdateTicket = async () => {
     if (!ticket || !id || statusDraft === null) return;
 
     setUpdating(true);
-    setUpdatingError(null);
-    setUpdatingErrors(null);
 
     const body = {
       status: statusDraft,
@@ -162,10 +156,8 @@ const SupportTicketDetail = () => {
     const result = await updateSupportTicketStatus(numericId, body);
 
     if ('error' in result) {
-      setUpdatingError(result.error);
       const errors = (result as any).errors;
       if (errors && Array.isArray(errors)) {
-        setUpdatingErrors(errors);
         showValidationErrors(
           'Failed to update ticket',
           errors,
