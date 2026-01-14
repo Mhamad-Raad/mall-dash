@@ -2,6 +2,7 @@ import { axiosInstance } from '@/data/axiosInstance';
 import type {
   SupportTicketsResponse,
   TicketStatus,
+  TicketPriority,
 } from '@/interfaces/SupportTicket.interface';
 
 const API_KEY = import.meta.env.VITE_API_KEY;
@@ -52,6 +53,45 @@ export const fetchSupportTickets = async (
       error.response?.data?.error ||
       error.message ||
       'Failed to fetch support tickets';
+
+    return { error: message };
+  }
+};
+
+export interface SupportTicketDetail {
+  id: number;
+  ticketNumber: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  subject: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  createdAt: string;
+  resolvedAt?: string | null;
+  adminNotes?: string | null;
+  imageUrls: string[];
+}
+
+export const fetchSupportTicketById = async (
+  id: number
+): Promise<SupportTicketDetail | { error: string }> => {
+  try {
+    const response = await axiosInstance.get<SupportTicketDetail>(
+      `/SupportTicket/${id}`,
+      {
+        headers: { key: API_KEY, value: API_VALUE },
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      'Failed to fetch support ticket';
 
     return { error: message };
   }

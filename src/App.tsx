@@ -23,6 +23,7 @@ import HistoryPage from './pages/HistoryPage';
 import AuditDetailsPage from './pages/AuditDetailsPage';
 import Orders from './pages/orders/Orders';
 import SupportTickets from './pages/support-tickets/SupportTickets';
+import SupportTicketDetail from './pages/support-tickets/SupportTicketDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
       {
         path: '/support-tickets',
         element: <SupportTickets />,
+      },
+      {
+        path: '/support-tickets/:id',
+        element: <SupportTicketDetail />,
       },
       {
         path: '/settings/themes',

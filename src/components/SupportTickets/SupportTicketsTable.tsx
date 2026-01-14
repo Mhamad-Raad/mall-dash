@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import {
@@ -58,9 +59,14 @@ const renderSkeletonRow = (key: number) => (
 );
 
 const SupportTicketsTable = () => {
+  const navigate = useNavigate();
   const { tickets, loading, error, total } = useSelector(
     (state: RootState) => state.supportTickets
   );
+
+  const handleRowClick = (id: number) => {
+    navigate(`/support-tickets/${id}`);
+  };
 
   if (error) {
     return (
@@ -116,7 +122,8 @@ const SupportTicketsTable = () => {
               tickets.map((ticket: SupportTicket) => (
                 <TableRow
                   key={ticket.id}
-                  className='hover:bg-muted/50 cursor-default'
+                  className='hover:bg-muted/50 cursor-pointer'
+                  onClick={() => handleRowClick(ticket.id)}
                 >
                   <TableCell className='font-medium text-sm'>
                     #{ticket.ticketNumber || ticket.id}
