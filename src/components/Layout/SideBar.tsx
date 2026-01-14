@@ -15,6 +15,7 @@ import {
   User,
   Palette,
   History,
+  LifeBuoy,
 } from 'lucide-react';
 
 import { useSelector } from 'react-redux';
@@ -83,9 +84,9 @@ const mainNavItems = [
     icon: ShoppingCart,
   },
   {
-    titleKey: 'Requests',
-    url: '/requests',
-    icon: FileText,
+    titleKey: 'supportTickets',
+    url: '/support-tickets',
+    icon: LifeBuoy,
   },
 ];
 

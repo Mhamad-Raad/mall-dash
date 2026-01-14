@@ -11,42 +11,43 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const RequestsFilters = () => {
+import { TICKET_STATUS_OPTIONS } from '@/interfaces/SupportTicket.interface';
+
+const SupportTicketsFilters = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [status, setStatus] = useState(searchParams.get('status') || 'All');
+  const [status, setStatus] = useState(searchParams.get('status') || 'all');
 
-  const handleSearch = () => {
+  const handleApply = () => {
     const params = new URLSearchParams(searchParams);
+
     if (search) {
       params.set('search', search);
     } else {
       params.delete('search');
     }
 
-    if (status && status !== 'All') {
+    if (status && status !== 'all') {
       params.set('status', status);
     } else {
       params.delete('status');
     }
 
-    // Reset page on filter change
     params.set('page', '1');
-
     navigate(`?${params.toString()}`);
   };
 
   const clearFilters = () => {
     setSearch('');
-    setStatus('All');
+    setStatus('all');
     navigate('?');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      handleApply();
     }
   };
 
@@ -56,7 +57,7 @@ const RequestsFilters = () => {
         <div className='relative flex-1'>
           <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
           <Input
-            placeholder='Search requests...'
+            placeholder='Search tickets...'
             className='pl-8'
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -71,20 +72,20 @@ const RequestsFilters = () => {
             <SelectValue placeholder='Status' />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='All'>All Statuses</SelectItem>
-            <SelectItem value='Pending'>Pending</SelectItem>
-            <SelectItem value='In Progress'>In Progress</SelectItem>
-            <SelectItem value='Resolved'>Resolved</SelectItem>
-            <SelectItem value='Rejected'>Rejected</SelectItem>
+            {TICKET_STATUS_OPTIONS.map((option) => (
+              <SelectItem key={String(option.value)} value={String(option.value)}>
+                {option.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        <Button onClick={handleSearch}>
+        <Button onClick={handleApply}>
           <Filter className='mr-2 h-4 w-4' />
           Filter
         </Button>
 
-        {(search || status !== 'All') && (
+        {(search || status !== 'all') && (
           <Button variant='ghost' onClick={clearFilters}>
             <X className='mr-2 h-4 w-4' />
             Clear
@@ -95,5 +96,5 @@ const RequestsFilters = () => {
   );
 };
 
-export default RequestsFilters;
+export default SupportTicketsFilters;
 
