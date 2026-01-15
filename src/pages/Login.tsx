@@ -4,8 +4,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { showValidationErrors } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import { loginUser } from '@/data/Authorization';
@@ -93,107 +92,123 @@ const Login = () => {
   }
 
   return (
-    <div className='w-full h-[100vh] flex items-center justify-center'>
-      <div className='w-[90%] max-w-[1000px] flex flex-col gap-6'>
-        <Card className='overflow-hidden p-0'>
-          <CardContent className='grid p-0 md:grid-cols-2'>
-            <form className='p-6 md:p-8' onSubmit={handleSubmit}>
-              <FieldGroup>
-                <div className='flex flex-col items-center gap-2 text-center mb-4'>
-                  <h1 className='text-2xl font-bold'>Welcome back!</h1>
-                  <p className='text-muted-foreground text-balance'>
-                    Login to your account
-                  </p>
-                </div>
-                {/* Email Field */}
-                <Field className='gap-2'>
-                  <FieldLabel htmlFor='email' className='text-muted-foreground'>
-                    Email
-                  </FieldLabel>
-                  <div className='relative'>
-                    <Input
-                      id='email'
-                      type='email'
-                      placeholder='m@example.com'
-                      className='h-11 pl-10'
-                      required
-                      value={email}
-                      onChange={handleChange(setEmail)}
-                    />
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
-                      <Mail size={20} />
-                    </span>
-                  </div>
-                </Field>
-                {/* Password Field */}
-                <Field className='gap-2'>
-                  <div className='flex items-center'>
-                    <FieldLabel
-                      htmlFor='password'
-                      className='text-muted-foreground'
-                    >
-                      Password
-                    </FieldLabel>
-                    <a
-                      href='#'
-                      className='ml-auto text-sm underline-offset-2 hover:underline'
-                    >
-                      Forgot your password?
-                    </a>
-                  </div>
-                  <div className='relative'>
-                    <Input
-                      id='password'
-                      type={showPassword ? 'text' : 'password'}
-                      className='h-11 pl-10 pr-10'
-                      placeholder='******'
-                      required
-                      value={password}
-                      onChange={handleChange(setPassword)}
-                    />
-                    <span className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
-                      <Lock size={20} />
-                    </span>
-                    <button
-                      type='button'
-                      tabIndex={-1}
-                      onClick={() => setShowPassword((v) => !v)}
-                      className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground'
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
-                  </div>
-                </Field>
-                {/* Submit Button */}
-                <Field className='mt-4'>
-                  <Button
-                    type='submit'
-                    disabled={isLoading || isLocked}
-                    className='w-full'
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />{' '}
-                        Logging in...
-                      </>
-                    ) : isLocked ? (
-                      'Please edit your credentials'
-                    ) : (
-                      'Login'
-                    )}
-                  </Button>
-                </Field>
-              </FieldGroup>
-            </form>
-            <div className='bg-muted relative hidden md:block'>
-              <img
-                src={Logo}
-                alt='Image'
-                className='absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale'
-              />
+    <div className='w-full h-screen lg:grid lg:grid-cols-2'>
+      {/* Left Column: Branding / Marketing */}
+      <div className='hidden lg:flex flex-col justify-between bg-zinc-900 p-10 text-white dark:bg-zinc-900 relative overflow-hidden'>
+        {/* Abstract Background Shape */}
+        <div className='absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20'>
+          <div className='absolute -top-[50%] -left-[50%] w-[200%] h-[200%] rounded-full bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl animate-blob' />
+        </div>
+        
+        <div className='relative z-10 flex items-center gap-3 font-medium text-lg'>
+          <div className='h-10 w-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center overflow-hidden border border-white/20 shadow-xl'>
+            <img src={Logo} alt='Logo' className='h-full w-full object-cover' />
+          </div>
+          <span className='text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent'>Mall Dash</span>
+        </div>
+        
+        <div className='relative z-10 mt-auto'>
+          <blockquote className='space-y-4'>
+            <p className='text-xl italic font-light leading-relaxed text-zinc-200'>
+              &ldquo;Streamline your mall management operations with real-time insights and comprehensive control.&rdquo;
+            </p>
+            <footer className='text-sm font-medium text-zinc-400 flex items-center gap-2'>
+              <div className='h-px w-8 bg-zinc-600' />
+              Admin Console
+            </footer>
+          </blockquote>
+        </div>
+      </div>
+
+      {/* Right Column: Login Form */}
+      <div className='flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background relative'>
+        {/* Mobile Logo (visible only on small screens) */}
+        <div className='absolute top-4 left-4 lg:hidden flex items-center gap-2'>
+           <div className='h-8 w-8 bg-zinc-100 rounded-md flex items-center justify-center overflow-hidden'>
+            <img src={Logo} alt='Logo' className='h-full w-full object-contain' />
+          </div>
+          <span className='font-bold'>Mall Dash</span>
+        </div>
+
+        <div className='mx-auto grid w-full max-w-[400px] gap-8'>
+          <div className='flex flex-col space-y-2 text-center'>
+            <h1 className='text-4xl font-bold tracking-tight text-foreground'>Welcome back</h1>
+            <p className='text-muted-foreground text-lg'>
+              Enter your credentials to access your account
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className='grid gap-6'>
+            <div className='grid gap-3'>
+              <Label htmlFor='email' className='text-base'>Email</Label>
+              <div className='relative group'>
+                <Input
+                  id='email'
+                  type='email'
+                  placeholder='name@example.com'
+                  required
+                  value={email}
+                  onChange={handleChange(setEmail)}
+                  className='pl-11 h-12 transition-all border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary/20'
+                />
+                <Mail className='absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors' />
+              </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className='grid gap-3'>
+              <div className='flex items-center justify-between'>
+                <Label htmlFor='password' className='text-base'>Password</Label>
+                <a
+                  href='#'
+                  className='text-sm font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors'
+                  onClick={(e) => { e.preventDefault(); toast.info("Please contact your administrator to reset password."); }}
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <div className='relative group'>
+                <Input
+                  id='password'
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='••••••'
+                  required
+                  value={password}
+                  onChange={handleChange(setPassword)}
+                  className='pl-11 pr-11 h-12 transition-all border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary/20'
+                />
+                <Lock className='absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors' />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground transition-colors'
+                >
+                  {showPassword ? (
+                    <EyeOff className='h-5 w-5' />
+                  ) : (
+                    <Eye className='h-5 w-5' />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <Button type='submit' className='w-full h-12 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all' disabled={isLoading || isLocked}>
+              {isLoading && <Loader2 className='mr-2 h-5 w-5 animate-spin' />}
+              {isLocked ? 'Please edit credentials' : 'Sign In'}
+            </Button>
+          </form>
+
+          <p className='px-8 text-center text-sm text-muted-foreground'>
+             By clicking continue, you agree to our{' '}
+            <a href='#' className='underline underline-offset-4 hover:text-primary transition-colors'>
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href='#' className='underline underline-offset-4 hover:text-primary transition-colors'>
+              Privacy Policy
+            </a>
+            .
+          </p>
+        </div>
       </div>
     </div>
   );
