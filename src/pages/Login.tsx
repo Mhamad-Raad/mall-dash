@@ -6,6 +6,7 @@ import { showValidationErrors } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { BackgroundBeams } from '@/components/ui/background-beams';
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import { loginUser } from '@/data/Authorization';
 import { validateRefreshToken } from '@/utils/authUtils';
@@ -79,26 +80,33 @@ const Login = () => {
 
   if (isCheckingSession) {
     return (
-      <div className='flex flex-col justify-center items-center h-screen'>
-        <img
-          src={Logo}
-          alt='Company Logo'
-          className='w-32 h-32 object-contain'
-          style={{ animation: 'bw-pulse 2.5s infinite' }}
-        />
-        <Loader2 className='mt-8 h-8 w-8 animate-spin text-gray-800' />
+      <div className='flex flex-col justify-center items-center h-screen bg-neutral-950'>
+        <div className='absolute inset-0 w-full h-full z-0'>
+           <BackgroundBeams />
+        </div>
+        <div className='relative z-10 flex flex-col items-center'>
+            <img
+            src={Logo}
+            alt='Company Logo'
+            className='w-32 h-32 object-contain'
+            style={{ animation: 'bw-pulse 2.5s infinite' }}
+            />
+            <Loader2 className='mt-8 h-8 w-8 animate-spin text-white' />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='w-full h-screen lg:grid lg:grid-cols-2'>
+    <div className='w-full h-screen lg:grid lg:grid-cols-2 relative bg-neutral-950'>
+      
+       {/* Global Background Beams container - spanning both columns */}
+       <div className='absolute inset-0 w-full h-full z-0 pointer-events-none'>
+           <BackgroundBeams />
+       </div>
+
       {/* Left Column: Branding / Marketing */}
-      <div className='hidden lg:flex flex-col justify-between bg-zinc-900 p-10 text-white dark:bg-zinc-900 relative overflow-hidden'>
-        {/* Abstract Background Shape */}
-        <div className='absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20'>
-          <div className='absolute -top-[50%] -left-[50%] w-[200%] h-[200%] rounded-full bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-3xl animate-blob' />
-        </div>
+      <div className='hidden lg:flex flex-col justify-between p-10 text-white relative z-10 bg-transparent'>
         
         <div className='relative z-10 flex items-center gap-3 font-medium text-lg'>
           <div className='h-10 w-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center overflow-hidden border border-white/20 shadow-xl'>
@@ -121,26 +129,26 @@ const Login = () => {
       </div>
 
       {/* Right Column: Login Form */}
-      <div className='flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background relative'>
+      <div className='flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10'>
         {/* Mobile Logo (visible only on small screens) */}
         <div className='absolute top-4 left-4 lg:hidden flex items-center gap-2'>
            <div className='h-8 w-8 bg-zinc-100 rounded-md flex items-center justify-center overflow-hidden'>
             <img src={Logo} alt='Logo' className='h-full w-full object-contain' />
           </div>
-          <span className='font-bold'>Mall Dash</span>
+          <span className='font-bold text-white'>Mall Dash</span>
         </div>
 
         <div className='mx-auto grid w-full max-w-[400px] gap-8'>
           <div className='flex flex-col space-y-2 text-center'>
-            <h1 className='text-4xl font-bold tracking-tight text-foreground'>Welcome back</h1>
-            <p className='text-muted-foreground text-lg'>
+            <h1 className='text-3xl font-bold tracking-tight text-white'>Welcome back</h1>
+            <p className='text-zinc-400 text-lg'>
               Enter your credentials to access your account
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className='grid gap-6'>
             <div className='grid gap-3'>
-              <Label htmlFor='email' className='text-base'>Email</Label>
+              <Label htmlFor='email' className='text-base text-zinc-300 ml-1'>Email</Label>
               <div className='relative group'>
                 <Input
                   id='email'
@@ -149,15 +157,15 @@ const Login = () => {
                   required
                   value={email}
                   onChange={handleChange(setEmail)}
-                  className='pl-11 h-12 transition-all border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary/20'
+                  className='pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus:bg-white/10 focus:border-primary/50 focus:ring-0 rounded-xl transition-all duration-300'
                 />
-                <Mail className='absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors' />
+                <Mail className='absolute left-4 top-4 h-6 w-6 text-zinc-500 group-hover:text-primary transition-colors duration-300' />
               </div>
             </div>
 
             <div className='grid gap-3'>
-              <div className='flex items-center justify-between'>
-                <Label htmlFor='password' className='text-base'>Password</Label>
+              <div className='flex items-center justify-between ml-1'>
+                <Label htmlFor='password' className='text-base text-zinc-300'>Password</Label>
                 <a
                   href='#'
                   className='text-sm font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors'
@@ -174,36 +182,36 @@ const Login = () => {
                   required
                   value={password}
                   onChange={handleChange(setPassword)}
-                  className='pl-11 pr-11 h-12 transition-all border-zinc-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary/20'
+                  className='pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus:bg-white/10 focus:border-primary/50 focus:ring-0 rounded-xl transition-all duration-300'
                 />
-                <Lock className='absolute left-3.5 top-3.5 h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors' />
+                <Lock className='absolute left-4 top-4 h-6 w-6 text-zinc-500 group-hover:text-primary transition-colors duration-300' />
                 <button
                   type='button'
                   onClick={() => setShowPassword(!showPassword)}
-                  className='absolute right-3.5 top-3.5 text-muted-foreground hover:text-foreground transition-colors'
+                  className='absolute right-4 top-4 text-zinc-500 hover:text-white transition-colors duration-300'
                 >
                   {showPassword ? (
-                    <EyeOff className='h-5 w-5' />
+                    <EyeOff className='h-6 w-6' />
                   ) : (
-                    <Eye className='h-5 w-5' />
+                    <Eye className='h-6 w-6' />
                   )}
                 </button>
               </div>
             </div>
 
-            <Button type='submit' className='w-full h-12 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all' disabled={isLoading || isLocked}>
+            <Button type='submit' className='w-full h-14 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl bg-primary hover:bg-primary/90' disabled={isLoading || isLocked}>
               {isLoading && <Loader2 className='mr-2 h-5 w-5 animate-spin' />}
               {isLocked ? 'Please edit credentials' : 'Sign In'}
             </Button>
           </form>
 
-          <p className='px-8 text-center text-sm text-muted-foreground'>
+          <p className='px-8 text-center text-sm text-zinc-500'>
              By clicking continue, you agree to our{' '}
-            <a href='#' className='underline underline-offset-4 hover:text-primary transition-colors'>
+            <a href='#' className='underline underline-offset-4 hover:text-primary transition-colors text-zinc-400'>
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href='#' className='underline underline-offset-4 hover:text-primary transition-colors'>
+            <a href='#' className='underline underline-offset-4 hover:text-primary transition-colors text-zinc-400'>
               Privacy Policy
             </a>
             .
