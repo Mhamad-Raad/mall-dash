@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { BackgroundBeams } from '@/components/ui/background-beams';
 import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
-import { loginUser } from '@/data/Authorization';
+import { loginUser, forgotPassword } from '@/data/Authorization';
 import { validateRefreshToken } from '@/utils/authUtils';
 import { setAccessToken } from '@/store/slices/notificationsSlice';
 import Logo from '@/assets/Logo.jpg';
@@ -82,10 +82,28 @@ const Login = () => {
 
   const handleForgotPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement backend API call here
-    toast.info(`Password reset link would be sent to: ${forgotPasswordEmail}`);
-    setShowForgotPassword(false);
-    setForgotPasswordEmail('');
+    setIsLoading(true);
+
+    forgotPassword(forgotPasswordEmail)
+      .then((response) => {
+        if (response.error || response.errors?.length > 0) {
+          showValidationErrors(
+            'Request Failed',
+            response.errors?.length > 0 ? response.errors : response.error,
+            'Unable to process password reset request'
+          );
+        } else {
+          toast.success(`Password reset link has been sent to ${forgotPasswordEmail}`);
+          setShowForgotPassword(false);
+          setForgotPasswordEmail('');
+        }
+      })
+      .catch(() => {
+        toast.error('Server is down or unreachable!');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   if (isCheckingSession) {
@@ -271,7 +289,8 @@ const Login = () => {
                   </div>
                 </div>
 
-                <Button type='submit' className='w-full h-14 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl bg-primary hover:bg-primary/90'>
+                <Button type='submit' className='w-full h-14 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl bg-primary hover:bg-primary/90' disabled={isLoading}>
+                  {isLoading && <Loader2 className='mr-2 h-5 w-5 animate-spin' />}
                   Send Reset Link
                 </Button>
               </form>
