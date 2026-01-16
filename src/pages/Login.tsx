@@ -140,13 +140,13 @@ const Login = () => {
           <div className='h-10 w-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center overflow-hidden border border-white/20 shadow-xl'>
             <img src={Logo} alt='Logo' className='h-full w-full object-cover' />
           </div>
-          <span className='text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent'>Mall Dash</span>
+          <span className='text-2xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent'>MallDash</span>
         </div>
         
         <div className='relative z-10 mt-auto'>
           <blockquote className='space-y-4'>
             <p className='text-xl italic font-light leading-relaxed text-zinc-200'>
-              &ldquo;Streamline your mall management operations with real-time insights and comprehensive control.&rdquo;
+              &ldquo;Streamline your system management operations with real-time insights and comprehensive control.&rdquo;
             </p>
             <footer className='text-sm font-medium text-zinc-400 flex items-center gap-2'>
               <div className='h-px w-8 bg-zinc-600' />
