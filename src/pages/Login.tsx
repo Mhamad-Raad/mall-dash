@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { BackgroundBeams } from '@/components/ui/background-beams';
-import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import { loginUser } from '@/data/Authorization';
 import { validateRefreshToken } from '@/utils/authUtils';
 import { setAccessToken } from '@/store/slices/notificationsSlice';
@@ -26,6 +26,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -77,6 +79,14 @@ const Login = () => {
       setter(e.target.value);
       if (isLocked) setIsLocked(false);
     };
+
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement backend API call here
+    toast.info(`Password reset link would be sent to: ${forgotPasswordEmail}`);
+    setShowForgotPassword(false);
+    setForgotPasswordEmail('');
+  };
 
   if (isCheckingSession) {
     return (
@@ -139,14 +149,17 @@ const Login = () => {
         </div>
 
         <div className='mx-auto grid w-full max-w-[400px] gap-8'>
-          <div className='flex flex-col space-y-2 text-center'>
-            <h1 className='text-3xl font-bold tracking-tight text-white'>Welcome back</h1>
-            <p className='text-zinc-400 text-lg'>
-              Enter your credentials to access your account
-            </p>
-          </div>
+          {!showForgotPassword ? (
+            // Login Form
+            <>
+              <div className='flex flex-col space-y-2 text-center'>
+                <h1 className='text-3xl font-bold tracking-tight text-white'>Welcome back</h1>
+                <p className='text-zinc-400 text-lg'>
+                  Enter your credentials to access your account
+                </p>
+              </div>
 
-          <form onSubmit={handleSubmit} className='grid gap-6'>
+              <form onSubmit={handleSubmit} className='grid gap-6'>
             <div className='grid gap-3'>
               <Label htmlFor='email' className='text-base text-zinc-300 ml-1'>Email</Label>
               <div className='relative group'>
@@ -166,13 +179,13 @@ const Login = () => {
             <div className='grid gap-3'>
               <div className='flex items-center justify-between ml-1'>
                 <Label htmlFor='password' className='text-base text-zinc-300'>Password</Label>
-                <a
-                  href='#'
+                <button
+                  type='button'
                   className='text-sm font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors'
-                  onClick={(e) => { e.preventDefault(); toast.info("Please contact your administrator to reset password."); }}
+                  onClick={() => setShowForgotPassword(true)}
                 >
                   Forgot password?
-                </a>
+                </button>
               </div>
               <div className='relative group'>
                 <Input
@@ -216,8 +229,57 @@ const Login = () => {
             </a>
             .
           </p>
+          </>
+          ) : (
+            // Forgot Password Form
+            <>
+              <div className='flex flex-col space-y-4'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setForgotPasswordEmail('');
+                  }}
+                  className='w-fit bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white group'
+                >
+                  <ArrowLeft className='mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300' />
+                  Back to login
+                </Button>
+                <div className='text-center mt-2'>
+                  <h1 className='text-3xl font-bold tracking-tight text-white'>Forgot Password</h1>
+                  <p className='text-zinc-400 text-lg mt-2'>
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleForgotPassword} className='grid gap-6'>
+                <div className='grid gap-3'>
+                  <Label htmlFor='forgot-email' className='text-base text-zinc-300 ml-1'>Email</Label>
+                  <div className='relative group'>
+                    <Input
+                      id='forgot-email'
+                      type='email'
+                      placeholder='name@example.com'
+                      required
+                      value={forgotPasswordEmail}
+                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                      className='pl-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus:bg-white/10 focus:border-primary/50 focus:ring-0 rounded-xl transition-all duration-300'
+                    />
+                    <Mail className='absolute left-4 top-4 h-6 w-6 text-zinc-500 group-hover:text-primary transition-colors duration-300' />
+                  </div>
+                </div>
+
+                <Button type='submit' className='w-full h-14 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 rounded-xl bg-primary hover:bg-primary/90'>
+                  Send Reset Link
+                </Button>
+              </form>
+            </>
+          )}
         </div>
       </div>
+
     </div>
   );
 };
