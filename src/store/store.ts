@@ -13,8 +13,8 @@ import meReducer from './slices/meSlice';
 import notificationsReducer from './slices/notificationsSlice';
 import productsReducer from './slices/productsSlice';
 import auditReducer from './slices/auditSlice';
-import requestsReducer from './slices/requestsSlice';
 import ordersReducer from './slices/ordersSlice';
+import supportTicketsReducer from './slices/supportTicketsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -28,10 +28,11 @@ export const store = configureStore({
     products: productsReducer,
     notifications: notificationsReducer,
     audit: auditReducer,
-    requests: requestsReducer,
     orders: ordersReducer,
+    supportTickets: supportTicketsReducer,
   },
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+

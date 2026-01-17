@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +18,7 @@ import type { RootState, AppDispatch } from '@/store/store';
 const AuditDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation('history');
   const dispatch = useDispatch<AppDispatch>();
   const { selectedLog, detailsLoading, error } = useSelector(
     (state: RootState) => state.audit
@@ -63,11 +65,11 @@ const AuditDetailsPage = () => {
           <Button variant='ghost' size='icon' onClick={() => navigate('/history')}>
             <ArrowLeft className='h-5 w-5' />
           </Button>
-          <h1 className='text-xl font-semibold'>Audit Log Details</h1>
+          <h1 className='text-xl font-semibold'>{t('details.title')}</h1>
         </div>
         <Card className='border-destructive/50'>
           <CardContent className='py-8 text-center text-destructive'>
-            <p>Error loading audit details: {error}</p>
+            <p>{t('details.errorLoading', { message: error })}</p>
           </CardContent>
         </Card>
       </section>
@@ -96,10 +98,10 @@ const AuditDetailsPage = () => {
           <Button variant='ghost' size='icon' onClick={() => navigate('/history')}>
             <ArrowLeft className='h-5 w-5' />
           </Button>
-          <h1 className='text-xl font-semibold'>Audit Log Details</h1>
+          <h1 className='text-xl font-semibold'>{t('details.title')}</h1>
         </div>
         <div className='flex-1 flex items-center justify-center'>
-          <p className='text-muted-foreground'>Audit log not found.</p>
+          <p className='text-muted-foreground'>{t('details.notFound')}</p>
         </div>
       </section>
     );

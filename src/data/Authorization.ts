@@ -69,3 +69,49 @@ export const getMe = async () => {
     };
   }
 };
+
+export const forgotPassword = async (email: string) => {
+  try {
+    const response = await axiosInstance.post(
+      '/Account/forgot-password',
+      { email },
+      {
+        headers: { key: API_KEY, value: API_VALUE },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
+  }
+};
+
+export const resetPassword = async ({
+  email,
+  token,
+  newPassword,
+}: {
+  email: string;
+  token: string;
+  newPassword: string;
+}) => {
+  try {
+    const response = await axiosInstance.post(
+      '/Account/reset-password',
+      { email, token, newPassword },
+      {
+        headers: { key: API_KEY, value: API_VALUE },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
+  }
+};

@@ -1,4 +1,5 @@
 import { FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,15 +19,23 @@ interface AuditChangesPanelProps {
 }
 
 const AuditChangesPanel = ({ changes, isCreated, isDeleted }: AuditChangesPanelProps) => {
+  const { t } = useTranslation('history');
+
   return (
     <Card className='lg:col-span-2 flex flex-col overflow-hidden'>
       <div className='p-4 border-b bg-muted/30 flex items-center justify-between'>
         <div className='flex items-center gap-3'>
           <h3 className='font-semibold text-lg'>
-            {isCreated ? 'Created Values' : isDeleted ? 'Deleted Values' : 'Data Changes'}
+            {isCreated
+              ? t('details.createdValues')
+              : isDeleted
+              ? t('details.deletedValues')
+              : t('details.dataChanges')}
           </h3>
           <Badge variant='outline' className='text-sm font-normal'>
-            {changes.length} field{changes.length !== 1 ? 's' : ''}
+            {changes.length === 1
+              ? t('details.fieldsCount', { count: changes.length })
+              : t('details.fieldsCountPlural', { count: changes.length })}
           </Badge>
         </div>
       </div>
@@ -36,10 +45,10 @@ const AuditChangesPanel = ({ changes, isCreated, isDeleted }: AuditChangesPanelP
           {/* Header Row */}
           {!isCreated && !isDeleted && (
             <div className='grid grid-cols-[160px_1fr_28px_1fr] gap-3 py-3 px-5 border-b bg-muted/20 text-sm font-medium text-muted-foreground'>
-              <div>Field</div>
-              <div>Previous Value</div>
+              <div>{t('details.field')}</div>
+              <div>{t('details.previousValue')}</div>
               <div></div>
-              <div>New Value</div>
+              <div>{t('details.newValue')}</div>
             </div>
           )}
 
@@ -97,9 +106,9 @@ const AuditChangesPanel = ({ changes, isCreated, isDeleted }: AuditChangesPanelP
           <div className='rounded-full bg-muted/50 p-5 mb-4'>
             <FileText className='h-10 w-10 opacity-50' />
           </div>
-          <p className='font-medium text-lg'>No data changes recorded</p>
+          <p className='font-medium text-lg'>{t('details.noChangesTitle')}</p>
           <p className='text-base text-muted-foreground/70'>
-            This action did not modify any fields
+            {t('details.noChangesSubtitle')}
           </p>
         </div>
       )}

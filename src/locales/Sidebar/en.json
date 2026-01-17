@@ -10,9 +10,14 @@
   "vendors": "Vendors",
   "products": "Products",
   "orders": "Orders",
+  "supportTickets": "Support Tickets",
   "analytics": "Analytics",
   "reports": "Reports",
   "settings": "Settings",
+  "accountMenu": "Account",
+  "manageProfile": "Manage your profile",
+  "logout": "Log out",
   "profile": "Profile",
-  "themes": "Themes"
+  "themes": "Themes",
+  "History": "History"
 }

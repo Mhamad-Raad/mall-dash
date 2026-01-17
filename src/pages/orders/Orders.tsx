@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 
@@ -37,6 +38,7 @@ const orderStatuses: (OrderStatus | 'All')[] = [
 ];
 
 const Orders = () => {
+  const { t } = useTranslation('orders');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
@@ -203,7 +205,7 @@ const Orders = () => {
                 }}
               >
                 <ArrowLeft className='h-4 w-4 mr-2' />
-                Back to Orders
+                {t('backToOrders')}
               </Button>
             </div>
             <OrderDisplay orderId={selectedOrderId} />
@@ -215,9 +217,11 @@ const Orders = () => {
           <div className='flex flex-col h-full w-full bg-muted/10'>
             <div className='bg-background border-b p-4 space-y-4'>
               <div className='flex items-center justify-between'>
-                <h1 className='text-xl font-semibold tracking-tight'>Orders</h1>
+                <h1 className='text-xl font-semibold tracking-tight'>
+                  {t('title')}
+                </h1>
                 <div className='text-sm text-muted-foreground'>
-                  Total:{' '}
+                  {t('totalLabel')}{' '}
                   <span className='font-medium text-foreground'>{total}</span>
                 </div>
               </div>
@@ -227,7 +231,7 @@ const Orders = () => {
                   <Search className='absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                   <Input
                     type='text'
-                    placeholder='Search orders...'
+                    placeholder={t('searchPlaceholder')}
                     value={searchQuery}
                     onChange={handleSearchChange}
                     className='pl-9 h-9 text-sm'
@@ -236,7 +240,7 @@ const Orders = () => {
 
                 <div className='relative'>
                   <ObjectAutoComplete<VendorAPIResponse>
-                    placeholder='Filter by vendor...'
+                    placeholder={t('filterVendorPlaceholder')}
                     fetchOptions={fetchVendorOptions}
                     onSelectOption={handleVendorSelect as any}
                     getOptionLabel={(vendor) => vendor.name}
@@ -252,13 +256,13 @@ const Orders = () => {
                   <SelectTrigger className='h-9 text-sm w-full'>
                     <div className='flex items-center gap-2'>
                       <Filter className='h-4 w-4 text-muted-foreground' />
-                      <SelectValue placeholder='Filter by status' />
+                      <SelectValue placeholder={t('filterStatusPlaceholder')} />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
                     {orderStatuses.map((s) => (
                       <SelectItem key={s} value={s}>
-                        {s === 'All' ? 'All Statuses' : s}
+                        {s === 'All' ? t('allStatuses') : s}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -302,4 +306,3 @@ const Orders = () => {
 };
 
 export default Orders;
-

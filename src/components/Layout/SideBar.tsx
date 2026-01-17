@@ -12,9 +12,9 @@ import {
   Building2,
   Store,
   ChevronRight,
-  User,
   Palette,
   History,
+  LifeBuoy,
 } from 'lucide-react';
 
 import { useSelector } from 'react-redux';
@@ -83,9 +83,9 @@ const mainNavItems = [
     icon: ShoppingCart,
   },
   {
-    titleKey: 'Requests',
-    url: '/requests',
-    icon: FileText,
+    titleKey: 'supportTickets',
+    url: '/support-tickets',
+    icon: LifeBuoy,
   },
 ];
 
@@ -110,11 +110,6 @@ const managementItems = [
 
 // Settings sub-items
 const settingsSubItems = [
-  {
-    titleKey: 'profile',
-    url: '/profile',
-    icon: User,
-  },
   {
     titleKey: 'themes',
     url: '/settings/themes',

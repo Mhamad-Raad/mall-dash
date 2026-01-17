@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ interface AuditDetailsHeaderProps {
 
 const AuditDetailsHeader = ({ log, id }: AuditDetailsHeaderProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('history');
   const actionConfig = getActionConfig(log.action);
   const ActionIcon = actionConfig.icon;
 
@@ -42,7 +44,7 @@ const AuditDetailsHeader = ({ log, id }: AuditDetailsHeaderProps) => {
               </Badge>
             </div>
             <p className='text-base text-muted-foreground'>
-              Audit Log #{id}
+              {t('details.headerSubtitle', { id })}
             </p>
           </div>
         </div>

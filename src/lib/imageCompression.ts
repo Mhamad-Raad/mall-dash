@@ -1,13 +1,11 @@
+
 /**
  * Compresses an image file if it exceeds the specified size limit.
  * @param file The original image file.
  * @param maxSizeMB The maximum allowed size in megabytes (default: 5).
  * @returns A Promise that resolves to the compressed file (or the original if no compression needed).
  */
-export const compressImage = async (
-  file: File,
-  maxSizeMB: number = 5
-): Promise<File> => {
+export const compressImage = async (file: File, maxSizeMB: number = 5): Promise<File> => {
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
   if (file.size <= maxSizeBytes) {
@@ -20,26 +18,26 @@ export const compressImage = async (
 
     img.onload = () => {
       URL.revokeObjectURL(url);
-
+      
       let quality = 0.9;
-
+      
       const compress = () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
 
         // Optional: Downscale if dimensions are too large (e.g., > 4K) to help with size
-        const MAX_DIMENSION = 3840;
+        const MAX_DIMENSION = 3840; 
         if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-          const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
-          width *= ratio;
-          height *= ratio;
+             const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+             width *= ratio;
+             height *= ratio;
         }
 
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-
+        
         if (!ctx) {
           resolve(file); // Fallback to original if canvas fails
           return;
@@ -83,4 +81,3 @@ export const compressImage = async (
     img.src = url;
   });
 };
-

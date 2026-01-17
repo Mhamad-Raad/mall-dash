@@ -4,6 +4,7 @@ import LoadingPage from './pages/LoadingPage';
 
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
+import ResetPassword from '@/pages/ResetPassword';
 import Users from './pages/users/Users';
 import CreateUser from './pages/users/CreateUser';
 import UserDetail from './pages/users/UserDetail';
@@ -21,9 +22,9 @@ import CreateProduct from './pages/products/CreateProduct';
 import ProductDetail from './pages/products/ProductDetail';
 import HistoryPage from './pages/HistoryPage';
 import AuditDetailsPage from './pages/AuditDetailsPage';
-import RequestsPage from './pages/requests/Requests';
-import RequestDetailPage from './pages/requests/RequestDetail';
 import Orders from './pages/orders/Orders';
+import SupportTickets from './pages/support-tickets/SupportTickets';
+import SupportTicketDetail from '@/pages/support-tickets/SupportTicketDetail';
 
 import NotFound from './pages/NotFound';
 import ErrorPage from './pages/ErrorPage';
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     element: <LoadingPage />,
@@ -94,20 +99,20 @@ const router = createBrowserRouter([
         element: <AuditDetailsPage />,
       },
       {
-        path: '/requests',
-        element: <RequestsPage />,
-      },
-      {
-        path: '/requests/:id',
-        element: <RequestDetailPage />,
-      },
-      {
         path: '/orders',
         element: <Orders />,
       },
       {
         path: '/orders/:id',
         element: <Orders />,
+      },
+      {
+        path: '/support-tickets',
+        element: <SupportTickets />,
+      },
+      {
+        path: '/support-tickets/:id',
+        element: <SupportTicketDetail />,
       },
       {
         path: '/settings/themes',

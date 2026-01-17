@@ -40,6 +40,15 @@ import profileKu from './locales/Profile/ku.json';
 import productsEn from './locales/Products/en.json';
 import productsAr from './locales/Products/ar.json';
 import productsKu from './locales/Products/ku.json';
+import supportTicketsEn from './locales/SupportTickets/en.json';
+import supportTicketsAr from './locales/SupportTickets/ar.json';
+import supportTicketsKu from './locales/SupportTickets/ku.json';
+import historyEn from './locales/History/en.json';
+import historyAr from './locales/History/ar.json';
+import historyKu from './locales/History/ku.json';
+import ordersEn from './locales/Orders/en.json';
+import ordersAr from './locales/Orders/ar.json';
+import ordersKu from './locales/Orders/ku.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -54,6 +63,9 @@ i18n.use(initReactI18next).init({
       reports: reportsEn,
       profile: profileEn,
       products: productsEn,
+      supportTickets: supportTicketsEn,
+      history: historyEn,
+      orders: ordersEn,
     },
     ar: {
       sidebar: sidebarAr,
@@ -66,6 +78,9 @@ i18n.use(initReactI18next).init({
       reports: reportsAr,
       profile: profileAr,
       products: productsAr,
+      supportTickets: supportTicketsAr,
+      history: historyAr,
+      orders: ordersAr,
     },
     ku: {
       sidebar: sidebarKu,
@@ -78,11 +93,28 @@ i18n.use(initReactI18next).init({
       reports: reportsKu,
       profile: profileKu,
       products: productsKu,
+      supportTickets: supportTicketsKu,
+      history: historyKu,
+      orders: ordersKu,
     },
   },
   lng: 'en', // default language
   fallbackLng: 'en',
-  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors', 'themes', 'home', 'reports', 'profile', 'products'], // namespaces
+  ns: [
+    'sidebar',
+    'navbar',
+    'users',
+    'buildings',
+    'vendors',
+    'themes',
+    'home',
+    'reports',
+    'profile',
+    'products',
+    'supportTickets',
+    'history',
+    'orders',
+  ],
   defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });

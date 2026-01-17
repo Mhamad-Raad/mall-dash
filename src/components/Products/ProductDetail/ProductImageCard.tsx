@@ -100,12 +100,8 @@ const ProductImageCard = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>
-          {t('productDetail.imageCard.title')}
-        </CardTitle>
-        <CardDescription>
-          {t('productDetail.imageCard.description')}
-        </CardDescription>
+        <CardTitle className='text-lg'>{t('productDetail.imageCard.title')}</CardTitle>
+        <CardDescription>{t('productDetail.imageCard.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className='flex flex-col lg:flex-row gap-6'>
@@ -164,16 +160,11 @@ const ProductImageCard = ({
             {/* Product Name */}
             <div className='space-y-2'>
               <Label htmlFor='productName' className='text-sm font-medium'>
-                {t('productDetail.imageCard.productName')}{' '}
-                <span className='text-destructive'>
-                  {t('productDetail.imageCard.required')}
-                </span>
+                {t('productDetail.imageCard.productName')} <span className='text-destructive'>{t('productDetail.imageCard.required')}</span>
               </Label>
               <Input
                 id='productName'
-                placeholder={t(
-                  'productDetail.imageCard.productNamePlaceholder'
-                )}
+                placeholder={t('productDetail.imageCard.productNamePlaceholder')}
                 value={name}
                 onChange={(e) => onNameChange(e.target.value)}
                 className='h-10'
@@ -192,16 +183,12 @@ const ProductImageCard = ({
                   <div className='font-medium text-sm'>{vendorName}</div>
                 </div>
               )}
-
+              
               {/* Product ID */}
               {productId && (
                 <div className='p-3 rounded-lg border bg-card space-y-1'>
-                  <div className='text-xs text-muted-foreground'>
-                    {t('productDetail.imageCard.productId')}
-                  </div>
-                  <div className='font-mono text-sm font-medium'>
-                    #{productId}
-                  </div>
+                  <div className='text-xs text-muted-foreground'>{t('productDetail.imageCard.productId')}</div>
+                  <div className='font-mono text-sm font-medium'>#{productId}</div>
                 </div>
               )}
             </div>
@@ -212,15 +199,9 @@ const ProductImageCard = ({
                 {discountPrice && parseFloat(discountPrice) > 0 ? (
                   <>
                     <div className='flex items-center justify-between mb-2'>
-                      <span className='text-sm text-muted-foreground'>
-                        {t('productDetail.imageCard.price')}
-                      </span>
+                      <span className='text-sm text-muted-foreground'>{t('productDetail.imageCard.price')}</span>
                       <Badge variant='destructive' className='text-xs'>
-                        {Math.round(
-                          (1 - parseFloat(discountPrice) / parseFloat(price)) *
-                            100
-                        )}
-                        % {t('productDetail.imageCard.off')}
+                        {Math.round((1 - parseFloat(discountPrice) / parseFloat(price)) * 100)}% {t('productDetail.imageCard.off')}
                       </Badge>
                     </div>
                     <div className='flex items-baseline gap-3'>
@@ -234,9 +215,7 @@ const ProductImageCard = ({
                   </>
                 ) : (
                   <>
-                    <div className='text-sm text-muted-foreground mb-2'>
-                      {t('productDetail.imageCard.price')}
-                    </div>
+                    <div className='text-sm text-muted-foreground mb-2'>{t('productDetail.imageCard.price')}</div>
                     <span className='text-3xl font-bold'>
                       ${parseFloat(price).toFixed(2)}
                     </span>
@@ -249,10 +228,7 @@ const ProductImageCard = ({
             <div className='space-y-2'>
               <Label className='text-sm font-medium flex items-center gap-2'>
                 <Tag className='size-3.5 text-primary' />
-                {t('productDetail.imageCard.category')}{' '}
-                <span className='text-destructive'>
-                  {t('productDetail.imageCard.required')}
-                </span>
+                {t('productDetail.imageCard.category')} <span className='text-destructive'>{t('productDetail.imageCard.required')}</span>
               </Label>
               <div className='relative z-20'>
                 <ObjectAutoComplete
@@ -274,9 +250,7 @@ const ProductImageCard = ({
               </Label>
               <Textarea
                 id='description'
-                placeholder={t(
-                  'productDetail.imageCard.descriptionPlaceholder'
-                )}
+                placeholder={t('productDetail.imageCard.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => onDescriptionChange(e.target.value)}
                 rows={3}

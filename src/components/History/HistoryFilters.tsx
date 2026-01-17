@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { Search, X, History, SlidersHorizontal, Sparkles } from 'lucide-react';
 const HistoryFilters = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('history');
 
   // State
   const [entityName, setEntityName] = useState(
@@ -91,12 +93,12 @@ const HistoryFilters = () => {
           <div>
             <div className='flex items-center gap-2'>
               <h1 className='text-3xl font-bold tracking-tight'>
-                Audit History
+                {t('page.title')}
               </h1>
               <Sparkles className='size-5 text-amber-500' />
             </div>
             <p className='text-muted-foreground mt-0.5'>
-              View system audit logs and history
+              {t('page.subtitle')}
             </p>
           </div>
         </div>
@@ -108,7 +110,7 @@ const HistoryFilters = () => {
           <div className='p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors'>
             <SlidersHorizontal className='size-4 text-primary' />
           </div>
-          <span className='text-sm font-medium'>Filters</span>
+          <span className='text-sm font-medium'>{t('filters.title')}</span>
         </div>
 
         <div className='flex flex-col sm:flex-row flex-1 items-start sm:items-center gap-3 w-full transition-all duration-300'>
@@ -116,7 +118,7 @@ const HistoryFilters = () => {
           <div className='relative flex-1 min-w-0 w-full group'>
             <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-primary transition-colors' />
             <Input
-              placeholder='Search by Entity Name...'
+              placeholder={t('filters.searchPlaceholder')}
               value={typedEntityName}
               onChange={(e) => setTypedEntityName(e.target.value)}
               className='pl-10 pr-10 h-10 bg-background/80 border-border/50 focus-visible:border-primary/50 focus-visible:ring-primary/20 focus-visible:shadow-sm transition-all rounded-xl'
@@ -125,7 +127,7 @@ const HistoryFilters = () => {
               <button
                 onClick={clearSearch}
                 className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded p-0.5 animate-in fade-in zoom-in duration-200'
-                title='Clear search'
+                title={t('filters.clearSearch')}
               >
                 <X className='size-4' />
               </button>
@@ -135,7 +137,7 @@ const HistoryFilters = () => {
           {/* Date Range Filters */}
           <div className='flex items-center gap-2 w-full sm:w-auto sm:min-w-[200px]'>
             <span className='text-sm text-muted-foreground whitespace-nowrap'>
-              From:
+              {t('filters.from')}
             </span>
             <Input
               type='datetime-local'
@@ -147,7 +149,7 @@ const HistoryFilters = () => {
 
           <div className='flex items-center gap-2 w-full sm:w-auto sm:min-w-[200px]'>
             <span className='text-sm text-muted-foreground whitespace-nowrap'>
-              To:
+              {t('filters.to')}
             </span>
             <Input
               type='datetime-local'
@@ -168,7 +170,7 @@ const HistoryFilters = () => {
             <>
               <Badge variant='secondary' className='gap-1.5 py-1.5 px-3 shadow-sm whitespace-nowrap'>
                 <span className='size-1.5 rounded-full bg-primary animate-pulse' />
-                <span className='font-medium'>Filtered</span>
+                <span className='font-medium'>{t('filters.activeBadge')}</span>
               </Badge>
               <Button
                 type='button'
@@ -176,7 +178,7 @@ const HistoryFilters = () => {
                 size='sm'
                 onClick={clearFilters}
                 className='h-8 px-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all rounded-lg shrink-0'
-                title='Clear all filters'
+                title={t('filters.clearFilters')}
               >
                 <X className='size-4' />
               </Button>

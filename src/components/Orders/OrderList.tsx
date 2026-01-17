@@ -4,6 +4,7 @@ import type { Order, OrderStatus } from '@/interfaces/Order.interface';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Clock, Package } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface OrderListProps {
   orders: Order[];
@@ -32,9 +33,12 @@ const getStatusColor = (status: OrderStatus | number) => {
 };
 
 const OrderList = ({ orders, selectedOrderId, onSelectOrder }: OrderListProps) => {
+  const { t } = useTranslation('orders');
+
   return (
     <div className="h-full overflow-y-auto">
-      <div className="flex flex-col">{orders.map((order) => {
+      <div className="flex flex-col">
+        {orders.map((order) => {
           const isSelected = order.id === selectedOrderId;
           return (
             <button
@@ -48,7 +52,7 @@ const OrderList = ({ orders, selectedOrderId, onSelectOrder }: OrderListProps) =
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
                 <Package className="h-4 w-4 text-primary" />
               </div>
-              
+
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-sm truncate">
@@ -66,16 +70,18 @@ const OrderList = ({ orders, selectedOrderId, onSelectOrder }: OrderListProps) =
                     </Badge>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between gap-2 text-xs">
                   <span className="font-medium text-muted-foreground truncate">
-                    {order.userName || order.customerName || 'Guest Customer'}
+                    {order.userName ||
+                      order.customerName ||
+                      t('table.guestCustomer')}
                   </span>
                   <span className="font-semibold text-foreground flex-shrink-0 ml-2">
                     ${order.totalAmount.toFixed(2)}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
@@ -83,7 +89,9 @@ const OrderList = ({ orders, selectedOrderId, onSelectOrder }: OrderListProps) =
                   </span>
                   {order.itemCount && order.itemCount > 0 && (
                     <span>
-                      {order.itemCount} {order.itemCount === 1 ? 'item' : 'items'}
+                      {order.itemCount === 1
+                        ? t('table.itemsSingle', { count: order.itemCount })
+                        : t('table.itemsPlural', { count: order.itemCount })}
                     </span>
                   )}
                 </div>

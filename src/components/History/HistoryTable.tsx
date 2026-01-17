@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
@@ -30,40 +31,46 @@ import CustomTablePagination from '../CustomTablePagination';
 import type { RootState } from '@/store/store';
 import type { AuditLog } from '@/interfaces/Audit.interface';
 
-const getActionConfig = (action: string) => {
+const getActionConfig = (
+  action: string,
+  t: (key: string, options?: any) => string,
+) => {
   const actionLower = action?.toLowerCase() || '';
   if (actionLower === 'created' || actionLower === 'create') {
     return {
       icon: Plus,
-      color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-      label: 'Created',
+      color:
+        'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+      label: t('table.actions.created'),
     };
   }
   if (actionLower === 'updated' || actionLower === 'update') {
     return {
       icon: PenLine,
-      color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
-      label: 'Updated',
+      color:
+        'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
+      label: t('table.actions.updated'),
     };
   }
   if (actionLower === 'deleted' || actionLower === 'delete') {
     return {
       icon: Trash2,
       color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30',
-      label: 'Deleted',
+      label: t('table.actions.deleted'),
     };
   }
   if (actionLower === 'viewed' || actionLower === 'view') {
     return {
       icon: Eye,
-      color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30',
-      label: 'Viewed',
+      color:
+        'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30',
+      label: t('table.actions.viewed'),
     };
   }
   return {
     icon: FileText,
     color: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/30',
-    label: action || 'Unknown',
+    label: action || t('table.actions.unknown'),
   };
 };
 
@@ -77,7 +84,10 @@ const getEntityIcon = (entityName: string) => {
   return FileText;
 };
 
-const formatRelativeTime = (timestamp: string) => {
+const formatRelativeTime = (
+  timestamp: string,
+  t: (key: string, options?: any) => string,
+) => {
   const now = new Date();
   const date = new Date(timestamp);
   const diffMs = now.getTime() - date.getTime();
@@ -85,17 +95,18 @@ const formatRelativeTime = (timestamp: string) => {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t('table.relative.justNow');
+  if (diffMins < 60) return t('table.relative.minutes', { count: diffMins });
+  if (diffHours < 24) return t('table.relative.hours', { count: diffHours });
+  if (diffDays < 7) return t('table.relative.days', { count: diffDays });
   return date.toLocaleDateString();
 };
 
 const HistoryTable = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('history');
   const { logs, loading, error, total } = useSelector(
-    (state: RootState) => state.audit
+    (state: RootState) => state.audit,
   );
 
   const handleRowClick = (id: string | number) => {
@@ -105,7 +116,9 @@ const HistoryTable = () => {
   if (error) {
     return (
       <div className='rounded-lg border bg-card shadow-sm p-8'>
-        <div className='text-center text-destructive'>Error: {error}</div>
+        <div className='text-center text-destructive'>
+          {t('table.error', { message: error })}
+        </div>
       </div>
     );
   }
@@ -117,16 +130,16 @@ const HistoryTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 pl-4'>
-                User
+                {t('table.headers.user')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 w-[120px]'>
-                Action
+                {t('table.headers.action')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Target
+                {t('table.headers.target')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12 w-[160px] text-right pr-4'>
-                When
+                {t('table.headers.when')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12 pr-4'></TableHead>
             </TableRow>
@@ -170,9 +183,9 @@ const HistoryTable = () => {
                       <FileText className='h-8 w-8 opacity-50' />
                     </div>
                     <div>
-                      <p className='font-medium'>No audit history found</p>
+                      <p className='font-medium'>{t('table.emptyTitle')}</p>
                       <p className='text-sm text-muted-foreground/70'>
-                        Activity will appear here once actions are performed
+                        {t('table.emptySubtitle')}
                       </p>
                     </div>
                   </div>
@@ -180,7 +193,7 @@ const HistoryTable = () => {
               </TableRow>
             ) : (
               logs.map((log: AuditLog, index) => {
-                const actionConfig = getActionConfig(log.action);
+                const actionConfig = getActionConfig(log.action, t);
                 const ActionIcon = actionConfig.icon;
                 const EntityIcon = getEntityIcon(log.entityName);
 
@@ -194,7 +207,10 @@ const HistoryTable = () => {
                     <TableCell className='py-4 pl-4'>
                       <div className='flex items-center gap-3'>
                         <Avatar className='h-14 w-14 border-2 border-border shadow-sm shrink-0 group-hover:shadow-md group-hover:border-primary/50 transition-all'>
-                          <AvatarImage src={log.profileImageUrl} alt={log.userEmail} />
+                          <AvatarImage
+                            src={log.profileImageUrl}
+                            alt={log.userEmail}
+                          />
                           <AvatarFallback className='bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-sm font-semibold'>
                             {log.userEmail?.slice(0, 2).toUpperCase() || 'U'}
                           </AvatarFallback>
@@ -222,7 +238,9 @@ const HistoryTable = () => {
                         <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0'>
                           <EntityIcon className='h-4.5 w-4.5' />
                         </div>
-                        <span className='font-semibold text-lg'>{log.entityName || '-'}</span>
+                        <span className='font-semibold text-lg'>
+                          {log.entityName || '-'}
+                        </span>
                         <code className='rounded bg-muted/50 px-2 py-1 text-base font-mono text-muted-foreground'>
                           #{log.entityId || '-'}
                         </code>
@@ -234,7 +252,9 @@ const HistoryTable = () => {
                       <div className='flex flex-col items-end'>
                         <span className='text-lg font-medium flex items-center gap-1.5'>
                           <Clock className='h-4 w-4 text-muted-foreground' />
-                          {log.timestamp ? formatRelativeTime(log.timestamp) : '-'}
+                          {log.timestamp
+                            ? formatRelativeTime(log.timestamp, t)
+                            : '-'}
                         </span>
                         <span className='text-base text-muted-foreground'>
                           {log.timestamp
@@ -268,4 +288,3 @@ const HistoryTable = () => {
 };
 
 export default HistoryTable;
-

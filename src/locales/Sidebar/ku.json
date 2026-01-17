@@ -10,9 +10,14 @@
   "vendors": "فرۆشیارەکان",
   "products": "بەرهەمەکان",
   "orders": "داواکاریەکان",
+  "supportTickets": "تیکەتی پاڵپشتی",
   "analytics": "شیکاری",
   "reports": "ڕاپۆرتەکان",
   "settings": "ڕێکخستنەکان",
+  "accountMenu": "هەژمار",
+  "manageProfile": "بەڕێوەبردنی پرۆفایلەکەت",
+  "logout": "چوونە دەرەوە",
   "profile": "پرۆفایل",
-  "themes": "تێمەکان"
+  "themes": "تێمەکان",
+  "History": "مێژوو"
 }

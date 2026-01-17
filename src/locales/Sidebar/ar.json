@@ -10,9 +10,14 @@
   "vendors": "البائعين",
   "products": "المنتجات",
   "orders": "الطلبات",
+  "supportTickets": "تذاكر الدعم",
   "analytics": "التحليلات",
   "reports": "التقارير",
   "settings": "الإعدادات",
+  "accountMenu": "الحساب",
+  "manageProfile": "إدارة ملفك الشخصي",
+  "logout": "تسجيل الخروج",
   "profile": "الملف الشخصي",
-  "themes": "السمات"
+  "themes": "السمات",
+  "History": "السجل"
 }
