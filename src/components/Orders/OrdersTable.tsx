@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableBody,
@@ -41,6 +42,7 @@ const getStatusColor = (status: OrderStatus | number) => {
 
 const OrdersTable = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('orders');
   const { orders, loading, total } = useSelector(
     (state: RootState) => state.orders
   );
@@ -76,19 +78,19 @@ const OrdersTable = () => {
           <TableHeader className='bg-muted/50'>
             <TableRow className='hover:bg-transparent border-b border-border/50'>
               <TableHead className='w-[140px] pl-6 h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-                Order #
+                {t('table.orderNumber')}
               </TableHead>
               <TableHead className='h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-                Customer
+                {t('table.customer')}
               </TableHead>
               <TableHead className='h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-                Status
+                {t('table.status')}
               </TableHead>
               <TableHead className='h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-                Date & Time
+                {t('table.dateTime')}
               </TableHead>
               <TableHead className='h-12 text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
-                Total
+                {t('table.total')}
               </TableHead>
               <TableHead className='w-[60px] h-12' />
             </TableRow>
@@ -117,7 +119,7 @@ const OrdersTable = () => {
                         <span className='font-medium text-sm'>
                           {order.userName ||
                             order.customerName ||
-                            'Guest Customer'}
+                            t('table.guestCustomer')}
                         </span>
                       </div>
                     </TableCell>

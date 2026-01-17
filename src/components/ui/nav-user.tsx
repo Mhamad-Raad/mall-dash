@@ -12,6 +12,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function NavUser({
   user,
@@ -31,6 +32,7 @@ export function NavUser({
   const initials = user.initials || user.name.slice(0, 2).toUpperCase();
   const containerRef = useRef<HTMLDivElement>(null);
   const { setOpen, state } = useSidebar();
+  const { t } = useTranslation('sidebar');
 
   // Close accordion when sidebar collapses
   useEffect(() => {
@@ -100,8 +102,10 @@ export function NavUser({
                   <User className='h-3.5 w-3.5 text-primary' />
                 </div>
                 <div className='flex flex-col'>
-                  <span className='font-medium text-sm'>Account</span>
-                  <span className='text-xs text-muted-foreground'>Manage your profile</span>
+                  <span className='font-medium text-sm'>{t('accountMenu')}</span>
+                  <span className='text-xs text-muted-foreground'>
+                    {t('manageProfile')}
+                  </span>
                 </div>
               </button>
 
@@ -116,7 +120,9 @@ export function NavUser({
                 <div className='flex h-7 w-7 items-center justify-center rounded-md bg-destructive/10 group-hover:bg-destructive/20 transition-colors'>
                   <LogOut className='h-3.5 w-3.5 text-destructive' />
                 </div>
-                <span className='font-medium text-sm text-destructive'>Log out</span>
+                <span className='font-medium text-sm text-destructive'>
+                  {t('logout')}
+                </span>
               </button>
             </div>
           </CollapsibleContent>

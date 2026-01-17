@@ -22,6 +22,7 @@ import { getStatusText } from '@/utils/orderUtils';
 import { formatDate } from '@/utils/dateUtils';
 import { cn } from '@/lib/utils';
 import { OrderDisplaySkeleton } from './OrderDisplaySkeleton';
+import { useTranslation } from 'react-i18next';
 
 interface OrderDisplayProps {
   orderId: number;
@@ -51,6 +52,7 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation('orders');
 
   useEffect(() => {
     const loadOrder = async () => {
@@ -138,7 +140,9 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
                     <div className="flex items-start gap-3">
                       <Mail className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">Email</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('detail.email')}
+                        </p>
                         <p className="font-medium text-base truncate">{order.userEmail}</p>
                       </div>
                     </div>
@@ -147,7 +151,9 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
                     <div className="flex items-start gap-3">
                       <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">Phone</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('detail.phone')}
+                        </p>
                         <p className="font-medium text-base">{order.userPhone}</p>
                       </div>
                     </div>
@@ -161,13 +167,15 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
               <div className="pt-6 md:pt-0 md:pl-6">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                   <MapPin className="h-3.5 w-3.5" />
-                  Delivery Address
+                  {t('detail.deliveryAddressSection')}
                 </p>
                 <div className="space-y-2.5">
                   <div className="flex items-start gap-3">
                     <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Building</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('detail.building')}
+                      </p>
                       <p className="font-medium text-base">
                         {order.deliveryAddress.buildingName}
                       </p>
@@ -176,16 +184,22 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
                   <div className="flex items-start gap-3">
                     <Layers className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Floor</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('detail.floor')}
+                      </p>
                       <p className="font-medium text-base">
-                        Floor {order.deliveryAddress.floorNumber}
+                        {t('detail.floorWithNumber', {
+                          number: order.deliveryAddress.floorNumber,
+                        })}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Home className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Apartment</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('detail.apartment')}
+                      </p>
                       <p className="font-medium text-base">
                         {order.deliveryAddress.apartmentName}
                       </p>
@@ -200,7 +214,9 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
         {/* Order Items */}
         {order.items && order.items.length > 0 && (
           <div className="px-6 py-5 border-b">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Items ({order.items.length})</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              {t('detail.itemsSection', { count: order.items.length })}
+            </p>
             <div className="space-y-4">
               {order.items.map((item) => (
                 <div
@@ -221,7 +237,10 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm mb-1 truncate">{item.productName}</p>
                     <p className="text-xs text-muted-foreground">
-                      Qty: {item.quantity} × ${item.unitPrice.toFixed(2)}
+                      {t('detail.qtyPrice', {
+                        quantity: item.quantity,
+                        price: item.unitPrice.toFixed(2),
+                      })}
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
@@ -235,19 +254,27 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
 
         {/* Order Summary */}
         <div className="px-6 py-5 border-b bg-muted/10">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Summary</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+            {t('detail.summarySection')}
+          </p>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Subtotal</span>
+              <span className="text-sm text-muted-foreground">
+                {t('detail.subtotal')}
+              </span>
               <span className="font-medium text-sm">${order.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Delivery Fee</span>
+              <span className="text-sm text-muted-foreground">
+                {t('detail.deliveryFee')}
+              </span>
               <span className="font-medium text-sm">${order.deliveryFee.toFixed(2)}</span>
             </div>
             <Separator className="my-3" />
             <div className="flex justify-between items-center pt-1">
-              <span className="font-semibold text-base">Total</span>
+              <span className="font-semibold text-base">
+                {t('detail.totalAmount')}
+              </span>
               <span className="text-xl font-bold">${order.totalAmount.toFixed(2)}</span>
             </div>
           </div>
@@ -256,21 +283,27 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
         {/* Notes */}
         {order.notes && (
           <div className="px-6 py-5 border-b">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Notes</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              {t('detail.notesSection')}
+            </p>
             <p className="text-sm leading-relaxed">{order.notes}</p>
           </div>
         )}
 
         {/* Timeline */}
         <div className="px-6 py-5">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Activity</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+            {t('detail.activitySection')}
+          </p>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
                 <Clock className="h-4 w-4 text-primary" />
               </div>
               <div className="pt-1.5">
-                <p className="font-medium text-sm">Order Created</p>
+                <p className="font-medium text-sm">
+                  {t('detail.orderCreated')}
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {formatDate(order.createdAt, 'MMMM dd, yyyy · hh:mm a')}
                 </p>
@@ -282,7 +315,9 @@ const OrderDisplay = ({ orderId }: OrderDisplayProps) => {
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 </div>
                 <div className="pt-1.5">
-                  <p className="font-medium text-sm">Order Completed</p>
+                  <p className="font-medium text-sm">
+                    {t('detail.orderCompleted')}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {formatDate(order.completedAt, 'MMMM dd, yyyy · hh:mm a')}
                   </p>

@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Select,
   SelectContent,
@@ -11,6 +12,7 @@ import { ShoppingCart, SlidersHorizontal, Search } from 'lucide-react';
 import type { OrderStatus } from '@/interfaces/Order.interface';
 
 const OrdersFilters = () => {
+  const { t } = useTranslation('orders');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -65,9 +67,11 @@ const OrdersFilters = () => {
           </div>
         </div>
         <div>
-          <h1 className='text-2xl font-bold tracking-tight'>Orders</h1>
+          <h1 className='text-2xl font-bold tracking-tight'>
+            {t('headerTitle')}
+          </h1>
           <p className='text-sm text-muted-foreground'>
-            Manage and track your customer orders
+            {t('headerSubtitle')}
           </p>
         </div>
       </div>
@@ -78,7 +82,7 @@ const OrdersFilters = () => {
           <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
           <Input
             type='text'
-            placeholder='Search orders...'
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={handleSearchChange}
             className='pl-9 w-[250px]'

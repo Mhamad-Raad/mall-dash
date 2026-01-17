@@ -46,6 +46,9 @@ import supportTicketsKu from './locales/SupportTickets/ku.json';
 import historyEn from './locales/History/en.json';
 import historyAr from './locales/History/ar.json';
 import historyKu from './locales/History/ku.json';
+import ordersEn from './locales/Orders/en.json';
+import ordersAr from './locales/Orders/ar.json';
+import ordersKu from './locales/Orders/ku.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -62,6 +65,7 @@ i18n.use(initReactI18next).init({
       products: productsEn,
       supportTickets: supportTicketsEn,
       history: historyEn,
+      orders: ordersEn,
     },
     ar: {
       sidebar: sidebarAr,
@@ -76,6 +80,7 @@ i18n.use(initReactI18next).init({
       products: productsAr,
       supportTickets: supportTicketsAr,
       history: historyAr,
+      orders: ordersAr,
     },
     ku: {
       sidebar: sidebarKu,
@@ -90,6 +95,7 @@ i18n.use(initReactI18next).init({
       products: productsKu,
       supportTickets: supportTicketsKu,
       history: historyKu,
+      orders: ordersKu,
     },
   },
   lng: 'en', // default language
@@ -107,6 +113,7 @@ i18n.use(initReactI18next).init({
     'products',
     'supportTickets',
     'history',
+    'orders',
   ],
   defaultNS: 'sidebar',
   interpolation: { escapeValue: false },

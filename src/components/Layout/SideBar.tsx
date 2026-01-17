@@ -12,7 +12,6 @@ import {
   Building2,
   Store,
   ChevronRight,
-  User,
   Palette,
   History,
   LifeBuoy,
@@ -111,11 +110,6 @@ const managementItems = [
 
 // Settings sub-items
 const settingsSubItems = [
-  {
-    titleKey: 'profile',
-    url: '/profile',
-    icon: User,
-  },
   {
     titleKey: 'themes',
     url: '/settings/themes',
