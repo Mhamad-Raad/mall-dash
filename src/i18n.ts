@@ -40,6 +40,12 @@ import profileKu from './locales/Profile/ku.json';
 import productsEn from './locales/Products/en.json';
 import productsAr from './locales/Products/ar.json';
 import productsKu from './locales/Products/ku.json';
+import supportTicketsEn from './locales/SupportTickets/en.json';
+import supportTicketsAr from './locales/SupportTickets/ar.json';
+import supportTicketsKu from './locales/SupportTickets/ku.json';
+import historyEn from './locales/History/en.json';
+import historyAr from './locales/History/ar.json';
+import historyKu from './locales/History/ku.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -54,6 +60,8 @@ i18n.use(initReactI18next).init({
       reports: reportsEn,
       profile: profileEn,
       products: productsEn,
+      supportTickets: supportTicketsEn,
+      history: historyEn,
     },
     ar: {
       sidebar: sidebarAr,
@@ -66,6 +74,8 @@ i18n.use(initReactI18next).init({
       reports: reportsAr,
       profile: profileAr,
       products: productsAr,
+      supportTickets: supportTicketsAr,
+      history: historyAr,
     },
     ku: {
       sidebar: sidebarKu,
@@ -78,11 +88,26 @@ i18n.use(initReactI18next).init({
       reports: reportsKu,
       profile: profileKu,
       products: productsKu,
+      supportTickets: supportTicketsKu,
+      history: historyKu,
     },
   },
   lng: 'en', // default language
   fallbackLng: 'en',
-  ns: ['sidebar', 'navbar', 'users', 'buildings', 'vendors', 'themes', 'home', 'reports', 'profile', 'products'], // namespaces
+  ns: [
+    'sidebar',
+    'navbar',
+    'users',
+    'buildings',
+    'vendors',
+    'themes',
+    'home',
+    'reports',
+    'profile',
+    'products',
+    'supportTickets',
+    'history',
+  ],
   defaultNS: 'sidebar',
   interpolation: { escapeValue: false },
 });

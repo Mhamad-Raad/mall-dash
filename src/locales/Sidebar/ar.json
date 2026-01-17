@@ -10,9 +10,11 @@
   "vendors": "البائعين",
   "products": "المنتجات",
   "orders": "الطلبات",
+  "supportTickets": "تذاكر الدعم",
   "analytics": "التحليلات",
   "reports": "التقارير",
   "settings": "الإعدادات",
   "profile": "الملف الشخصي",
-  "themes": "السمات"
+  "themes": "السمات",
+  "History": "السجل"
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Mail,
@@ -37,22 +38,6 @@ import type { SupportTicketDetailInterface } from '@/data/SupportTickets';
 
 import type { TicketStatus } from '@/interfaces/SupportTicket.interface';
 
-const getStatusText = (status: TicketStatus) => {
-  if (status === 0) return 'Open';
-  if (status === 1) return 'In Progress';
-  if (status === 2) return 'Resolved';
-  if (status === 3) return 'Closed';
-  return 'Unknown';
-};
-
-const getStatusBadgeClass = (status: TicketStatus) => {
-  if (status === 0) return 'bg-blue-50 text-blue-700 border-blue-200';
-  if (status === 1) return 'bg-amber-50 text-amber-700 border-amber-200';
-  if (status === 2) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-  if (status === 3) return 'bg-gray-100 text-gray-700 border-gray-200';
-  return '';
-};
-
 const formatDateTime = (date: string | Date | null | undefined) => {
   if (!date) return '-';
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -62,6 +47,7 @@ const formatDateTime = (date: string | Date | null | undefined) => {
 const SupportTicketDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation('supportTickets');
 
   const [ticket, setTicket] = useState<SupportTicketDetailInterface | null>(
     null
@@ -73,6 +59,22 @@ const SupportTicketDetail = () => {
   const [updating, setUpdating] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
+  const getStatusBadgeClass = (status: TicketStatus) => {
+    if (status === 0) return 'bg-blue-50 text-blue-700 border-blue-200';
+    if (status === 1) return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (status === 2) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (status === 3) return 'bg-gray-100 text-gray-700 border-gray-200';
+    return '';
+  };
+
+  const getStatusText = (status: TicketStatus) => {
+    if (status === 0) return t('status.open');
+    if (status === 1) return t('status.inProgress');
+    if (status === 2) return t('status.resolved');
+    if (status === 3) return t('status.closed');
+    return t('status.unknown');
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -83,7 +85,7 @@ const SupportTicketDetail = () => {
       const numericId = Number(id);
 
       if (Number.isNaN(numericId)) {
-        setError('Invalid ticket id');
+        setError(t('detail.invalidId'));
         setLoading(false);
         return;
       }
@@ -119,7 +121,7 @@ const SupportTicketDetail = () => {
 
     if (statusDraft !== null && statusDraft !== ticket.status) {
       list.push({
-        field: 'Status',
+        field: t('detail.changes.fieldStatus'),
         oldValue: getStatusText(ticket.status),
         newValue: getStatusText(statusDraft),
       });
@@ -127,12 +129,15 @@ const SupportTicketDetail = () => {
 
     if ((ticket.adminNotes ?? '') !== adminNotesDraft) {
       list.push({
-        field: 'Admin notes',
+        field: t('detail.changes.fieldAdminNotes'),
         oldValue:
           ticket.adminNotes && ticket.adminNotes.trim().length > 0
-            ? 'Has notes'
-            : 'Empty',
-        newValue: adminNotesDraft.trim().length > 0 ? 'Has notes' : 'Empty',
+            ? t('detail.changes.hasNotes')
+            : t('detail.changes.empty'),
+        newValue:
+          adminNotesDraft.trim().length > 0
+            ? t('detail.changes.hasNotes')
+            : t('detail.changes.empty'),
       });
     }
 
@@ -161,16 +166,12 @@ const SupportTicketDetail = () => {
     if ('error' in result) {
       const errors = (result as any).errors;
       if (errors && Array.isArray(errors)) {
-        showValidationErrors(
-          'Failed to update ticket',
-          errors,
-          'An error occurred while updating the ticket'
-        );
+        showValidationErrors(t('detail.update.failedTitle'), errors, t('detail.update.failedGeneric'));
       } else {
         showValidationErrors(
-          'Failed to update ticket',
+          t('detail.update.failedTitle'),
           result.error,
-          'An error occurred while updating the ticket'
+          t('detail.update.failedGeneric')
         );
       }
       setUpdating(false);
@@ -182,7 +183,7 @@ const SupportTicketDetail = () => {
     setAdminNotesDraft(result.adminNotes ?? '');
     setUpdating(false);
     setShowUpdateModal(false);
-    toast.success('Ticket updated successfully!');
+    toast.success(t('detail.update.success'));
   };
 
   if (loading) {
@@ -227,25 +228,25 @@ const SupportTicketDetail = () => {
           >
             <ArrowLeft className='h-5 w-5' />
           </Button>
-          <h1 className='text-xl font-semibold'>Support Ticket</h1>
+          <h1 className='text-xl font-semibold'>{t('detail.title')}</h1>
         </div>
 
         <Card className='border-destructive/30 bg-destructive/5'>
           <CardContent className='p-6 flex flex-col items-center justify-center text-center gap-3'>
             <AlertCircle className='h-10 w-10 text-destructive mb-1' />
-            <h2 className='text-lg font-semibold'>Unable to load ticket</h2>
+            <h2 className='text-lg font-semibold'>{t('detail.errorTitle')}</h2>
             <p className='text-sm text-muted-foreground'>
-              {error || 'Ticket not found or you do not have access.'}
+              {error || t('detail.errorDescription')}
             </p>
             <div className='mt-4 flex gap-2'>
               <Button
                 variant='outline'
                 onClick={() => navigate('/support-tickets')}
               >
-                Back to tickets
+                {t('detail.backToTickets')}
               </Button>
               <Button variant='default' onClick={() => navigate(0)}>
-                Retry
+                {t('detail.retry')}
               </Button>
             </div>
           </CardContent>
@@ -268,10 +269,12 @@ const SupportTicketDetail = () => {
           </Button>
           <div>
             <h1 className='text-2xl font-semibold tracking-tight'>
-              Ticket #{ticket.ticketNumber || ticket.id}
+              {t('detail.ticketHeading', {
+                ticketNumber: ticket.ticketNumber || ticket.id,
+              })}
             </h1>
             <p className='text-sm text-muted-foreground'>
-              Created at {formatDateTime(ticket.createdAt)}
+              {t('detail.createdAt', { date: formatDateTime(ticket.createdAt) })}
             </p>
           </div>
         </div>
@@ -285,13 +288,13 @@ const SupportTicketDetail = () => {
             disabled={updating}
           >
             <SelectTrigger className='w-[160px]'>
-              <SelectValue placeholder='Status' />
+              <SelectValue placeholder={t('detail.statusSelectPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='0'>Open</SelectItem>
-              <SelectItem value='1'>In Progress</SelectItem>
-              <SelectItem value='2'>Resolved</SelectItem>
-              <SelectItem value='3'>Closed</SelectItem>
+              <SelectItem value='0'>{t('status.open')}</SelectItem>
+              <SelectItem value='1'>{t('status.inProgress')}</SelectItem>
+              <SelectItem value='2'>{t('status.resolved')}</SelectItem>
+              <SelectItem value='3'>{t('status.closed')}</SelectItem>
             </SelectContent>
           </Select>
           <Badge
@@ -309,20 +312,22 @@ const SupportTicketDetail = () => {
         <div className='lg:col-span-2 flex flex-col gap-4 min-h-0'>
           <Card className='flex-1'>
             <CardHeader>
-              <CardTitle className='text-base'>Ticket details</CardTitle>
+              <CardTitle className='text-base'>
+                {t('detail.fields.ticketDetails')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className='space-y-4'>
                 <div>
                   <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
-                    Subject
+                    {t('detail.fields.subject')}
                   </p>
                   <p className='text-sm font-medium'>{ticket.subject}</p>
                 </div>
 
                 <div>
                   <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
-                    Description
+                    {t('detail.fields.description')}
                   </p>
                   <ScrollArea className='max-h-64 rounded-md border bg-muted/30 p-3'>
                     <p className='text-sm whitespace-pre-line leading-relaxed'>
@@ -334,41 +339,41 @@ const SupportTicketDetail = () => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <div>
                     <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
-                      Priority
+                      {t('detail.fields.priority')}
                     </p>
                     <Badge variant='outline' className='text-xs font-medium'>
                       {ticket.priority === 0
-                        ? 'Low'
+                        ? t('priority.low')
                         : ticket.priority === 1
-                        ? 'Medium'
+                        ? t('priority.medium')
                         : ticket.priority === 2
-                        ? 'High'
+                        ? t('priority.high')
                         : ticket.priority === 3
-                        ? 'Urgent'
+                        ? t('priority.urgent')
                         : ticket.priority}
                     </Badge>
                   </div>
 
                   <div>
                     <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
-                      Resolved at
+                      {t('detail.fields.resolvedAt')}
                     </p>
                     <p className='text-sm'>
                       {ticket.resolvedAt
                         ? formatDateTime(ticket.resolvedAt)
-                        : 'Not resolved yet'}
+                        : t('detail.fields.notResolvedYet')}
                     </p>
                   </div>
                 </div>
 
                 <div>
                   <p className='text-xs font-medium text-muted-foreground uppercase mb-1.5'>
-                    Admin notes
+                    {t('detail.fields.adminNotes')}
                   </p>
                   <Textarea
                     value={adminNotesDraft}
                     onChange={(e) => setAdminNotesDraft(e.target.value)}
-                    placeholder='Add internal notes about this ticket...'
+                    placeholder={t('detail.fields.adminNotesPlaceholder')}
                     className='min-h-[100px] text-sm'
                     disabled={updating}
                   />
@@ -381,7 +386,9 @@ const SupportTicketDetail = () => {
         <div className='flex flex-col gap-4'>
           <Card>
             <CardHeader>
-              <CardTitle className='text-base'>Requester</CardTitle>
+              <CardTitle className='text-base'>
+                {t('detail.requester.title')}
+              </CardTitle>
             </CardHeader>
             <CardContent className='space-y-3'>
               <div className='flex items-center gap-3'>
@@ -391,7 +398,7 @@ const SupportTicketDetail = () => {
                 <div>
                   <p className='text-sm font-medium'>{ticket.userName}</p>
                   <p className='text-xs text-muted-foreground'>
-                    User ID: {ticket.userId}
+                    {t('detail.requester.userId', { id: ticket.userId })}
                   </p>
                 </div>
               </div>
@@ -403,14 +410,18 @@ const SupportTicketDetail = () => {
 
               <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                 <Clock className='h-4 w-4' />
-                <span>Created {formatDateTime(ticket.createdAt)}</span>
+                <span>
+                  {t('detail.created', { date: formatDateTime(ticket.createdAt) })}
+                </span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className='text-base'>Attachments</CardTitle>
+              <CardTitle className='text-base'>
+                {t('detail.attachments.title')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {ticket.imageUrls && ticket.imageUrls.length > 0 ? (
@@ -422,7 +433,9 @@ const SupportTicketDetail = () => {
                     >
                       <img
                         src={url}
-                        alt={`Attachment ${index + 1}`}
+                        alt={t('detail.attachments.alt', {
+                          index: index + 1,
+                        })}
                         className='w-full h-24 object-cover transition-transform group-hover:scale-105'
                       />
                     </div>
@@ -431,7 +444,7 @@ const SupportTicketDetail = () => {
               ) : (
                 <div className='flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground py-4'>
                   <ImageIcon className='h-6 w-6' />
-                  <span>No attachments</span>
+                  <span>{t('detail.attachments.empty')}</span>
                 </div>
               )}
             </CardContent>
@@ -444,13 +457,13 @@ const SupportTicketDetail = () => {
           onClick={() => navigate('/support-tickets')}
           disabled={updating}
         >
-          Back
+          {t('detail.back')}
         </Button>
         <Button
           onClick={handleToggleUpdateModal}
           disabled={!hasChanges || updating}
         >
-          Save changes
+          {t('detail.saveChanges')}
         </Button>
       </div>
 
@@ -458,11 +471,11 @@ const SupportTicketDetail = () => {
         open={showUpdateModal}
         onCancel={() => setShowUpdateModal(false)}
         onConfirm={handleUpdateTicket}
-        title='Update ticket'
-        description='Are you sure you want to update this support ticket?'
+        title={t('detail.updateModal.title')}
+        description={t('detail.updateModal.description')}
         confirmType='warning'
-        confirmLabel='Update ticket'
-        cancelLabel='Cancel'
+        confirmLabel={t('detail.updateModal.confirmLabel')}
+        cancelLabel={t('detail.updateModal.cancelLabel')}
         changes={changes}
       />
     </section>
@@ -470,4 +483,3 @@ const SupportTicketDetail = () => {
 };
 
 export default SupportTicketDetail;
-

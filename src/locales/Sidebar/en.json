@@ -10,9 +10,11 @@
   "vendors": "Vendors",
   "products": "Products",
   "orders": "Orders",
+  "supportTickets": "Support Tickets",
   "analytics": "Analytics",
   "reports": "Reports",
   "settings": "Settings",
   "profile": "Profile",
-  "themes": "Themes"
+  "themes": "Themes",
+  "History": "History"
 }

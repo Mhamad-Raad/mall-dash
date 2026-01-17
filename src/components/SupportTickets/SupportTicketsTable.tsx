@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import type { RootState } from '@/store/store';
 import {
   Table,
@@ -60,6 +61,7 @@ const renderSkeletonRow = (key: number) => (
 
 const SupportTicketsTable = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('supportTickets');
   const { tickets, loading, error, total } = useSelector(
     (state: RootState) => state.supportTickets
   );
@@ -72,7 +74,7 @@ const SupportTicketsTable = () => {
     return (
       <div className='rounded-lg border bg-card shadow-sm p-6'>
         <div className='text-center text-destructive text-sm'>
-          Error: {error}
+          {t('table.error', { message: error })}
         </div>
       </div>
     );
@@ -85,22 +87,22 @@ const SupportTicketsTable = () => {
           <TableHeader>
             <TableRow className='hover:bg-transparent border-b bg-muted/50'>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Ticket
+                {t('table.headers.ticket')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Subject
+                {t('table.headers.subject')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                User
+                {t('table.headers.user')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Status
+                {t('table.headers.status')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Priority
+                {t('table.headers.priority')}
               </TableHead>
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
-                Created
+                {t('table.headers.created')}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -115,7 +117,7 @@ const SupportTicketsTable = () => {
                   colSpan={6}
                   className='h-32 text-center text-sm text-muted-foreground'
                 >
-                  No support tickets found
+                  {t('table.empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -142,14 +144,14 @@ const SupportTicketsTable = () => {
                       }`}
                     >
                       {ticket.status === 0
-                        ? 'Open'
+                        ? t('status.open')
                         : ticket.status === 1
-                        ? 'In Progress'
+                        ? t('status.inProgress')
                         : ticket.status === 2
-                        ? 'Resolved'
+                        ? t('status.resolved')
                         : ticket.status === 3
-                        ? 'Closed'
-                        : 'Unknown'}
+                        ? t('status.closed')
+                        : t('status.unknown')}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -160,13 +162,13 @@ const SupportTicketsTable = () => {
                       }`}
                     >
                       {ticket.priority === 0
-                        ? 'Low'
+                        ? t('priority.low')
                         : ticket.priority === 1
-                        ? 'Medium'
+                        ? t('priority.medium')
                         : ticket.priority === 2
-                        ? 'High'
+                        ? t('priority.high')
                         : ticket.priority === 3
-                        ? 'Urgent'
+                        ? t('priority.urgent')
                         : ticket.priority}
                     </Badge>
                   </TableCell>
@@ -191,4 +193,3 @@ const SupportTicketsTable = () => {
 };
 
 export default SupportTicketsTable;
-

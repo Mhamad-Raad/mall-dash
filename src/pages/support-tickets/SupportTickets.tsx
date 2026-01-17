@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import SupportTicketsTable from '@/components/SupportTickets/SupportTicketsTable';
 import type { AppDispatch } from '@/store/store';
@@ -25,6 +26,7 @@ const parseStatusParam = (statusParam: string | null): TicketStatus | 'all' => {
 const SupportTickets = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('supportTickets');
 
   useEffect(() => {
     const page = Number(searchParams.get('page')) || 1;
@@ -46,10 +48,10 @@ const SupportTickets = () => {
     <section className='w-full h-full flex flex-col gap-4 overflow-hidden'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Support Tickets</h1>
-          <p className='text-muted-foreground mt-2'>
-            View and manage support tickets from residents and vendors.
-          </p>
+          <h1 className='text-3xl font-bold tracking-tight'>
+            {t('page.title')}
+          </h1>
+          <p className='text-muted-foreground mt-2'>{t('page.subtitle')}</p>
         </div>
       </div>
 
