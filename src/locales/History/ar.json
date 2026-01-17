@@ -39,7 +39,18 @@
   "details": {
     "title": "تفاصيل سجل التدقيق",
     "errorLoading": "حدث خطأ أثناء تحميل تفاصيل التدقيق: {{message}}",
-    "notFound": "لم يتم العثور على سجل التدقيق."
+    "notFound": "لم يتم العثور على سجل التدقيق.",
+    "headerSubtitle": "سجل التدقيق رقم {{id}}",
+    "createdValues": "القيم التي تم إنشاؤها",
+    "deletedValues": "القيم التي تم حذفها",
+    "dataChanges": "تغييرات البيانات",
+    "fieldsCount": "{{count}} حقل",
+    "fieldsCountPlural": "{{count}} حقول",
+    "field": "الحقل",
+    "previousValue": "القيمة السابقة",
+    "newValue": "القيمة الجديدة",
+    "noChangesTitle": "لا توجد تغييرات في البيانات",
+    "noChangesSubtitle": "هذا الإجراء لم يعدّل أي حقول"
   },
   "sidebar": {
     "performedBy": "تم التنفيذ بواسطة",

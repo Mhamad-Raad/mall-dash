@@ -39,7 +39,18 @@
   "details": {
     "title": "Audit Log Details",
     "errorLoading": "Error loading audit details: {{message}}",
-    "notFound": "Audit log not found."
+    "notFound": "Audit log not found.",
+    "headerSubtitle": "Audit Log #{{id}}",
+    "createdValues": "Created Values",
+    "deletedValues": "Deleted Values",
+    "dataChanges": "Data Changes",
+    "fieldsCount": "{{count}} field",
+    "fieldsCountPlural": "{{count}} fields",
+    "field": "Field",
+    "previousValue": "Previous Value",
+    "newValue": "New Value",
+    "noChangesTitle": "No data changes recorded",
+    "noChangesSubtitle": "This action did not modify any fields"
   },
   "sidebar": {
     "performedBy": "Performed By",

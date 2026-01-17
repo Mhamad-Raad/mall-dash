@@ -39,7 +39,18 @@
   "details": {
     "title": "وردەکاریی مێژووی ئۆدیت",
     "errorLoading": "هەڵە ڕوویدا لە کاتی بارکردنی وردەکاریی ئۆدیت: {{message}}",
-    "notFound": "هیچ مێژووی ئۆدیتێک نەدۆزرایەوە."
+    "notFound": "هیچ مێژووی ئۆدیتێک نەدۆزرایەوە.",
+    "headerSubtitle": "مێژووی ئۆدیت #{{id}}",
+    "createdValues": "نرخە دروستکراوەکان",
+    "deletedValues": "نرخە سڕاوەکان",
+    "dataChanges": "گۆڕانکارییەکانی داتا",
+    "fieldsCount": "{{count}} خانە",
+    "fieldsCountPlural": "{{count}} خانە",
+    "field": "خانە",
+    "previousValue": "نرخە پێشووەکان",
+    "newValue": "نرخی نوێ",
+    "noChangesTitle": "هیچ گۆڕانکاریی داتایەک تۆمار نەکراوە",
+    "noChangesSubtitle": "ئەم کردەوە گۆڕانکاری لە هیچ خانەیەکدا نەکرد"
   },
   "sidebar": {
     "performedBy": "لە لایەن",

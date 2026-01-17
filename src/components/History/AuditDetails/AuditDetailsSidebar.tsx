@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Clock, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,6 +18,7 @@ interface AuditDetailsSidebarProps {
 
 const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation('history');
   const actionConfig = getActionConfig(log.action);
   const ActionIcon = actionConfig.icon;
   const EntityIcon = getEntityIcon(log.entityName);
@@ -26,10 +28,9 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
     <Card className='flex flex-col overflow-hidden'>
       <ScrollArea className='flex-1'>
         <div className='p-5 space-y-6'>
-          {/* User Section */}
           <div className='space-y-3'>
             <h3 className='text-sm font-semibold text-muted-foreground uppercase tracking-wider'>
-              Performed By
+              {t('sidebar.performedBy')}
             </h3>
             <div className='flex items-center gap-4 group'>
               <Avatar className='h-14 w-14'>
@@ -50,21 +51,24 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
 
           <Separator />
 
-          {/* Action & Target */}
           <div className='space-y-4'>
             <h3 className='text-sm font-semibold text-muted-foreground uppercase tracking-wider'>
-              Action Details
+              {t('sidebar.actionDetails')}
             </h3>
             <div className='space-y-4'>
               <div className='flex items-center justify-between'>
-                <span className='text-base text-muted-foreground'>Action</span>
+                <span className='text-base text-muted-foreground'>
+                  {t('sidebar.action')}
+                </span>
                 <Badge variant='outline' className={`${actionConfig.color} gap-1.5 text-sm py-1 px-2.5`}>
                   <ActionIcon className='h-4 w-4' />
                   {actionConfig.label}
                 </Badge>
               </div>
               <div className='flex items-center justify-between'>
-                <span className='text-base text-muted-foreground'>Entity</span>
+                <span className='text-base text-muted-foreground'>
+                  {t('sidebar.entity')}
+                </span>
                 <div className='flex items-center gap-2'>
                   <div className='flex h-7 w-7 items-center justify-center rounded bg-muted/60'>
                     <EntityIcon className='h-4 w-4 text-muted-foreground' />
@@ -73,7 +77,9 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
                 </div>
               </div>
               <div className='flex items-center justify-between group'>
-                <span className='text-base text-muted-foreground'>Entity ID</span>
+                <span className='text-base text-muted-foreground'>
+                  {t('sidebar.entityId')}
+                </span>
                 <div className='flex items-center gap-1'>
                   <code className='text-sm bg-muted/50 px-2.5 py-1 rounded font-mono'>
                     {log.entityId}
@@ -86,10 +92,9 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
 
           <Separator />
 
-          {/* Timestamp */}
           <div className='space-y-3'>
             <h3 className='text-sm font-semibold text-muted-foreground uppercase tracking-wider'>
-              Timestamp
+              {t('sidebar.timestamp')}
             </h3>
             <div className='flex items-center gap-4'>
               <div className='flex h-12 w-12 items-center justify-center rounded-lg bg-muted/50'>
@@ -116,17 +121,18 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
             </div>
           </div>
 
-          {/* Technical Details */}
           {(log.ipAddress || log.userAgent) && (
             <>
               <Separator />
               <div className='space-y-4'>
                 <h3 className='text-sm font-semibold text-muted-foreground uppercase tracking-wider'>
-                  Technical Details
+                  {t('sidebar.technicalDetails')}
                 </h3>
                 {log.ipAddress && (
                   <div className='flex items-center justify-between'>
-                    <span className='text-base text-muted-foreground'>IP Address</span>
+                    <span className='text-base text-muted-foreground'>
+                      {t('sidebar.ipAddress')}
+                    </span>
                     <code className='text-sm bg-muted/50 px-2.5 py-1 rounded font-mono'>
                       {log.ipAddress}
                     </code>
@@ -134,7 +140,9 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
                 )}
                 {log.userAgent && (
                   <div className='space-y-1.5'>
-                    <span className='text-base text-muted-foreground'>User Agent</span>
+                    <span className='text-base text-muted-foreground'>
+                      {t('sidebar.userAgent')}
+                    </span>
                     <code className='text-xs bg-muted/50 px-2.5 py-1.5 rounded font-mono block break-all text-muted-foreground'>
                       {log.userAgent}
                     </code>
@@ -144,7 +152,6 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
             </>
           )}
 
-          {/* View Entity Link - Only show if not deleted */}
           {!isDeleted && entityRoute && (
             <>
               <Separator />
@@ -154,7 +161,7 @@ const AuditDetailsSidebar = ({ log, isDeleted }: AuditDetailsSidebarProps) => {
                 onClick={() => navigate(entityRoute)}
               >
                 <ExternalLink className='h-4 w-4' />
-                View {log.entityName}
+                {t('sidebar.viewEntity', { entityName: log.entityName })}
               </Button>
             </>
           )}
