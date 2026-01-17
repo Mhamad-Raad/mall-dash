@@ -4,6 +4,7 @@ import LoadingPage from './pages/LoadingPage';
 
 import Home from '@/pages/Home';
 import Login from '@/pages/Login';
+import ResetPassword from '@/pages/ResetPassword';
 import Users from './pages/users/Users';
 import CreateUser from './pages/users/CreateUser';
 import UserDetail from './pages/users/UserDetail';
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     element: <LoadingPage />,
