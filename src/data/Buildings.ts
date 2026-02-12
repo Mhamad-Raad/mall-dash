@@ -1,4 +1,5 @@
 import { axiosInstance } from '@/data/axiosInstance';
+import type { ApartmentLayout } from '@/interfaces/Building.interface';
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 const API_VALUE = import.meta.env.VITE_API_VALUE;
@@ -104,12 +105,13 @@ export const deleteBuildingFloor = async (floorId: number) => {
 export const updateApartment = async (
   id: number,
   apartmentName: string,
-  userId: string | number | null
+  userId: string | number | null,
+  layout?: ApartmentLayout
 ) => {
   try {
     const response = await axiosInstance.put(
       `/Building/apartment/${id}`,
-      { apartmentName, userId },
+      { apartmentName, userId, layout },
       {
         headers: { 'Content-Type': 'application/json' },
       }
@@ -198,6 +200,39 @@ export const deleteBuilding = async (id: number) => {
         value: API_VALUE,
       },
     });
+    return response.data;
+  } catch (error: any) {
+    const errorData = error.response?.data;
+    return { 
+      error: errorData?.error || errorData?.message || error.message,
+      errors: errorData?.errors || []
+    };
+  }
+};
+
+export const updateApartmentLayout = async (
+  apartmentId: number,
+  layout: {
+    rooms: Array<{
+      id: string;
+      type: string;
+      name: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }>;
+    gridSize: number;
+  }
+) => {
+  try {
+    const response = await axiosInstance.put(
+      `/Building/apartment/${apartmentId}/layout`,
+      { layout },
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
     return response.data;
   } catch (error: any) {
     const errorData = error.response?.data;
