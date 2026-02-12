@@ -6,6 +6,7 @@
   "filters": {
     "searchPlaceholder": "Search tickets...",
     "statusPlaceholder": "Status",
+    "filterLabel": "Filter tickets",
     "apply": "Filter",
     "clear": "Clear"
   },

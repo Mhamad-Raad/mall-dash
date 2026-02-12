@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { Hash, MessageSquare, User, Clock, ChevronRight } from 'lucide-react';
 import type { RootState } from '@/store/store';
 import {
   Table,
@@ -10,24 +11,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import CustomTablePagination from '@/components/CustomTablePagination';
+import SupportTicketsTableSkeleton from './SupportTicketsTableSkeleton';
 import type { SupportTicket } from '@/interfaces/SupportTicket.interface';
 
 const statusColorMap: Record<number, string> = {
-  0: 'bg-blue-50 text-blue-700 border-blue-200',
-  1: 'bg-amber-50 text-amber-700 border-amber-200',
-  2: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  3: 'bg-gray-100 text-gray-700 border-gray-200',
+  0: 'bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/30 dark:border-blue-500/40',
+  1: 'bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/30 dark:border-amber-500/40',
+  2: 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/30 dark:border-emerald-500/40',
+  3: 'bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400 border-gray-500/30 dark:border-gray-500/40',
 };
 
 const priorityColorMap: Record<number, string> = {
-  0: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  1: 'bg-blue-50 text-blue-700 border-blue-200',
-  2: 'bg-amber-50 text-amber-700 border-amber-200',
-  3: 'bg-red-50 text-red-700 border-red-200',
+  0: 'bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/30 dark:border-emerald-500/40',
+  1: 'bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/30 dark:border-blue-500/40',
+  2: 'bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/30 dark:border-amber-500/40',
+  3: 'bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-400 border-red-500/30 dark:border-red-500/40',
 };
 
 const formatDate = (value: string | undefined | null) => {
@@ -35,29 +36,6 @@ const formatDate = (value: string | undefined | null) => {
   const date = new Date(value);
   return date.toLocaleString();
 };
-
-const renderSkeletonRow = (key: number) => (
-  <TableRow key={key}>
-    <TableCell>
-      <Skeleton className='h-4 w-16' />
-    </TableCell>
-    <TableCell>
-      <Skeleton className='h-4 w-40' />
-    </TableCell>
-    <TableCell>
-      <Skeleton className='h-4 w-32' />
-    </TableCell>
-    <TableCell>
-      <Skeleton className='h-5 w-24' />
-    </TableCell>
-    <TableCell>
-      <Skeleton className='h-5 w-20' />
-    </TableCell>
-    <TableCell>
-      <Skeleton className='h-4 w-32' />
-    </TableCell>
-  </TableRow>
-);
 
 const SupportTicketsTable = () => {
   const navigate = useNavigate();
@@ -72,8 +50,8 @@ const SupportTicketsTable = () => {
 
   if (error) {
     return (
-      <div className='rounded-lg border bg-card shadow-sm p-6'>
-        <div className='text-center text-destructive text-sm'>
+      <div className='rounded-lg border bg-card shadow-sm p-8'>
+        <div className='text-center text-destructive'>
           {t('table.error', { message: error })}
         </div>
       </div>
@@ -104,17 +82,18 @@ const SupportTicketsTable = () => {
               <TableHead className='sticky top-0 z-10 font-semibold text-foreground/80 bg-muted/50 backdrop-blur-sm border-b h-12'>
                 {t('table.headers.created')}
               </TableHead>
+              <TableHead className='sticky top-0 z-10 w-12 bg-muted/50 backdrop-blur-sm border-b h-12'></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              Array.from({ length: 6 }).map((_, index) =>
-                renderSkeletonRow(index)
-              )
+              Array.from({ length: 6 }).map((_, index) => (
+                <SupportTicketsTableSkeleton key={`skeleton-${index}`} />
+              ))
             ) : tickets.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className='h-32 text-center text-sm text-muted-foreground'
                 >
                   {t('table.empty')}
@@ -124,22 +103,47 @@ const SupportTicketsTable = () => {
               tickets.map((ticket: SupportTicket) => (
                 <TableRow
                   key={ticket.id}
-                  className='hover:bg-muted/50 cursor-pointer'
+                  className='group hover:bg-muted/50 transition-all cursor-pointer border-b last:border-0'
                   onClick={() => handleRowClick(ticket.id)}
                 >
-                  <TableCell className='font-medium text-sm'>
-                    #{ticket.ticketNumber || ticket.id}
+                  {/* Ticket Number */}
+                  <TableCell className='font-medium py-4'>
+                    <div className='flex items-center gap-2.5'>
+                      <div className='flex items-center justify-center w-7 h-7 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors'>
+                        <Hash className='h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors' />
+                      </div>
+                      <span className='font-semibold text-base group-hover:text-primary transition-colors'>
+                        {ticket.ticketNumber || ticket.id}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell className='text-sm max-w-xs'>
-                    <div className='line-clamp-2'>{ticket.subject}</div>
+                  {/* Subject */}
+                  <TableCell className='py-4'>
+                    <div className='flex items-center gap-2.5 max-w-xs'>
+                      <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors shrink-0'>
+                        <MessageSquare className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
+                      </div>
+                      <span className='text-base text-foreground/80 line-clamp-2'>
+                        {ticket.subject}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell className='text-sm'>
-                    {ticket.userName || '-'}
+                  {/* User */}
+                  <TableCell className='py-4'>
+                    <div className='flex items-center gap-2.5'>
+                      <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
+                        <User className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
+                      </div>
+                      <span className='text-base font-medium text-foreground/80'>
+                        {ticket.userName || '-'}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell>
+                  {/* Status */}
+                  <TableCell className='py-4'>
                     <Badge
                       variant='outline'
-                      className={`text-xs font-medium border ${
+                      className={`text-base font-semibold border px-3 py-1 ${
                         statusColorMap[ticket.status] || ''
                       }`}
                     >
@@ -154,10 +158,11 @@ const SupportTicketsTable = () => {
                         : t('status.unknown')}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  {/* Priority */}
+                  <TableCell className='py-4'>
                     <Badge
                       variant='outline'
-                      className={`text-xs font-medium border ${
+                      className={`text-base font-semibold border px-3 py-1 ${
                         priorityColorMap[ticket.priority] || ''
                       }`}
                     >
@@ -172,20 +177,34 @@ const SupportTicketsTable = () => {
                         : ticket.priority}
                     </Badge>
                   </TableCell>
-                  <TableCell className='text-xs text-muted-foreground'>
-                    {formatDate(ticket.createdAt)}
+                  {/* Created */}
+                  <TableCell className='py-4'>
+                    <div className='flex items-center gap-2.5'>
+                      <div className='flex items-center justify-center w-6 h-6 rounded-md bg-muted group-hover:bg-primary/10 transition-colors'>
+                        <Clock className='h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors' />
+                      </div>
+                      <span className='text-sm text-muted-foreground'>
+                        {formatDate(ticket.createdAt)}
+                      </span>
+                    </div>
+                  </TableCell>
+                  {/* Chevron */}
+                  <TableCell className='py-4 w-12'>
+                    <ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all' />
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        <ScrollBar orientation='horizontal' />
       </ScrollArea>
 
-      <div className='border-t px-3 py-2 bg-background'>
+      {/* Pagination */}
+      <div className='border-t px-4 py-3 bg-muted/20'>
         <CustomTablePagination
           total={total}
-          suggestions={[10, 20, 30, 40, 50]}
+          suggestions={[10, 20, 40, 50, 100]}
         />
       </div>
     </div>
