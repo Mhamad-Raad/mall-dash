@@ -6,6 +6,7 @@
   "filters": {
     "searchPlaceholder": "گەڕان لە ناو تیکێتەکان...",
     "statusPlaceholder": "دۆخ",
+    "filterLabel": "فلتەرکردنی تیکێتەکان",
     "apply": "فلتەرکردن",
     "clear": "سڕینەوە"
   },

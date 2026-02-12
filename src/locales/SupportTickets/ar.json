@@ -6,6 +6,7 @@
   "filters": {
     "searchPlaceholder": "بحث في التذاكر...",
     "statusPlaceholder": "الحالة",
+    "filterLabel": "تصفية التذاكر",
     "apply": "تصفية",
     "clear": "مسح"
   },
