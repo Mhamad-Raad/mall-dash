@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { Building } from '@/interfaces/Building.interface';
+import type { Building, ApartmentLayout } from '@/interfaces/Building.interface';
 import {
   fetchBuildingById,
   updateBuildingName,
@@ -50,13 +50,15 @@ export const updateApartmentThunk = createAsyncThunk(
       id: number;
       apartmentName: string;
       userId: string | number | null;
+      layout?: ApartmentLayout;
     },
     { rejectWithValue }
   ) => {
     const result = await updateApartment(
       params.id,
       params.apartmentName,
-      params.userId
+      params.userId,
+      params.layout
     );
     if (result.error) return rejectWithValue({ error: result.error, errors: result.errors || [] });
 

@@ -2,7 +2,6 @@ import { Home, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
@@ -10,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { Apartment, Occupant } from '@/interfaces/Building.interface';
+import type { Apartment, Occupant, ApartmentLayout } from '@/interfaces/Building.interface';
 import { useEffect, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ObjectAutoComplete } from '@/components/ObjectAutoComplete';
 import { fetchUsers } from '@/data/Users';
+import { LayoutDesigner } from './LayoutDesigner';
 
 export interface UserResult {
   id: number | string;
@@ -27,11 +27,12 @@ export interface EditApartmentDialogProps {
   apartment: Apartment | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (occupant: any, name: string) => void;
+  onSave: (occupant: any, name: string, layout?: ApartmentLayout) => void;
   onDelete?: (apartmentId: number) => void;
   apartmentName: string;
   setApartmentName: (name: string) => void;
 }
+
 
 const EditApartmentDialog = ({
   apartment,
@@ -46,17 +47,33 @@ const EditApartmentDialog = ({
   const [pendingOccupant, setPendingOccupant] = useState<
     UserResult | null | 'remove'
   >(null);
+  const [layout, setLayout] = useState<ApartmentLayout | undefined>(undefined);
 
   useEffect(() => {
-    setApartmentName(apartment?.apartmentName ?? '');
-    setPendingOccupant(apartment?.occupant ? null : 'remove');
+    // Only reset layout when apartment changes or dialog opens
+    // Don't reset when apartment.layout changes (to prevent overwriting user edits)
+    if (isOpen && apartment) {
+      setApartmentName(apartment.apartmentName ?? '');
+      setPendingOccupant(apartment.occupant ? null : 'remove');
+      setLayout(apartment.layout);
+    }
   }, [
-    apartment?.apartmentName,
     apartment?.id,
     setApartmentName,
     isOpen,
-    apartment?.occupant,
   ]);
+
+  // Cleanup memory when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset layout to release memory from large room/door arrays
+      const cleanupTimer = setTimeout(() => {
+        setPendingOccupant(null);
+      }, 300); // Small delay to allow closing animation
+
+      return () => clearTimeout(cleanupTimer);
+    }
+  }, [isOpen]);
 
   const fetchUserObjects = useCallback(
     async (query: string): Promise<UserResult[]> => {
@@ -99,13 +116,13 @@ const EditApartmentDialog = ({
     } else if (apartment?.occupant) {
       userId = apartment.occupant.id;
     }
-    onSave(userId, apartmentName);
+    onSave(userId, apartmentName, layout);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className='max-w-2xl max-h-[85vh] flex flex-col'>
-        <DialogHeader>
+      <DialogContent className='!w-screen !h-screen !max-w-none !max-h-none !rounded-none !translate-x-0 !translate-y-0 !top-0 !left-0 flex flex-col p-0 gap-0 overflow-hidden'>
+        <DialogHeader className='px-6 pt-4 pb-3 border-b shrink-0'>
           <DialogTitle className='flex items-center gap-2'>
             <Home className='h-5 w-5 text-primary' />
             {t('detail.apartment.editApartment')} {apartment?.apartmentName}
@@ -115,49 +132,52 @@ const EditApartmentDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className='mb-4'>
-          <Label htmlFor='apartment-name' className='text-xs font-semibold'>
-            {t('detail.apartment.apartmentNameLabel')}
-          </Label>
-          <Input
-            id='apartment-name'
-            value={apartmentName}
-            onChange={(e) => setApartmentName(e.target.value)}
-            placeholder={t('detail.apartment.apartmentNamePlaceholder')}
-            className='mt-1'
-          />
-        </div>
+        {/* Two-column layout: Details on left, Floor Plan on right */}
+        <div className='flex-1 flex overflow-hidden'>
+          {/* Left sidebar - Details & Occupant */}
+          <div className='w-80 shrink-0 border-r p-4 overflow-auto space-y-4'>
+            {/* Apartment Name */}
+            <div>
+              <Label htmlFor='apartment-name' className='text-xs font-semibold'>
+                {t('detail.apartment.apartmentNameLabel')}
+              </Label>
+              <Input
+                id='apartment-name'
+                value={apartmentName}
+                onChange={(e) => setApartmentName(e.target.value)}
+                placeholder={t('detail.apartment.apartmentNamePlaceholder')}
+                className='mt-1'
+              />
+            </div>
 
-        <div className='mb-4'>
-          {occupant === null && (
-            <ObjectAutoComplete<UserResult>
-              fetchOptions={fetchUserObjects}
-              getOptionLabel={(user) => `${user.name} (${user.email})`}
-              onSelectOption={(user) => setPendingOccupant(user)}
-              placeholder={t('detail.apartment.searchUserPlaceholder')}
-              debounceMs={250}
-            />
-          )}
-        </div>
+            {/* User Search */}
+            <div>
+              {occupant === null && (
+                <ObjectAutoComplete<UserResult>
+                  fetchOptions={fetchUserObjects}
+                  getOptionLabel={(user) => `${user.name} (${user.email})`}
+                  onSelectOption={(user) => setPendingOccupant(user)}
+                  placeholder={t('detail.apartment.searchUserPlaceholder')}
+                  debounceMs={250}
+                />
+              )}
+            </div>
 
-        <ScrollArea className='flex-1 overflow-auto pr-4'>
-          <div className='space-y-4 py-4'>
-            <div className='border-t pt-4 space-y-4'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-sm font-semibold flex items-center gap-2'>
-                  <Users className='h-4 w-4' />
-                  {t('detail.apartment.occupantLabel')}
-                </h3>
-              </div>
+            {/* Occupant Section */}
+            <div className='border-t pt-4 space-y-3'>
+              <h3 className='text-sm font-semibold flex items-center gap-2'>
+                <Users className='h-4 w-4' />
+                {t('detail.apartment.occupantLabel')}
+              </h3>
               {occupant ? (
-                <div className='flex items-center justify-between gap-4'>
-                  <div className='flex gap-4 items-center'>
-                    <div className='w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-bold text-primary uppercase overflow-hidden'>
+                <div className='flex items-center justify-between gap-2 p-3 border rounded-lg bg-muted/20'>
+                  <div className='flex gap-3 items-center min-w-0'>
+                    <div className='w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary uppercase overflow-hidden shrink-0'>
                       {'avatarUrl' in occupant && occupant.avatarUrl ? (
                         <img
                           src={occupant.avatarUrl}
                           alt={occupant.name}
-                          className='w-12 h-12 object-cover rounded-full'
+                          className='w-10 h-10 object-cover rounded-full'
                         />
                       ) : (
                         occupant.name
@@ -166,37 +186,46 @@ const EditApartmentDialog = ({
                           .join('') || '?'
                       )}
                     </div>
-                    <div className='flex flex-col'>
-                      <span className='text-lg font-medium'>
+                    <div className='flex flex-col min-w-0'>
+                      <span className='font-medium truncate'>
                         {occupant.name}
                       </span>
-                      <span className='text-muted-foreground text-sm'>
+                      <span className='text-muted-foreground text-xs truncate'>
                         {occupant.email}
                       </span>
                     </div>
                   </div>
-                  {/* Remove/clear buttons */}
                   <Button
                     size='icon'
                     variant='ghost'
+                    className='shrink-0'
                     onClick={() => setPendingOccupant('remove')}
                   >
                     <X className='w-4 h-4' />
                   </Button>
                 </div>
               ) : (
-                <div className='text-center py-8 border rounded-lg bg-muted/30'>
-                  <p className='text-sm text-muted-foreground mb-3'>
+                <div className='text-center py-6 border rounded-lg bg-muted/30'>
+                  <p className='text-sm text-muted-foreground'>
                     {t('detail.apartment.noOccupantsAssigned')}
                   </p>
                 </div>
               )}
             </div>
           </div>
-          <ScrollBar orientation='horizontal' />
-        </ScrollArea>
 
-        <div className='flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t bg-background shrink-0'>
+          {/* Right side - Floor Plan Designer */}
+          <div className='flex-1 p-4 overflow-hidden'>
+            <LayoutDesigner
+              initialLayout={layout}
+              onSave={setLayout}
+              apartmentName={apartmentName || apartment?.apartmentName || 'Apartment'}
+              embedded
+            />
+          </div>
+        </div>
+
+        <div className='flex flex-col-reverse sm:flex-row justify-end gap-2 px-6 py-4 border-t bg-background shrink-0'>
           <Button
             variant='outline'
             onClick={onClose}
